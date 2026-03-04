@@ -1,0 +1,11 @@
+cashier_webhook_stripe:
+    path: '%cashier.path%/webhook'
+    methods: [POST]
+    controller: CashierBundle\Controller\WebhookController::handle
+    defaults:
+        _format: json
+
+# Payment routes (defined as attributes in PaymentController)
+# The following routes are automatically registered via Symfony's routing attribute system:
+# - cashier_payment_show    GET  /cashier/payment/{paymentIntentId}
+# - cashier_payment_confirm POST /cashier/payment/{paymentIntentId}/confirm

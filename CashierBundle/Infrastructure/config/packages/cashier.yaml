@@ -1,0 +1,20 @@
+# Cashier Bundle Configuration
+cashier:
+    # Currency configuration
+    currency: '%env(default:usd:CASHIER_CURRENCY)%'
+    currency_locale: '%env(default:en:CASHIER_CURRENCY_LOCALE)%'
+
+    # Invoice configuration
+    invoice:
+        paper: '%env(default:letter:CASHIER_INVOICE_PAPER)%'
+        remote_enabled: '%env(default:false:CASHIER_INVOICE_REMOTE_ENABLED)%'
+        orientation: '%env(default:portrait:CASHIER_INVOICE_ORIENTATION)%'
+
+    # Tax configuration
+    automatic_tax:
+        enabled: '%env(default:false:CASHIER_AUTOMATIC_TAX)%'
+
+    # Subscription behavior
+    subscription:
+        deactivate_past_due: true
+        deactivate_incomplete: true

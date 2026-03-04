@@ -1,0 +1,4 @@
+cashier_webhook:
+    path: /cashier/webhook
+    methods: [POST]
+    controller: CashierBundle\Controller\WebhookController::handle

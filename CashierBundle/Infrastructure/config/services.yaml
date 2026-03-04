@@ -1,0 +1,108 @@
+# This file is the entry point to configure your own services.
+# Files in the packages/ subdirectory configure your dependencies.
+
+# Put parameters here that don't need to change on each machine where the app is deployed
+# https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
+services:
+    _defaults:
+        autowire: true      # Automatically injects dependencies in your services.
+        autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+
+    # makes classes in src/ available to be used as services
+    # this creates a service per class whose id is the fully-qualified class name
+    CashierBundle\:
+        resource: '../../*'
+        exclude:
+            - '../../Entity/'
+            - '../../Model/'
+            - '../../Kernel.php'
+
+    # Controllers are imported separately to make sure services can be injected
+    # as action arguments even if you don't extend any base controller class
+    CashierBundle\Controller\:
+        resource: '../../Controller/'
+        tags: ['controller.service_arguments']
+
+    # Stripe Client
+    Stripe\StripeClient:
+        arguments:
+            $apiKey: '%env(STRIPE_SECRET_KEY)%'
+
+    # Core Services
+    CashierBundle\Service\Cashier:
+        arguments:
+            $stripe: '@Stripe\StripeClient'
+
+    CashierBundle\Service\CustomerService:
+        arguments:
+            $stripe: '@Stripe\StripeClient'
+
+    CashierBundle\Service\SubscriptionService:
+        arguments:
+            $stripe: '@Stripe\StripeClient'
+
+    CashierBundle\Service\SubscriptionBuilder:
+        shared: false  # Create a new instance each time
+        arguments:
+            $stripe: '@Stripe\StripeClient'
+
+    CashierBundle\Service\PaymentService:
+        arguments:
+            $stripe: '@Stripe\StripeClient'
+
+    CashierBundle\Service\PaymentIntentService:
+        arguments:
+            $stripe: '@Stripe\StripeClient'
+
+    CashierBundle\Service\SetupIntentService:
+        arguments:
+            $stripe: '@Stripe\StripeClient'
+
+    CashierBundle\Service\PaymentMethodService:
+        arguments:
+            $stripe: '@Stripe\StripeClient'
+
+    CashierBundle\Service\InvoiceService:
+        arguments:
+            $stripe: '@Stripe\StripeClient'
+            $renderer: '@CashierBundle\Contract\InvoiceRendererInterface'
+
+    CashierBundle\Service\CheckoutService:
+        arguments:
+            $stripe: '@Stripe\StripeClient'
+
+    CashierBundle\Service\TaxService:
+        arguments:
+            $stripe: '@Stripe\StripeClient'
+
+    # Invoice Renderers
+    CashierBundle\Service\InvoiceRenderer\DompdfInvoiceRenderer:
+        arguments:
+            $paper: '%env(default:letter:CASHIER_INVOICE_PAPER)%'
+            $remoteEnabled: '%env(default:false:CASHIER_INVOICE_REMOTE_ENABLED)%'
+
+    CashierBundle\Service\InvoiceRenderer\SnappyInvoiceRenderer:
+        arguments:
+            $paper: '%env(default:letter:CASHIER_INVOICE_PAPER)%'
+            $orientation: '%env(default:portrait:CASHIER_INVOICE_ORIENTATION)%'
+
+    # Logger
+    CashierBundle\Logger\StripeLogger:
+        arguments:
+            $logger: '@monolog.logger.stripe'
+
+    # Default Invoice Renderer (change alias to switch implementation)
+    CashierBundle\Contract\InvoiceRendererInterface: '@CashierBundle\Service\InvoiceRenderer\DompdfInvoiceRenderer'
+
+    # Repositories
+    CashierBundle\Repository\StripeCustomerRepository:
+        arguments:
+            $registry: '@Doctrine\Bundle\DoctrineBundle\Registry'
+
+    CashierBundle\Repository\SubscriptionRepository:
+        arguments:
+            $registry: '@Doctrine\Bundle\DoctrineBundle\Registry'
+
+    CashierBundle\Repository\SubscriptionItemRepository:
+        arguments:
+            $registry: '@Doctrine\Bundle\DoctrineBundle\Registry'

@@ -1,0 +1,50 @@
+{
+    "name": "cashier/cashier-bundle",
+    "description": "Stripe Cashier integration for Symfony 8",
+    "type": "symfony-bundle",
+    "keywords": ["stripe", "cashier", "symfony", "payments"],
+    "homepage": "https://github.com/cashier/cashier-bundle",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Cashier Team",
+            "email": "team@cashier.dev"
+        }
+    ],
+    "require": {
+        "php": "^8.2",
+        "stripe/stripe-php": "^16.0",
+        "symfony/framework-bundle": "^7.0|^8.0",
+        "symfony/doctrine-bridge": "^7.0|^8.0",
+        "doctrine/orm": "^3.0",
+        "nesbot/carbon": "^3.0",
+        "moneyphp/money": "^4.5",
+        "phpseclib/bcmath_compat": "^1.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^11.0",
+        "symfony/phpunit-bridge": "^7.0|^8.0"
+    },
+    "suggest": {
+        "dompdf/dompdf": "^3.0 (for PDF invoice rendering)",
+        "symfony/messenger": "For processing webhooks asynchronously"
+    },
+    "autoload": {
+        "psr-4": {
+            "CashierBundle\\": "CashierBundle/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "CashierBundle\\Tests\\": "CashierBundle/tests/"
+        }
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "php-http/discovery": true
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}

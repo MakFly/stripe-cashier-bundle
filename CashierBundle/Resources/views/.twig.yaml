@@ -1,0 +1,13 @@
+# CashierBundle Twig Template Configuration
+
+# Template paths are automatically registered by Symfony's Bundle system
+# Templates can be referenced using the @Cashier namespace:
+# - @Cashier/base.html.twig
+# - @Cashier/payment/show.html.twig
+# - @Cashier/invoice/default.html.twig
+
+# To override any template in your application, create a file with the same path
+# in your templates/ directory:
+# templates/cashier/base.html.twig
+# templates/cashier/payment/show.html.twig
+# templates/cashier/invoice/default.html.twig

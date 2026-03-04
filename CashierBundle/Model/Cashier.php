@@ -1,0 +1,106 @@
+<?php
+
+declare(strict_types=1);
+
+namespace CashierBundle\Model;
+
+final class Cashier
+{
+    private static string $currency = 'usd';
+
+    private static string $locale = 'en';
+
+    public static function formatAmount(int $amount, ?string $currency = null, ?string $locale = null): string
+    {
+        $currency = $currency ?? self::$currency;
+        $locale = $locale ?? self::$locale;
+
+        // Convert amount from cents to decimal
+        $decimal = $amount / 100;
+
+        // Format based on currency
+        return self::formatCurrency($decimal, $currency, $locale);
+    }
+
+    public static function useCurrency(string $currency): void
+    {
+        self::$currency = strtolower($currency);
+    }
+
+    public static function useLocale(string $locale): void
+    {
+        self::$locale = $locale;
+    }
+
+    public static function getCurrency(): string
+    {
+        return self::$currency;
+    }
+
+    public static function getLocale(): string
+    {
+        return self::$locale;
+    }
+
+    private static function formatCurrency(float $amount, string $currency, string $locale): string
+    {
+        // Get currency symbol and formatting rules
+        $symbol = self::getCurrencySymbol($currency);
+        $position = self::getCurrencyPosition($currency);
+        $decimals = self::getCurrencyDecimals($currency);
+
+        // Format the number
+        $formatted = number_format($amount, $decimals, '.', '');
+
+        // Add currency symbol
+        if ($position === 'before') {
+            return $symbol . $formatted;
+        }
+
+        return $formatted . ' ' . $symbol;
+    }
+
+    private static function getCurrencySymbol(string $currency): string
+    {
+        return match (strtolower($currency)) {
+            'usd' => '$',
+            'eur' => '€',
+            'gbp' => '£',
+            'cad' => 'C$',
+            'aud' => 'A$',
+            'chf' => 'CHF',
+            'sek' => 'kr',
+            'nok' => 'kr',
+            'dkk' => 'kr',
+            'pln' => 'zł',
+            'czk' => 'Kč',
+            'huf' => 'Ft',
+            'ron' => 'lei',
+            'bgn' => 'лв',
+            'hrk' => 'kn',
+            'rub' => '₽',
+            'try' => '₺',
+            'cny' => '¥',
+            'jpy' => '¥',
+            'inr' => '₹',
+            'mxn' => '$',
+            'brl' => 'R$',
+            default => strtoupper($currency),
+        };
+    }
+
+    private static function getCurrencyPosition(string $currency): string
+    {
+        $currenciesBefore = ['usd', 'eur', 'gbp', 'cad', 'aud', 'mxn', 'brl', 'cny', 'jpy', 'inr'];
+
+        return in_array(strtolower($currency), $currenciesBefore, true) ? 'before' : 'after';
+    }
+
+    private static function getCurrencyDecimals(string $currency): int
+    {
+        // Zero decimal currencies
+        $zeroDecimal = ['jpy', 'clp', 'kid', 'krw', 'pyg', 'vnd', 'bif', 'djf', 'gnf', 'kmf', 'mga', 'rwf'];
+
+        return in_array(strtolower($currency), $zeroDecimal, true) ? 0 : 2;
+    }
+}

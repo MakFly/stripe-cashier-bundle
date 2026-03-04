@@ -1,0 +1,32 @@
+# Development configuration for CashierBundle
+# This file overrides the default configuration in dev environment
+
+cashier:
+    # Use test mode in development
+    currency: 'usd'
+    currency_locale: 'en'
+
+    # Enable debug features
+    invoice:
+        remote_enabled: true  # Allow loading remote assets in PDFs (useful for logos)
+
+    # Enable automatic tax for testing (requires Stripe Tax)
+    automatic_tax:
+        enabled: false
+
+    # Keep subscriptions active even when past due (useful for testing)
+    subscription:
+        deactivate_past_due: false
+        deactivate_incomplete: false
+
+# Monolog configuration for Stripe debugging
+monolog:
+    channels:
+        - stripe
+
+    handlers:
+        stripe:
+            type: stream
+            path: "%kernel.logs_dir%/stripe.log"
+            level: debug
+            channels: ["stripe"]

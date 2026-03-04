@@ -1,0 +1,55 @@
+# This file is the entry point to configure your own services.
+# Files in the packages/ subdirectory configure your dependencies.
+
+# Put parameters here that don't need to change on each machine where the app is deployed
+# https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
+
+services:
+    # default configuration for services in *this* file
+    _defaults:
+        autowire: true      # Automatically injects dependencies in your services.
+        autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+
+    # makes classes in src/ available to be used as services
+    # this creates a service per class whose id is the fully-qualified class name
+    CashierBundle\:
+        resource: '../../'
+        exclude:
+            - '../../Entity/'
+            - '../../Kernel.php'
+
+    # Stripe Client Service
+    Stripe\StripeClient:
+        arguments:
+            $apiKey: '%cashier.secret%'
+        public: false
+
+    # controllers are imported separately to make sure services can be injected
+    # as action arguments even if you don't extend any base controller class
+    CashierBundle\Controller\:
+        resource: '../../Controller/'
+        tags: ['controller.service_arguments']
+
+    # Webhook handlers
+    CashierBundle\Webhook\:
+        resource: '../../Webhook/'
+        exclude: '../../Webhook/{WebhookController}'
+        tags: ['cashier.webhook_handler']
+
+    # Invoice renderer
+    CashierBundle\Service\Invoice\InvoiceRendererInterface:
+        alias: '%cashier.invoices.renderer%'
+
+    # Logger
+    CashierBundle\Logger\LoggerInterface:
+        alias: '%cashier.logger%'
+        deprecated: 'The "%alias_id%" service alias is deprecated. Use PSR-3 logger instead.'
+
+    # Twig Extension
+    CashierBundle\Twig\CashierExtension:
+        tags: ['twig.extension']
+
+    # Payment Controller with Stripe publishable key
+    CashierBundle\Controller\PaymentController:
+        arguments:
+            $stripePublishableKey: '%cashier.key%'

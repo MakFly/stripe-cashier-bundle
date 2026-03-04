@@ -1,0 +1,143 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Confirm Payment{% endblock %}
+
+{% block body %}
+<div class="payment-container">
+    <h2>Complete your payment</h2>
+
+    <div class="payment-info">
+        <p>Amount: {{ amount|stripe_amount(currency) }}</p>
+        <p>Currency: {{ currency|upper }}</p>
+    </div>
+
+    <div id="payment-element">
+        <!-- Stripe.js will populate this -->
+    </div>
+
+    <button id="submit-btn" class="btn btn-primary">
+        <span id="btn-text">Confirm Payment</span>
+        <span id="btn-loader" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+    </button>
+
+    <div id="error-message" class="alert alert-danger mt-3" style="display:none;"></div>
+
+    <div id="success-message" class="alert alert-success mt-3" style="display:none;"></div>
+</div>
+
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+    (function() {
+        const stripe = Stripe('{{ stripeKey|e('js') }}');
+        const elements = stripe.elements({
+            clientSecret: '{{ clientSecret|e('js') }}',
+            appearance: {
+                theme: 'stripe',
+                variables: {
+                    colorPrimary: '#0570de',
+                    colorBackground: '#ffffff',
+                    colorText: '#30313d',
+                }
+            }
+        });
+
+        const paymentElement = elements.create('payment', {
+            layout: 'tabs'
+        });
+        paymentElement.mount('#payment-element');
+
+        const submitBtn = document.getElementById('submit-btn');
+        const btnText = document.getElementById('btn-text');
+        const btnLoader = document.getElementById('btn-loader');
+        const errorMsg = document.getElementById('error-message');
+        const successMsg = document.getElementById('success-message');
+
+        submitBtn.addEventListener('click', async (event) => {
+            event.preventDefault();
+
+            // Show loading state
+            submitBtn.disabled = true;
+            btnText.classList.add('d-none');
+            btnLoader.classList.remove('d-none');
+            errorMsg.style.display = 'none';
+            successMsg.style.display = 'none';
+
+            const {error} = await stripe.confirmPayment({
+                elements,
+                confirmParams: {
+                    return_url: '{{ return_url|default(url('home'))|e('js') }}',
+                }
+            });
+
+            if (error) {
+                // Show error
+                errorMsg.textContent = error.message;
+                errorMsg.style.display = 'block';
+
+                // Reset button
+                submitBtn.disabled = false;
+                btnText.classList.remove('d-none');
+                btnLoader.classList.add('d-none');
+            } else {
+                // Payment succeeded, redirect will happen automatically
+                successMsg.textContent = 'Payment successful! Redirecting...';
+                successMsg.style.display = 'block';
+            }
+        });
+
+        // Handle redirects
+        paymentElement.on('ready', () => {
+            console.log('Payment element ready');
+        });
+
+        paymentElement.on('change', (event) => {
+            if (event.error) {
+                errorMsg.textContent = event.error.message;
+                errorMsg.style.display = 'block';
+            } else {
+                errorMsg.style.display = 'none';
+            }
+        });
+    })();
+</script>
+
+<style>
+    .payment-container {
+        max-width: 500px;
+        margin: 40px auto;
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .payment-info {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 4px;
+        margin-bottom: 20px;
+    }
+
+    .payment-info p {
+        margin: 5px 0;
+    }
+
+    #payment-element {
+        margin: 20px 0;
+        padding: 10px;
+        border: 1px solid #e0e0e0;
+        border-radius: 4px;
+    }
+
+    #submit-btn {
+        width: 100%;
+        padding: 12px 24px;
+        font-size: 16px;
+    }
+
+    #submit-btn:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+</style>
+{% endblock %}
