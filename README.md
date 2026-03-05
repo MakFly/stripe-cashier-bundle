@@ -82,6 +82,8 @@ cashier:
     default_subscription_type: 'default'
     invoices:
         renderer: 'CashierBundle\Service\InvoiceRenderer\DompdfInvoiceRenderer'
+        default_locale: 'en'
+        supported_locales: ['en', 'fr']
         storage:
             driver: 'local'
             path: '%kernel.project_dir%/var/data/invoices'
@@ -146,6 +148,17 @@ You can customize the invoice UX in two ways:
 
 - override the Twig template at `templates/bundles/CashierBundle/invoice/default.html.twig`
 - replace the renderer service via `cashier.invoices.renderer`
+
+Invoice locale resolution priority:
+
+- explicit `locale` / `invoice_locale` render data
+- Stripe customer `preferred_locales`
+- `cashier.invoices.default_locale`
+
+The default provider ships with `en` and `fr`. For additional locales, override:
+
+- `CashierBundle\Contract\InvoiceLocaleResolverInterface`
+- `CashierBundle\Contract\InvoiceTranslationProviderInterface`
 
 ## Quick Start
 

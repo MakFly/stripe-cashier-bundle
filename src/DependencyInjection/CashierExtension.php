@@ -40,6 +40,8 @@ final class CashierExtension extends Extension
         $container->setParameter('cashier.currency_locale', $config['currency_locale']);
         $container->setParameter('cashier.default_subscription_type', $config['default_subscription_type']);
         $container->setParameter('cashier.invoices.renderer', $config['invoices']['renderer']);
+        $container->setParameter('cashier.invoices.default_locale', $config['invoices']['default_locale']);
+        $container->setParameter('cashier.invoices.supported_locales', $config['invoices']['supported_locales']);
         $container->setParameter('cashier.invoices.storage.driver', $config['invoices']['storage']['driver']);
         $container->setParameter('cashier.invoices.storage.path', $config['invoices']['storage']['path']);
         $container->setParameter('cashier.invoices.options.paper', $config['invoices']['options']['paper']);

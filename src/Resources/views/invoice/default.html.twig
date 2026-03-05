@@ -1,318 +1,312 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ meta.locale|default('en') }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Invoice #{{ invoice.number|default(invoice.id) }}</title>
+    <title>{{ meta.labels.title }} #{{ invoice.number|default(invoice.id) }}</title>
     <style>
         * { box-sizing: border-box; }
         body {
             margin: 0;
-            padding: 32px;
-            background: #f6f9fc;
-            color: #0a2540;
-            font-family: Helvetica, Arial, sans-serif;
-            font-size: 13px;
-            line-height: 1.5;
+            padding: 28px;
+            background: #f4f7fb;
+            color: #16233b;
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            font-size: 12px;
+            line-height: 1.45;
         }
-        .sheet {
+        .page {
             max-width: 860px;
             margin: 0 auto;
-            background: #ffffff;
-            border: 1px solid #e3e8ee;
-            border-radius: 18px;
-            padding: 40px;
+            background: #fff;
+            border: 1px solid #dfe7f1;
+            border-radius: 20px;
+            overflow: hidden;
         }
-        .topbar {
-            width: 100%;
-            margin-bottom: 32px;
+        .hero {
+            padding: 34px 38px 28px;
+            background: linear-gradient(180deg, #f8fbff 0%, #ffffff 100%);
+            border-bottom: 1px solid #e5edf6;
         }
-        .brand {
-            display: inline-block;
-            font-size: 24px;
-            font-weight: 700;
-            letter-spacing: -0.02em;
-            color: #635bff;
-        }
-        .header-table,
-        .summary-table,
+        .hero-table,
+        .info-table,
         .items-table,
+        .totals-table,
         .meta-table {
             width: 100%;
             border-collapse: collapse;
         }
-        .header-table td {
-            vertical-align: top;
-        }
-        .invoice-title {
-            text-align: right;
+        .brand {
+            font-size: 26px;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            color: #635bff;
         }
         .eyebrow {
-            color: #697386;
-            text-transform: uppercase;
-            font-size: 11px;
-            letter-spacing: 0.08em;
             margin-bottom: 6px;
+            color: #6b7c93;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.11em;
+            text-transform: uppercase;
         }
         .invoice-number {
-            font-size: 28px;
-            font-weight: 700;
-            color: #0a2540;
-            margin: 0 0 8px;
+            margin: 0 0 10px;
+            font-size: 30px;
+            line-height: 1;
+            letter-spacing: -0.04em;
         }
-        .status-pill {
+        .status {
             display: inline-block;
-            padding: 5px 10px;
+            padding: 6px 11px;
             border-radius: 999px;
-            font-size: 11px;
+            background: #d8f3dc;
+            color: #0f6b3b;
+            font-size: 10px;
             font-weight: 700;
+            letter-spacing: 0.08em;
             text-transform: uppercase;
-            letter-spacing: 0.06em;
         }
-        .status-paid { background: #d1f7dd; color: #0a7f42; }
-        .status-open, .status-pending { background: #fff3d6; color: #8b5e00; }
-        .status-draft { background: #e6ebf1; color: #566171; }
-        .card {
-            border: 1px solid #e3e8ee;
-            border-radius: 14px;
-            padding: 18px 20px;
-            background: #fff;
+        .status-open, .status-pending { background: #fff1cc; color: #8c6400; }
+        .status-draft { background: #e9eef5; color: #526277; }
+        .status-void, .status-uncollectible { background: #fee2e2; color: #b42318; }
+        .content {
+            padding: 30px 38px 34px;
         }
-        .grid {
-            width: 100%;
-            margin-bottom: 28px;
-        }
-        .grid td {
+        .info-table td {
             width: 50%;
             vertical-align: top;
-            padding-right: 12px;
+            padding: 0 0 24px;
         }
-        .grid td:last-child {
-            padding-right: 0;
-            padding-left: 12px;
+        .panel {
+            min-height: 132px;
+            padding: 18px 20px;
+            border: 1px solid #e5edf6;
+            border-radius: 16px;
+            background: #fff;
         }
-        .muted { color: #697386; }
+        .muted { color: #6b7c93; }
         .strong { font-weight: 700; }
         .meta-table td {
-            padding: 2px 0;
-            color: #425466;
+            padding: 4px 0;
+            vertical-align: top;
+        }
+        .meta-table td:last-child {
+            text-align: right;
+            color: #16233b;
+            font-weight: 600;
         }
         .items-table {
-            border: 1px solid #e3e8ee;
-            border-radius: 14px;
+            border: 1px solid #e5edf6;
+            border-radius: 16px;
             overflow: hidden;
             margin-bottom: 24px;
         }
         .items-table thead th {
-            background: #f6f9fc;
-            color: #697386;
-            font-size: 11px;
+            padding: 13px 16px;
+            background: #f8fbff;
+            color: #6b7c93;
+            font-size: 10px;
             font-weight: 700;
+            letter-spacing: 0.11em;
             text-transform: uppercase;
-            letter-spacing: 0.06em;
-            padding: 14px 16px;
-            border-bottom: 1px solid #e3e8ee;
             text-align: left;
+            border-bottom: 1px solid #e5edf6;
         }
+        .items-table thead th:nth-child(2),
+        .items-table thead th:nth-child(3) { text-align: center; }
         .items-table thead th:last-child,
-        .items-table tbody td:last-child,
-        .summary-table td:last-child {
-            text-align: right;
-        }
+        .items-table tbody td:last-child { text-align: right; }
         .items-table tbody td {
-            padding: 16px;
-            border-bottom: 1px solid #e3e8ee;
+            padding: 15px 16px;
+            border-bottom: 1px solid #eef3f8;
             vertical-align: top;
         }
-        .items-table tbody tr:last-child td {
-            border-bottom: none;
+        .items-table tbody tr:last-child td { border-bottom: none; }
+        .items-table .quantity,
+        .items-table .unit { text-align: center; width: 110px; }
+        .description-title {
+            font-weight: 700;
+            margin-bottom: 4px;
         }
-        .qty,
-        .price {
-            text-align: center;
-            width: 110px;
-        }
-        .summary-wrap {
-            width: 100%;
-        }
-        .summary-offset {
-            width: 46%;
-        }
-        .summary-card {
-            width: 54%;
+        .totals-card {
+            width: 330px;
             margin-left: auto;
-            border: 1px solid #e3e8ee;
-            border-radius: 14px;
-            padding: 16px 18px;
+            padding: 18px 20px;
+            border: 1px solid #e5edf6;
+            border-radius: 16px;
+            background: #fbfdff;
         }
-        .summary-table td {
-            padding: 8px 0;
-            color: #425466;
+        .totals-table td {
+            padding: 7px 0;
+            color: #516074;
         }
-        .summary-table .total td {
+        .totals-table td:last-child {
+            text-align: right;
+            color: #16233b;
+            font-weight: 600;
+        }
+        .totals-table .grand-total td {
+            padding-top: 13px;
+            border-top: 1px solid #dfe7f1;
             font-size: 18px;
             font-weight: 700;
-            color: #0a2540;
-            border-top: 1px solid #e3e8ee;
-            padding-top: 14px;
+            color: #16233b;
         }
-        .payment-note,
-        .footer {
-            margin-top: 22px;
-            color: #697386;
-        }
-        .footer {
-            border-top: 1px solid #e3e8ee;
+        .bottom {
+            margin-top: 24px;
             padding-top: 18px;
-            font-size: 12px;
+            border-top: 1px solid #e5edf6;
+        }
+        .support {
+            margin-top: 6px;
         }
         @media print {
-            body {
-                padding: 0;
-                background: #fff;
-            }
-            .sheet {
-                border: none;
-                border-radius: 0;
-                padding: 0;
-            }
+            body { padding: 0; background: #fff; }
+            .page { border: none; border-radius: 0; }
         }
     </style>
 </head>
 <body>
-<div class="sheet">
-    <div class="topbar">
-        <span class="brand">{{ company.name|default('Stripe-like Invoice') }}</span>
-    </div>
-
-    <table class="header-table">
-        <tr>
-            <td>
-                <div class="eyebrow">From</div>
-                <div class="strong">{{ company.name|default('Stripe-like Invoice') }}</div>
-                {% if company.address %}<div class="muted">{{ company.address|nl2br }}</div>{% endif %}
-                {% if company.email %}<div class="muted">{{ company.email }}</div>{% endif %}
-                {% if company.phone %}<div class="muted">{{ company.phone }}</div>{% endif %}
-            </td>
-            <td class="invoice-title">
-                <div class="eyebrow">Invoice</div>
-                <h1 class="invoice-number">#{{ invoice.number|default(invoice.id) }}</h1>
-                <span class="status-pill status-{{ invoice.status|default('paid') }}">{{ invoice.status|default('paid')|upper }}</span>
-            </td>
-        </tr>
-    </table>
-
-    <table class="grid">
-        <tr>
-            <td>
-                <div class="card">
-                    <div class="eyebrow">Bill to</div>
-                    {% if customer %}
-                        {% if customer.name %}<div class="strong">{{ customer.name }}</div>{% endif %}
-                        {% if customer.email %}<div class="muted">{{ customer.email }}</div>{% endif %}
-                        {% if customer.address %}<div class="muted">{{ customer.address|nl2br }}</div>{% endif %}
-                    {% else %}
-                        <div class="muted">Customer information unavailable</div>
-                    {% endif %}
-                </div>
-            </td>
-            <td>
-                <div class="card">
-                    <div class="eyebrow">Invoice details</div>
-                    <table class="meta-table">
-                        <tr>
-                            <td>Date issued</td>
-                            <td>{{ invoice.date|date('M j, Y') }}</td>
-                        </tr>
-                        {% if invoice.dueDate %}
-                            <tr>
-                                <td>Due date</td>
-                                <td>{{ invoice.dueDate|date('M j, Y') }}</td>
-                            </tr>
-                        {% endif %}
-                        <tr>
-                            <td>Currency</td>
-                            <td>{{ invoice.currency|upper }}</td>
-                        </tr>
-                        <tr>
-                            <td>Reference</td>
-                            <td>{{ invoice.id }}</td>
-                        </tr>
-                    </table>
-                </div>
-            </td>
-        </tr>
-    </table>
-
-    <table class="items-table">
-        <thead>
-        <tr>
-            <th>Description</th>
-            <th class="qty">Qty</th>
-            <th class="price">Unit price</th>
-            <th>Amount</th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for item in invoice.items %}
+<div class="page">
+    <div class="hero">
+        <table class="hero-table">
             <tr>
                 <td>
-                    <div class="strong">{{ item.description }}</div>
+                    <div class="brand">{{ company.name|default('Cashier') }}</div>
                 </td>
-                <td class="qty">{{ item.quantity|default(1) }}</td>
-                <td class="price">{{ item.unit_amount|stripe_amount(invoice.currency) }}</td>
-                <td>{{ item.amount|stripe_amount(invoice.currency) }}</td>
+                <td style="text-align:right;">
+                    <div class="eyebrow">{{ meta.labels.title }}</div>
+                    <h1 class="invoice-number">#{{ invoice.number|default(invoice.id) }}</h1>
+                    <span class="status status-{{ invoice.status|default('paid') }}">{{ invoice.status_label|default(invoice.status|upper) }}</span>
+                </td>
             </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+        </table>
+    </div>
 
-    <div class="summary-wrap">
-        <div class="summary-card">
-            <table class="summary-table">
+    <div class="content">
+        <table class="info-table">
+            <tr>
+                <td style="padding-right: 10px;">
+                    <div class="panel">
+                        <div class="eyebrow">{{ meta.labels.from }}</div>
+                        <div class="strong">{{ company.name|default('Cashier') }}</div>
+                        {% if company.address %}<div class="muted">{{ company.address|nl2br }}</div>{% endif %}
+                        {% if company.email %}<div class="muted">{{ company.email }}</div>{% endif %}
+                        {% if company.phone %}<div class="muted">{{ company.phone }}</div>{% endif %}
+                    </div>
+                </td>
+                <td style="padding-left: 10px;">
+                    <div class="panel">
+                        <div class="eyebrow">{{ meta.labels.bill_to }}</div>
+                        {% if customer %}
+                            {% if customer.name %}<div class="strong">{{ customer.name }}</div>{% endif %}
+                            {% if customer.email %}<div class="muted">{{ customer.email }}</div>{% endif %}
+                            {% if customer.address %}<div class="muted">{{ customer.address|nl2br }}</div>{% endif %}
+                        {% else %}
+                            <div class="muted">{{ meta.labels.customer_unavailable }}</div>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+        </table>
+
+        <table class="info-table">
+            <tr>
+                <td style="padding-right: 10px;">
+                    <div class="panel">
+                        <div class="eyebrow">{{ meta.labels.invoice_details }}</div>
+                        <table class="meta-table">
+                            <tr>
+                                <td>{{ meta.labels.date_issued }}</td>
+                                <td>{{ invoice.formatted_date }}</td>
+                            </tr>
+                            {% if invoice.formatted_due_date %}
+                                <tr>
+                                    <td>{{ meta.labels.due_date }}</td>
+                                    <td>{{ invoice.formatted_due_date }}</td>
+                                </tr>
+                            {% endif %}
+                            <tr>
+                                <td>{{ meta.labels.currency }}</td>
+                                <td>{{ invoice.currency|upper }}</td>
+                            </tr>
+                            <tr>
+                                <td>{{ meta.labels.reference }}</td>
+                                <td>{{ invoice.id }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </td>
+                <td style="padding-left: 10px;"></td>
+            </tr>
+        </table>
+
+        <table class="items-table">
+            <thead>
+            <tr>
+                <th>{{ meta.labels.description }}</th>
+                <th>{{ meta.labels.quantity }}</th>
+                <th>{{ meta.labels.unit_price }}</th>
+                <th>{{ meta.labels.amount }}</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for item in invoice.items %}
                 <tr>
-                    <td>Subtotal</td>
-                    <td>{{ invoice.subtotal|stripe_amount(invoice.currency) }}</td>
+                    <td>
+                        <div class="description-title">{{ item.description }}</div>
+                    </td>
+                    <td class="quantity">{{ item.quantity }}</td>
+                    <td class="unit">{{ item.formatted_unit_amount }}</td>
+                    <td>{{ item.formatted_amount }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="totals-card">
+            <table class="totals-table">
+                <tr>
+                    <td>{{ meta.labels.subtotal }}</td>
+                    <td>{{ invoice.formatted_subtotal }}</td>
                 </tr>
                 {% if invoice.tax > 0 %}
                     <tr>
-                        <td>Tax</td>
-                        <td>{{ invoice.tax|stripe_amount(invoice.currency) }}</td>
+                        <td>{{ meta.labels.tax }}</td>
+                        <td>{{ invoice.formatted_tax }}</td>
                     </tr>
                 {% endif %}
                 {% for discount in invoice.discounts %}
                     <tr>
-                        <td>Discount{% if discount.coupon.name %} · {{ discount.coupon.name }}{% endif %}</td>
-                        <td>
-                            -{% if discount.coupon.amountOff %}
-                                {{ discount.coupon.amountOff|stripe_amount(invoice.currency) }}
-                            {% elseif discount.coupon.percentOff %}
-                                {{ discount.coupon.percentOff }}%
-                            {% else %}
-                                0
-                            {% endif %}
-                        </td>
+                        <td>{{ meta.labels.discount }}{% if discount.coupon.name %} · {{ discount.coupon.name }}{% endif %}</td>
+                        <td>-{{ discount.coupon.formatted_label }}</td>
                     </tr>
                 {% endfor %}
-                <tr class="total">
-                    <td>Total</td>
-                    <td>{{ invoice.total|stripe_amount(invoice.currency) }}</td>
+                {% if invoice.amount_due > 0 %}
+                    <tr>
+                        <td>{{ meta.labels.amount_due }}</td>
+                        <td>{{ invoice.formatted_amount_due }}</td>
+                    </tr>
+                {% endif %}
+                <tr class="grand-total">
+                    <td>{{ meta.labels.total }}</td>
+                    <td>{{ invoice.formatted_total }}</td>
                 </tr>
             </table>
         </div>
-    </div>
 
-    {% if invoice.payment_intent %}
-        <div class="payment-note">
-            Payment intent: <span class="strong">{{ invoice.payment_intent }}</span>
+        <div class="bottom">
+            {% if invoice.payment_intent %}
+                <div class="muted">{{ meta.labels.payment_reference }}: <span class="strong">{{ invoice.payment_intent }}</span></div>
+            {% endif %}
+            <div class="muted support">
+                {{ footer.text|default(meta.labels.thank_you) }}
+                {% if footer.support_email %}
+                    {{ meta.labels.support }}: {{ footer.support_email }}
+                {% endif %}
+            </div>
         </div>
-    {% endif %}
-
-    <div class="footer">
-        <div class="strong">Thank you for your business.</div>
-        {% if footer.text %}<div>{{ footer.text }}</div>{% endif %}
-        {% if footer.support_email %}<div>Support: {{ footer.support_email }}</div>{% endif %}
-        <div>Generated on {{ 'now'|date('M j, Y H:i') }}</div>
     </div>
 </div>
 </body>

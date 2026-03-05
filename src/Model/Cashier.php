@@ -71,15 +71,13 @@ final class Cashier
 
     private static function formatCurrency(float $amount, string $currency, string $locale): string
     {
-        // Get currency symbol and formatting rules
         $symbol = self::getCurrencySymbol($currency);
-        $position = self::getCurrencyPosition($currency);
+        $position = self::getCurrencyPosition($currency, $locale);
         $decimals = self::getCurrencyDecimals($currency);
+        [$decimalSeparator, $thousandsSeparator] = self::getNumberSeparators($locale);
 
-        // Format the number
-        $formatted = number_format($amount, $decimals, '.', '');
+        $formatted = number_format($amount, $decimals, $decimalSeparator, $thousandsSeparator);
 
-        // Add currency symbol
         if ($position === 'before') {
             return $symbol . $formatted;
         }
@@ -116,11 +114,29 @@ final class Cashier
         };
     }
 
-    private static function getCurrencyPosition(string $currency): string
+    private static function getCurrencyPosition(string $currency, string $locale): string
     {
+        $language = strtolower(strtok(str_replace('_', '-', $locale), '-') ?: $locale);
+        if (in_array($language, ['fr', 'de', 'es', 'it', 'nl', 'pt'], true)) {
+            return 'after';
+        }
+
         $currenciesBefore = ['usd', 'eur', 'gbp', 'cad', 'aud', 'mxn', 'brl', 'cny', 'jpy', 'inr'];
 
         return in_array(strtolower($currency), $currenciesBefore, true) ? 'before' : 'after';
+    }
+
+    /**
+     * @return array{0:string,1:string}
+     */
+    private static function getNumberSeparators(string $locale): array
+    {
+        $language = strtolower(strtok(str_replace('_', '-', $locale), '-') ?: $locale);
+
+        return match ($language) {
+            'fr', 'de', 'es', 'it', 'nl', 'pt' => [',', ' '],
+            default => ['.', ','],
+        };
     }
 
     private static function getCurrencyDecimals(string $currency): int

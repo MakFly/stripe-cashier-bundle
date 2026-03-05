@@ -50,6 +50,8 @@ cashier:
     default_subscription_type: 'default'
     invoices:
         renderer: 'CashierBundle\Service\InvoiceRenderer\DompdfInvoiceRenderer'
+        default_locale: 'en'
+        supported_locales: ['en', 'fr']
         storage:
             driver: 'local'
             path: '%kernel.project_dir%/var/data/invoices'
@@ -110,6 +112,14 @@ La personnalisation se fait soit:
 
 - par surcharge Twig via `templates/bundles/CashierBundle/invoice/default.html.twig`
 - par remplacement du service renderer configuré dans `cashier.invoices.renderer`
+- par remplacement de `CashierBundle\Contract\InvoiceLocaleResolverInterface`
+- par remplacement de `CashierBundle\Contract\InvoiceTranslationProviderInterface`
+
+Priorité de résolution de langue:
+
+- `locale` / `invoice_locale` passé au rendu
+- `preferred_locales` du customer Stripe
+- `cashier.invoices.default_locale`
 
 ## 🚀 Utilisation rapide
 
