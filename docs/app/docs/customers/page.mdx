@@ -1,0 +1,127 @@
+# Clients
+
+Le `CustomerService` gère les clients Stripe liés à vos entités.
+
+## Créer un client
+
+```php
+use CashierBundle\Service\CustomerService;
+
+class CheckoutController
+{
+    public function __construct(
+        private readonly CustomerService $customerService,
+    ) {}
+
+    public function create(User $user): Response
+    {
+        $stripeId = $this->customerService->create($user);
+
+        // $stripeId = 'cus_xxx'
+    }
+}
+```
+
+Le client est automatiquement créé dans Stripe avec les données de l'entité :
+- `email` → `getEmail()`
+- `name` → `getName()`
+- `phone` → `getPhone()`
+- `address` → `getAddress()`
+
+### Avec options supplémentaires
+
+```php
+$stripeId = $this->customerService->create($user, [
+    'metadata' => [
+        'source' => 'registration',
+        'campaign' => 'summer2024',
+    ],
+    'tax_exempt' => 'exempt',
+]);
+```
+
+## Obtenir ou créer
+
+Évite de créer un doublon si le client existe déjà :
+
+```php
+$stripeId = $this->customerService->createOrGetStripeId($user);
+```
+
+## Mettre à jour un client
+
+```php
+$this->customerService->update($user, [
+    'email' => 'new@email.com',
+    'name' => 'Jean Dupont',
+    'metadata' => [
+        'vip' => 'true',
+    ],
+]);
+```
+
+La base de données locale est synchronisée automatiquement.
+
+## Synchroniser un client
+
+Synchronise les données Stripe vers la base locale :
+
+```php
+use Stripe\Customer as StripeCustomer;
+
+$stripeCustomer = $this->stripeClient->customers->retrieve($stripeId);
+
+$this->customerService->sync($stripeCustomer, $user);
+```
+
+## Trouver un client local
+
+```php
+$localCustomer = $this->customerService->find('cus_xxx');
+
+if ($localCustomer !== null) {
+    echo $localCustomer->getEmail();
+    echo $localCustomer->getBalance();
+}
+```
+
+## Payload Stripe
+
+Obtenir les données formatées pour l'API Stripe :
+
+```php
+$payload = $this->customerService->getStripePayload($user);
+// ['email' => '...', 'name' => '...', ...]
+```
+
+## Entité StripeCustomer
+
+L'entité locale `StripeCustomer` stocke :
+
+| Propriété | Description |
+|-----------|-------------|
+| `stripeId` | ID Stripe (`cus_xxx`) |
+| `email` | Email |
+| `name` | Nom |
+| `phone` | Téléphone |
+| `balance` | Balance en cents |
+| `currency` | Devise préférée |
+| `address` | Adresse (array) |
+| `pmType` | Type de paiement par défaut |
+| `invoicePrefix` | Préfixe de facture |
+| `taxExempt` | Exonération TVA |
+
+## Gérer la balance client
+
+La balance est synchronisée depuis Stripe. Pour l'utiliser :
+
+```php
+$customer = $this->customerService->find($user->stripeId());
+
+if ($customer->getBalance() > 0) {
+    // Le client a un crédit
+    $credit = $customer->getBalance() / 100; // en euros
+}
+```
+
+[Prochain : Paiements →](/docs/payments)

@@ -1,0 +1,79 @@
+---
+title: Fonctions Twig
+---
+
+# Fonctions et Filtres Twig
+
+Le bundle Stripe Cashier fournit une extension Twig pour formater facilement les montants Stripe dans vos templates.
+
+## Filtre `stripe_amount`
+
+Formate un montant Stripe (en cents) en format lisible selon la devise spécifiée.
+
+### Signature
+
+```twig
+{{ montant_en_cents|stripe_amount(devise) }}
+```
+
+### Paramètres
+
+| Paramètre | Type | Description |
+|-----------|------|-------------|
+| `amount` | `int` | Montant en cents (ex: 1000 pour $10.00) |
+| `currency` | `string` | Code de la devise (ex: 'usd', 'eur') |
+
+### Valeur par défaut
+
+- Si aucune devise n'est spécifiée, utilise `'usd'`
+- Le formatage utilise `Cashier::formatAmount()` en interne
+
+### Exemples
+
+#### Formater un montant USD par défaut
+
+```twig
+{# 1000 cents = $10.00 #}
+{{ 1000|stripe_amount }}          {# Affiche: $10.00 #}
+```
+
+#### Formater un montant en Euros
+
+```twig
+{# 1000 cents = 10,00 € #}
+{{ 1000|stripe_amount('eur') }}   {# Affiche: 10,00 € #}
+```
+
+#### Utiliser avec une variable
+
+```twig
+{# Avec une variable de montant et de devise #}
+{{ amount|stripe_amount(currency) }}
+```
+
+#### Exemples concrets
+
+```twig
+<div class="price">
+    <h3>Prix mensuel</h3>
+    <p>{{ 2000|stripe_amount('eur') }}/mois</p> {# 20,00 €/mois #}
+</div>
+
+<div class="invoice-total">
+    <strong>Total:</strong> {{ invoice.total|stripe_amount(invoice.currency) }}
+</div>
+```
+
+### Formatage automatique
+
+Le filtre gère automatiquement :
+- Le symbole de devise selon la région
+- Le séparateur décimal (virgule ou point)
+- Le séparateur des milliers
+- L'ordre du symbole (avant ou après le montant)
+
+### Notes
+
+- Le filre est marqué comme `is_safe: ['html']` pour autoriser l'utilisation dans du contenu HTML
+- Le formatage est basé sur les locales PHP et les configurations de devise
+- Pour un contrôle plus fin, vous pouvez utiliser directement `Cashier::formatAmount()` dans vos contrôleurs

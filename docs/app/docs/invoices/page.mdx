@@ -1,0 +1,301 @@
+---
+title: Facturations
+description: Gérer les factures et les paiements avec Stripe Cashier
+---
+
+# Facturations
+
+Le service de facturation de Stripe Cashier vous permet de créer, gérer et récupérer facilement des factures pour vos clients.
+
+## InvoiceService
+
+Le `InvoiceService` est le service principal pour gérer toutes les opations liées aux factures.
+
+### Méthodes disponibles
+
+#### `list(BillableInterface $billable, bool $includePending = false): Collection`
+
+Récupère toutes les factures d'un client facturable.
+
+```php
+use CashierBundle\Service\InvoiceService;
+use CashierBundle\Contract\BillableInterface;
+
+// Récupérer toutes les factures payées
+$invoices = $invoiceService->list($user);
+
+// Inclure les factures en attente de paiement
+$allInvoices = $invoiceService->list($user, true);
+```
+
+#### `create(BillableInterface $billable, array $options = []): Invoice`
+
+Crée une nouvelle facture pour un client.
+
+```php
+$invoice = $invoiceService->create($user, [
+    'description' => 'Facture mensuelle',
+    'metadata' => [
+        'order_id' => '12345',
+    ],
+]);
+```
+
+#### `find(string $id): ?Invoice`
+
+Récupère une facture spécifique par son ID.
+
+```php
+$invoice = $invoiceService->find('in_123456789');
+```
+
+#### `upcoming(BillableInterface $billable): ?Invoice`
+
+Récupère la prochaine facture à payer pour un client.
+
+```php
+$upcomingInvoice = $invoiceService->upcoming($user);
+```
+
+#### `tab(BillableInterface $billable, string $description, int $amount, array $options = []): void`
+
+Ajoute un élément de facturation à un client.
+
+```php
+// Ajouter un élément de 50€ à la facture du client
+$invoiceService->tab($user, 'Service supplémentaire', 5000);
+```
+
+#### `invoiceFor(BillableInterface $billable, string $description, int $amount, array $options = []): Invoice`
+
+Crée et retourne une facture pour un montant spécifique.
+
+```php
+$invoice = $invoiceService->invoiceFor($user, 'Facture unique', 15000);
+```
+
+#### `pay(Invoice $invoice): Payment`
+
+Paye une facture spécifique.
+
+```php
+$payment = $invoiceService->pay($invoice);
+```
+
+#### `getInvoiceLines(string $invoiceId): array`
+
+Récupère tous les lignes d'une facture.
+
+```php
+$lines = $invoiceService->getInvoiceLines('in_123456789');
+```
+
+#### `deleteInvoiceItem(string $invoiceItemId): void`
+
+Supprime un élément de facture.
+
+```php
+$invoiceService->deleteInvoiceItem('ii_123456789');
+```
+
+## Modèle Invoice
+
+Le modèle `Invoice` représente une facture Stripe avec des méthodes utiles.
+
+### Méthodes disponibles
+
+#### `id(): string`
+
+Retourne l'ID de la facture.
+
+```php
+$invoiceId = $invoice->id(); // ex: in_123456789
+```
+
+#### `date(): \DateTimeImmutable`
+
+Retourne la date de création de la facture.
+
+```php
+$date = $invoice->date();
+```
+
+#### `dueDate(): ?\DateTimeImmutable`
+
+Retourne la date d'échéance de la facture.
+
+```php
+$dueDate = $invoice->dueDate();
+```
+
+#### `total(): string`
+
+Retourne le total formaté de la facture.
+
+```php
+$total = $invoice->total(); // ex: "100,00 €"
+```
+
+#### `rawTotal(): int`
+
+Retourne le total brut en cents.
+
+```php
+$totalCents = $invoice->rawTotal(); // ex: 10000
+```
+
+#### `subtotal(): string`
+
+Retourne le sous-total formaté.
+
+```php
+$subtotal = $invoice->subtotal();
+```
+
+#### `tax(): string`
+
+Retourne le montant total de la taxe formaté.
+
+```php
+$tax = $invoice->tax();
+```
+
+#### `currency(): string`
+
+Retourne la devise de la facture.
+
+```php
+$currency = $invoice->currency(); // ex: "eur"
+```
+
+#### `items(): array`
+
+Retourne tous les éléments de la facture.
+
+```php
+$items = $invoice->items();
+foreach ($items as $item) {
+    echo $item->description;
+}
+```
+
+#### `taxes(): array`
+
+Retourne toutes les taxes applicables à la facture.
+
+```php
+$taxes = $invoice->taxes();
+foreach ($taxes as $tax) {
+    echo $tax->name();
+}
+```
+
+#### `payments(): array`
+
+Retourne tous les paiements associés à la facture.
+
+```php
+$payments = $invoice->payments();
+foreach ($payments as $payment) {
+    echo $payment->status();
+}
+```
+
+#### `discounts(): array`
+
+Retourne tous les appliqués à la facture.
+
+```php
+$discounts = $invoice->discounts();
+foreach ($discounts as $discount) {
+    echo $discount->amount();
+}
+```
+
+#### `download(array $data = []): Response`
+
+Télécharge la facture en PDF.
+
+```php
+// Télécharger la facture
+$response = $invoice->download();
+
+// Envoyer la réponse HTTP
+return $response;
+```
+
+## Exemple complet
+
+```php
+use CashierBundle\Service\InvoiceService;
+use CashierBundle\Contract\BillableInterface;
+
+class InvoiceController
+{
+    public function __construct(
+        private readonly InvoiceService $invoiceService,
+    ) {
+    }
+
+    public function createInvoiceAction(BillableInterface $user): Response
+    {
+        // Créer une facture avec un élément
+        $invoiceService->tab($user, 'Abonnement mensuel', 10000);
+
+        // Créer la facture
+        $invoice = $invoiceService->create($user);
+
+        // Ajouter un élément supplémentaire
+        $invoiceService->tab($user, 'Option premium', 5000);
+
+        // Créer une deuxième facture
+        $secondInvoice = $invoiceService->create($user);
+
+        // Lister toutes les factures
+        $allInvoices = $invoiceService->list($user);
+
+        // Lister les factures à venir
+        $upcoming = $invoiceService->upcoming($user);
+
+        return new Response('Factures créées avec succès');
+    }
+
+    public function downloadInvoiceAction(string $invoiceId): Response
+    {
+        $invoice = $this->invoiceService->find($invoiceId);
+
+        if (!$invoice) {
+            throw new NotFoundHttpException('Facture non trouvée');
+        }
+
+        return $invoice->download();
+    }
+}
+```
+
+## Tableau récapitulatif
+
+| Méthode | Description | Retour |
+|---------|-------------|--------|
+| `list()` | Lister les factures d'un client | `Collection<Invoice>` |
+| `create()` | Créer une nouvelle facture | `Invoice` |
+| `find()` | Trouver une facture par ID | `?Invoice` |
+| `upcoming()` | Facture à venir | `?Invoice` |
+| `tab()` | Ajouter un élément de facturation | `void` |
+| `invoiceFor()` | Créer une facture pour un montant | `Invoice` |
+| `pay()` | Payer une facture | `Payment` |
+| `getInvoiceLines()` | Lister les lignes de facture | `array<InvoiceLineItem>` |
+| `deleteInvoiceItem()` | Supprimer un élément | `void` |
+| `download()` | Télécharger en PDF | `Response` |
+| `id()` | ID de la facture | `string` |
+| `date()` | Date de création | `\DateTimeImmutable` |
+| `dueDate()` | Date d'échéance | `?\DateTimeImmutable` |
+| `total()` | Total formaté | `string` |
+| `rawTotal()` | Total en cents | `int` |
+| `subtotal()` | Sous-total formaté | `string` |
+| `tax()` | Montant de la taxe | `string` |
+| `currency()` | Devise | `string` |
+| `items()` | Éléments de la facture | `array<InvoiceLineItem>` |
+| `taxes()` | Taxes applicables | `array<Tax>` |
+| `payments()` | Paiements associés | `array<InvoicePayment>` |
+| `discounts()` | Réductions appliquées | `array<Discount>` |

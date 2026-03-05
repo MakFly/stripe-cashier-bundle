@@ -1,0 +1,150 @@
+# Configuration
+
+## Fichier de configuration
+
+Créez `config/packages/cashier.yaml` :
+
+```yaml
+cashier:
+    # Identifiants API Stripe
+    key: '%env(STRIPE_KEY)%'
+    secret: '%env(STRIPE_SECRET)%'
+
+    # Chemin de base pour les routes (défaut: stripe)
+    path: 'stripe'
+
+    # Webhooks
+    webhook:
+        secret: '%env(STRIPE_WEBHOOK_SECRET)%'
+        tolerance: 300  # secondes
+        events:
+            - customer.subscription.created
+            - customer.subscription.updated
+            - customer.subscription.deleted
+            - invoice.paid
+            - invoice.payment_failed
+
+    # Devise par défaut
+    currency: usd
+    currency_locale: en
+
+    # Factures PDF
+    invoices:
+        renderer: CashierBundle\Service\Invoice\DompdfInvoiceRenderer
+        options:
+            paper: letter
+            remote_enabled: false
+
+    # Logger optionnel
+    logger: null
+```
+
+## Variables d'environnement
+
+Ajoutez ces variables à votre `.env` :
+
+```env
+STRIPE_KEY=pk_test_xxx
+STRIPE_SECRET=sk_test_xxx
+STRIPE_WEBHOOK_SECRET=whsec_xxx
+```
+
+## Options de configuration
+
+### Options principales
+
+| Option | Type | Défaut | Description |
+|--------|------|--------|-------------|
+| `key` | string | *requis* | Clé publique Stripe |
+| `secret` | string | *requis* | Clé secrète Stripe |
+| `path` | string | `stripe` | Chemin de base pour les routes |
+| `currency` | string | `usd` | Devise par défaut |
+| `currency_locale` | string | `en` | Locale pour le formatage |
+| `logger` | string | `null` | Service de log |
+
+### Webhook
+
+| Option | Type | Défaut | Description |
+|--------|------|--------|-------------|
+| `webhook.secret` | string | *requis* | Secret de signature webhook |
+| `webhook.tolerance` | int | `300` | Tolérance timestamp (secondes) |
+| `webhook.events` | array | `[]` | Événements à écouter |
+
+### Factures
+
+| Option | Type | Défaut | Description |
+|--------|------|--------|-------------|
+| `invoices.renderer` | string | `DompdfInvoiceRenderer` | Service de rendu PDF |
+| `invoices.options.paper` | string | `letter` | Format de papier |
+| `invoices.options.remote_enabled` | bool | `false` | Ressources distantes |
+
+## Renderers de factures
+
+### Dompdf
+
+Renderer par défaut, inclus automatiquement :
+
+```bash
+composer require dompdf/dompdf
+```
+
+```yaml
+cashier:
+    invoices:
+        renderer: CashierBundle\Service\Invoice\DompdfInvoiceRenderer
+        options:
+            paper: a4
+            remote_enabled: false
+```
+
+### Snappy (wkhtmltopdf)
+
+Pour des PDFs plus complexes :
+
+```bash
+composer require knplabs/knp-snappy
+```
+
+```yaml
+cashier:
+    invoices:
+        renderer: CashierBundle\Service\Invoice\SnappyInvoiceRenderer
+        options:
+            paper: a4
+            orientation: portrait
+```
+
+## Personnaliser le renderer
+
+Créez votre propre renderer en implémentant `InvoiceRendererInterface` :
+
+```php
+use CashierBundle\Contract\InvoiceRendererInterface;
+use CashierBundle\Model\Invoice;
+use Symfony\Component\HttpFoundation\Response;
+
+final class CustomInvoiceRenderer implements InvoiceRendererInterface
+{
+    public function render(Invoice $invoice, array $data = []): Response
+    {
+        // Votre logique de rendu
+        $pdf = $this->generatePdf($invoice);
+
+        return new Response($pdf, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="invoice.pdf"',
+        ]);
+    }
+}
+```
+
+Enregistrez-le dans `services.yaml` :
+
+```yaml
+services:
+    App\Service\CustomInvoiceRenderer:
+        tags:
+            - { name: 'cashier.invoice_renderer' }
+```
+
+[Prochain : Clients →](/docs/customers)

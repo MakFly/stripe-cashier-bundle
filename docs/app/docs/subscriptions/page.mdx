@@ -23,6 +23,21 @@ $builder->price('price_xxx', quantity: 1);
 // Plan mesuré (usage-based, sans quantité fixe)
 $builder->meteredPrice('price_yyy');
 
+### Billing basé sur l'usage
+
+Pour les plans basés sur l'utilisation, utilisez les méthodes suivantes :
+
+```php
+// Reporter l'utilisation pour un plan mesuré
+$builder->meteredPrice('price_metered')
+    ->withUsageTracking();
+
+// Reporter manuellement l'utilisation
+$subscription->reportUsage('price_metered', 100);  // 100 unités
+```
+
+Voir [commandes CLI →](/docs/commands) pour `cashier:report-usage`
+
 // Modifier la quantité du dernier plan ajouté
 $builder->quantity(5);
 ```
@@ -71,6 +86,24 @@ $builder->prorate();
 
 // Options brutes Stripe
 $builder->withOptions(['collection_method' => 'send_invoice']);
+```
+
+### SubscriptionItem
+
+L'entité `SubscriptionItem` expose des méthodes utiles :
+
+```php
+$item->getStripeProduct();  // Récupère le produit Stripe
+$item->getStripePrice();    // Récupère le prix Stripe
+$item->getQuantity();       // Récupère la quantité
+
+// Pour les plans mesurés
+$item->reportUsage(100);    // Reporter l'utilisation
+```
+
+### Stripe Checkout
+
+Pour créer des abonnements via Stripe Checkout, voir [Checkout →](/docs/checkout)
 ```
 
 ### Finaliser la création

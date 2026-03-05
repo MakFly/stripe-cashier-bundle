@@ -1,0 +1,133 @@
+# Paiements
+
+Le `PaymentService` gère les paiements one-time et les remboursements.
+
+## Charger une carte
+
+Effectuer un paiement immédiat :
+
+```php
+use CashierBundle\Service\PaymentService;
+
+class PaymentController
+{
+    public function __construct(
+        private readonly PaymentService $paymentService,
+    ) {}
+
+    public function charge(User $user): Response
+    {
+        $payment = $this->paymentService->charge(
+            billable: $user,
+            amount: 1999, // 19.99€ en cents
+            paymentMethod: 'pm_card_visa',
+        );
+
+        // Vérifier le statut
+        if ($payment->isSucceeded()) {
+            // Paiement réussi
+        }
+    }
+}
+```
+
+### Avec options
+
+```php
+$payment = $this->paymentService->charge($user, 1999, 'pm_card_visa', [
+    'description' => 'Commande #1234',
+    'metadata' => [
+        'order_id' => '1234',
+    ],
+    'capture_method' => 'manual', // Autorisation sans capture
+]);
+```
+
+## Payer avec la carte par défaut
+
+Utilise la méthode de paiement par défaut du client :
+
+```php
+$payment = $this->paymentService->pay($user, 2999);
+```
+
+Lève `InvalidPaymentMethodException` si le client n'a pas de carte par défaut.
+
+## Remboursements
+
+### Remboursement total
+
+```php
+$refund = $this->paymentService->refund($paymentIntentId);
+```
+
+### Remboursement partiel
+
+```php
+$refund = $this->paymentService->refundPartial(
+    paymentIntent: $paymentIntentId,
+    amount: 1000, // 10.00€
+);
+```
+
+## Model Payment
+
+Le modèle `Payment` wrappe un PaymentIntent Stripe :
+
+```php
+$payment->id();                    // 'pi_xxx'
+$payment->amount();                // '$19.99'
+$payment->rawAmount();             // 1999 (cents)
+$payment->currency();              // 'eur'
+$payment->clientSecret();          // Pour frontend
+$payment->status();                // 'succeeded', 'processing', etc.
+```
+
+### Vérifier le statut
+
+```php
+$payment->isSucceeded();           // true si réussi
+$payment->isProcessing();          // en cours
+$payment->isCanceled();            // annulé
+$payment->requiresAction();        // 3D Secure requis
+$payment->requiresPaymentMethod(); // méthode invalide
+$payment->requiresConfirmation();  // nécessite confirmation
+$payment->requiresCapture();       // autorisé, pas encore capturé
+```
+
+### Actions
+
+```php
+// Capturer un paiement autorisé
+$payment->capture();
+
+// Annuler un paiement
+$payment->cancel();
+```
+
+## Gérer les paiements incomplets
+
+Quand un paiement nécessite une action (ex: 3D Secure) :
+
+```php
+use CashierBundle\Exception\IncompletePaymentException;
+
+try {
+    $payment = $this->paymentService->charge($user, 1999, 'pm_card_visa');
+} catch (IncompletePaymentException $e) {
+    $payment = $e->payment;
+
+    // Rediriger vers la page de confirmation
+    return $this->render('payment/confirm.html.twig', [
+        'clientSecret' => $payment->clientSecret(),
+    ]);
+}
+```
+
+## Accéder à l'objet Stripe
+
+```php
+$stripePaymentIntent = $payment->asStripePaymentIntent();
+```
+
+[Prochain : Abonnements →](/docs/subscriptions)
