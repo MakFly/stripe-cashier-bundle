@@ -4,10 +4,7 @@ declare(strict_types=1);
 
 namespace CashierBundle\Tests\Unit\Entity;
 
-use CashierBundle\Entity\StripeCustomer;
 use CashierBundle\Entity\Subscription;
-use CashierBundle\Entity\SubscriptionItem;
-use Doctrine\Common\Collections\ArrayCollection;
 use PHPUnit\Framework\TestCase;
 
 final class SubscriptionTest extends TestCase
@@ -46,7 +43,7 @@ final class SubscriptionTest extends TestCase
     {
         $subscription = $this->createSubscription([
             'stripeStatus' => 'active',
-            'trialEndsAt' => new \DateTimeImmutable('+5 days')
+            'trialEndsAt' => new \DateTimeImmutable('+5 days'),
         ]);
 
         $this->assertTrue($subscription->active());
@@ -56,7 +53,7 @@ final class SubscriptionTest extends TestCase
     {
         $subscription = $this->createSubscription([
             'stripeStatus' => 'active',
-            'trialEndsAt' => new \DateTimeImmutable('+5 days')
+            'trialEndsAt' => new \DateTimeImmutable('+5 days'),
         ]);
 
         $this->assertTrue($subscription->onTrial());
@@ -73,7 +70,7 @@ final class SubscriptionTest extends TestCase
     {
         $subscription = $this->createSubscription([
             'stripeStatus' => 'active',
-            'endsAt' => new \DateTimeImmutable('+5 days')
+            'endsAt' => new \DateTimeImmutable('+5 days'),
         ]);
 
         $this->assertTrue($subscription->canceled());
@@ -83,7 +80,7 @@ final class SubscriptionTest extends TestCase
     {
         $subscription = $this->createSubscription([
             'stripeStatus' => 'active',
-            'endsAt' => new \DateTimeImmutable('+5 days')
+            'endsAt' => new \DateTimeImmutable('+5 days'),
         ]);
 
         $this->assertTrue($subscription->onGracePeriod());
@@ -93,7 +90,7 @@ final class SubscriptionTest extends TestCase
     {
         $subscription = $this->createSubscription([
             'stripeStatus' => 'canceled',
-            'endsAt' => new \DateTimeImmutable('-1 day')
+            'endsAt' => new \DateTimeImmutable('-1 day'),
         ]);
 
         $this->assertTrue($subscription->ended());
@@ -124,7 +121,7 @@ final class SubscriptionTest extends TestCase
     {
         $subscription = $this->createSubscription([
             'stripeStatus' => 'active',
-            'trialEndsAt' => new \DateTimeImmutable('+5 days')
+            'trialEndsAt' => new \DateTimeImmutable('+5 days'),
         ]);
 
         $this->assertTrue($subscription->valid());
@@ -134,7 +131,7 @@ final class SubscriptionTest extends TestCase
     {
         $subscription = $this->createSubscription([
             'stripeStatus' => 'past_due',
-            'endsAt' => new \DateTimeImmutable('+3 days')
+            'endsAt' => new \DateTimeImmutable('+3 days'),
         ]);
 
         $this->assertTrue($subscription->valid());
@@ -151,7 +148,7 @@ final class SubscriptionTest extends TestCase
     {
         $subscription = $this->createSubscription([
             'stripeStatus' => 'active',
-            'trialEndsAt' => null
+            'trialEndsAt' => null,
         ]);
 
         $this->assertTrue($subscription->recurring());
@@ -161,7 +158,7 @@ final class SubscriptionTest extends TestCase
     {
         $subscription = $this->createSubscription([
             'stripeStatus' => 'active',
-            'trialEndsAt' => new \DateTimeImmutable('+5 days')
+            'trialEndsAt' => new \DateTimeImmutable('+5 days'),
         ]);
 
         $this->assertFalse($subscription->recurring());

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace CashierBundle\Service;
 
 use CashierBundle\Contract\BillableInterface;
-use CashierBundle\Entity\StripeCustomer;
 use CashierBundle\Entity\Subscription;
 use CashierBundle\Model\Invoice;
 use CashierBundle\Repository\StripeCustomerRepository;
@@ -30,7 +29,7 @@ class Cashier
     public function __construct(
         private readonly StripeClient $stripe,
         private readonly SubscriptionRepository $subscriptionRepository,
-        private readonly StripeCustomerRepository $customerRepository
+        private readonly StripeCustomerRepository $customerRepository,
     ) {
     }
 

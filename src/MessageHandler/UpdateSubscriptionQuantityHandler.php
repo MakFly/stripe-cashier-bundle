@@ -12,15 +12,16 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 class UpdateSubscriptionQuantityHandler
 {
     public function __construct(
-        private readonly SubscriptionService $subscriptionService
-    ) {}
+        private readonly SubscriptionService $subscriptionService,
+    ) {
+    }
 
     public function __invoke(UpdateSubscriptionQuantityMessage $message): void
     {
         $this->subscriptionService->updateQuantity(
             $message->subscriptionId,
             $message->quantity,
-            $message->prorate
+            $message->prorate,
         );
     }
 }

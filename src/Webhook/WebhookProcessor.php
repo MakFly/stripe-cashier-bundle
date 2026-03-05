@@ -8,7 +8,6 @@ use CashierBundle\Contract\WebhookHandlerInterface;
 use CashierBundle\Event\WebhookHandledEvent;
 use CashierBundle\Event\WebhookReceivedEvent;
 use Psr\Container\ContainerInterface;
-use Stripe\Event;
 use Symfony\Component\DependencyInjection\Attribute\AutowireLocator;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
@@ -22,17 +21,25 @@ final readonly class WebhookProcessor
         private ContainerInterface $handlers,
         private EventDispatcherInterface $dispatcher,
         private string $webhookSecret,
-        private int $tolerance = 300
+        private int $tolerance = 300,
     ) {
     }
 
     public function process(string $payload, ?string $signature): void
     {
+        if ($payload === '') {
+            throw new \InvalidArgumentException('Webhook payload cannot be empty.');
+        }
+
+        if ($signature === null || trim($signature) === '') {
+            throw new \InvalidArgumentException('Stripe signature header is required.');
+        }
+
         $event = \Stripe\Webhook::constructEvent(
             $payload,
             $signature,
             $this->webhookSecret,
-            $this->tolerance
+            $this->tolerance,
         );
 
         // Dispatch WebhookReceivedEvent
@@ -53,7 +60,7 @@ final readonly class WebhookProcessor
      */
     private function getHandlersForType(string $type): iterable
     {
-        foreach ($this->handlers->getServiceIds() as $serviceId) {
+        foreach ($this->getHandlerServiceIds() as $serviceId) {
             if (!$this->handlers->has($serviceId)) {
                 continue;
             }
@@ -67,5 +74,27 @@ final readonly class WebhookProcessor
                 yield $handler;
             }
         }
+    }
+
+    /**
+     * @return iterable<string>
+     */
+    private function getHandlerServiceIds(): iterable
+    {
+        if (method_exists($this->handlers, 'getProvidedServices')) {
+            /** @var array<string, mixed> $providedServices */
+            $providedServices = $this->handlers->getProvidedServices();
+
+            return array_keys($providedServices);
+        }
+
+        if (method_exists($this->handlers, 'getServiceIds')) {
+            /** @var iterable<string> $serviceIds */
+            $serviceIds = $this->handlers->getServiceIds();
+
+            return $serviceIds;
+        }
+
+        return [];
     }
 }

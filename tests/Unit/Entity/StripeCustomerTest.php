@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace CashierBundle\Tests\Unit\Entity;
 
 use CashierBundle\Entity\StripeCustomer;
-use CashierBundle\Entity\Subscription;
-use CashierBundle\Contract\BillableEntityInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use PHPUnit\Framework\TestCase;
 
@@ -48,7 +46,7 @@ final class StripeCustomerTest extends TestCase
     public function testOnTrialReturnsTrueWhenTrialEndsAtIsInFuture(): void
     {
         $customer = $this->createStripeCustomer([
-            'trialEndsAt' => new \DateTimeImmutable('+7 days')
+            'trialEndsAt' => new \DateTimeImmutable('+7 days'),
         ]);
 
         $this->assertTrue($customer->onTrial());
@@ -57,7 +55,7 @@ final class StripeCustomerTest extends TestCase
     public function testOnTrialReturnsFalseWhenTrialEndsAtIsInPast(): void
     {
         $customer = $this->createStripeCustomer([
-            'trialEndsAt' => new \DateTimeImmutable('-1 day')
+            'trialEndsAt' => new \DateTimeImmutable('-1 day'),
         ]);
 
         $this->assertFalse($customer->onTrial());
@@ -72,7 +70,7 @@ final class StripeCustomerTest extends TestCase
     public function testOnGenericTrialReturnsTrueWhenTrialEndsAtIsInFuture(): void
     {
         $customer = $this->createStripeCustomer([
-            'trialEndsAt' => new \DateTimeImmutable('+7 days')
+            'trialEndsAt' => new \DateTimeImmutable('+7 days'),
         ]);
 
         $this->assertTrue($customer->onGenericTrial());

@@ -7,8 +7,9 @@ namespace CashierBundle\Model;
 final class Coupon
 {
     public function __construct(
-        private readonly object $coupon
-    ) {}
+        private readonly object $coupon,
+    ) {
+    }
 
     public function id(): string
     {

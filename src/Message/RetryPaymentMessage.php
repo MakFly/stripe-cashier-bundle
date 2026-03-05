@@ -7,6 +7,7 @@ namespace CashierBundle\Message;
 final class RetryPaymentMessage
 {
     public function __construct(
-        public readonly string $invoiceId
-    ) {}
+        public readonly string $invoiceId,
+    ) {
+    }
 }

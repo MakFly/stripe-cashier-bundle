@@ -8,8 +8,8 @@ use CashierBundle\Contract\WebhookHandlerInterface;
 use Stripe\Event;
 
 abstract readonly class AbstractWebhookHandler implements WebhookHandlerInterface
-    {
-        protected function getStripeCustomer(Event $event): ?\Stripe\Customer
+{
+    protected function getStripeCustomer(Event $event): ?\Stripe\Customer
     {
         $object = $event->data->object;
 

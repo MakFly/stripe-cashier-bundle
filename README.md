@@ -1,5 +1,7 @@
 # CashierBundle
 
+[![CI](https://github.com/MakFly/stripe-cashier-bundle/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/MakFly/stripe-cashier-bundle/actions/workflows/ci.yml)
+
 Stripe subscription billing for Symfony 7.x and 8.x, inspired by [Laravel Cashier](https://github.com/laravel/cashier-stripe).
 
 ## Features
@@ -159,7 +161,16 @@ Listen to these events in your application:
 ## Testing
 
 ```bash
-./vendor/bin/phpunit --configuration CashierBundle/phpunit.xml
+./vendor/bin/phpunit --configuration phpunit.xml
+```
+
+## Quality Checks
+
+```bash
+composer lint:phpstan
+composer lint:cs
+composer audit:composer
+composer quality
 ```
 
 ## Documentation

@@ -16,7 +16,7 @@ class SnappyInvoiceRenderer implements InvoiceRendererInterface
         private readonly Environment $twig,
         private readonly Pdf $snappy,
         private readonly string $paper = 'letter',
-        private readonly string $orientation = 'portrait'
+        private readonly string $orientation = 'portrait',
     ) {
     }
 
@@ -48,7 +48,7 @@ class SnappyInvoiceRenderer implements InvoiceRendererInterface
             [
                 'Content-Type' => 'application/pdf',
                 'Content-Disposition' => sprintf('attachment; filename="%s"', $filename),
-            ]
+            ],
         );
     }
 
@@ -80,7 +80,7 @@ class SnappyInvoiceRenderer implements InvoiceRendererInterface
             [
                 'Content-Type' => 'application/pdf',
                 'Content-Disposition' => sprintf('inline; filename="%s"', $filename),
-            ]
+            ],
         );
     }
 }

@@ -6,7 +6,6 @@ namespace CashierBundle\Contract;
 
 use CashierBundle\Entity\Subscription;
 use CashierBundle\Model\Checkout;
-use CashierBundle\Model\Coupon;
 use CashierBundle\Model\CustomerBalanceTransaction;
 use CashierBundle\Model\Invoice;
 use CashierBundle\Model\Payment;

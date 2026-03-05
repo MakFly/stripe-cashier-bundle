@@ -27,8 +27,8 @@ final class WebhookProcessorTest extends TestCase
                 'object' => [
                     'id' => 'sub_test_123',
                     'status' => 'active',
-                ]
-            ]
+                ],
+            ],
         ]);
 
         $timestamp = time();
@@ -52,7 +52,7 @@ final class WebhookProcessorTest extends TestCase
             $handlers,
             $eventDispatcher,
             $this->testSecret,
-            300
+            300,
         );
 
         // Note: This test verifies the event dispatching logic
@@ -76,11 +76,61 @@ final class WebhookProcessorTest extends TestCase
         $this->assertSame($stripeEvent, $event->stripeEvent);
     }
 
+    public function testProcessThrowsWhenPayloadIsEmpty(): void
+    {
+        $processor = $this->createProcessor();
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Webhook payload cannot be empty.');
+
+        $processor->process('', 't=123,v1=signature');
+    }
+
+    public function testProcessThrowsWhenSignatureIsMissing(): void
+    {
+        $processor = $this->createProcessor();
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Stripe signature header is required.');
+
+        $processor->process('{"id":"evt_test"}', null);
+    }
+
     private function generateTestSignature(int $timestamp, string $payload): string
     {
         $signedPayload = "{$timestamp}.{$payload}";
         $signature = hash_hmac('sha256', $signedPayload, $this->testSecret);
 
         return "t={$timestamp},v1={$signature}";
+    }
+
+    private function createProcessor(): WebhookProcessor
+    {
+        $handlers = new class () implements ContainerInterface {
+            public function get(string $id)
+            {
+                throw new \RuntimeException('No handlers available in test container.');
+            }
+
+            public function has(string $id): bool
+            {
+                return false;
+            }
+
+            /**
+             * @return list<string>
+             */
+            public function getServiceIds(): array
+            {
+                return [];
+            }
+        };
+
+        return new WebhookProcessor(
+            $handlers,
+            $this->createMock(EventDispatcherInterface::class),
+            $this->testSecret,
+            300,
+        );
     }
 }

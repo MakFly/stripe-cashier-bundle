@@ -11,7 +11,7 @@ final class PaymentTest extends TestCase
 {
     private function createPaymentIntent(array $data = []): object
     {
-        return new class($data) {
+        return new class ($data) {
             public string $id;
             public int $amount;
             public string $currency;
@@ -27,8 +27,12 @@ final class PaymentTest extends TestCase
                 $this->client_secret = $data['client_secret'] ?? 'secret_123';
             }
 
-            public function capture(): void {}
-            public function cancel(): void {}
+            public function capture(): void
+            {
+            }
+            public function cancel(): void
+            {
+            }
         };
     }
 

@@ -15,7 +15,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 #[AsCommand(
     name: 'cashier:webhook',
-    description: 'Create a Stripe webhook endpoint'
+    description: 'Create a Stripe webhook endpoint',
 )]
 class WebhookCommand extends Command
 {
@@ -34,7 +34,7 @@ class WebhookCommand extends Command
 
     public function __construct(
         private readonly StripeClient $stripe,
-        private readonly array $webhookConfig
+        private readonly array $webhookConfig,
     ) {
         parent::__construct();
     }
@@ -45,6 +45,7 @@ class WebhookCommand extends Command
             ->addOption('url', 'u', InputOption::VALUE_OPTIONAL, 'The webhook URL')
             ->addOption('disabled', 'd', InputOption::VALUE_NONE, 'Disable the webhook')
             ->addOption('api-version', null, InputOption::VALUE_OPTIONAL, 'Stripe API version')
+            ->addOption('show-secret', null, InputOption::VALUE_NONE, 'Display webhook secret in clear text output')
         ;
     }
 
@@ -61,6 +62,7 @@ class WebhookCommand extends Command
             'api_version' => $input->getOption('api-version') ?? ApiVersion::CURRENT,
             'disabled' => $input->getOption('disabled'),
         ]);
+        $maskedSecret = $this->maskSecret($webhook->secret);
 
         $io->success('Webhook endpoint created!');
         $io->table(
@@ -68,12 +70,15 @@ class WebhookCommand extends Command
             [
                 ['ID', $webhook->id],
                 ['URL', $webhook->url],
-                ['Secret', $webhook->secret],
+                ['Secret', $maskedSecret],
                 ['Status', $webhook->status],
-            ]
+            ],
         );
-
-        $io->note('Add this secret to your .env: STRIPE_WEBHOOK_SECRET=' . $webhook->secret);
+        if ($input->getOption('show-secret')) {
+            $io->note('Add this secret to your .env: STRIPE_WEBHOOK_SECRET=' . $webhook->secret);
+        } else {
+            $io->note('Secret is masked by default. Re-run with --show-secret to print it in clear text.');
+        }
 
         return Command::SUCCESS;
     }
@@ -82,5 +87,14 @@ class WebhookCommand extends Command
     {
         // Try to guess the webhook URL from the app configuration
         return 'https://your-app.com/stripe/webhook';
+    }
+
+    private function maskSecret(string $secret): string
+    {
+        if (strlen($secret) <= 8) {
+            return str_repeat('*', strlen($secret));
+        }
+
+        return substr($secret, 0, 4) . str_repeat('*', strlen($secret) - 8) . substr($secret, -4);
     }
 }

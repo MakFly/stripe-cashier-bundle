@@ -11,7 +11,7 @@ use Symfony\Component\HttpFoundation\Response;
 final class WebhookController
 {
     public function __construct(
-        private readonly WebhookProcessor $processor
+        private readonly WebhookProcessor $processor,
     ) {
     }
 

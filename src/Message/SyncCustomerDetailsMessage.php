@@ -7,6 +7,7 @@ namespace CashierBundle\Message;
 final class SyncCustomerDetailsMessage
 {
     public function __construct(
-        public readonly string $stripeId
-    ) {}
+        public readonly string $stripeId,
+    ) {
+    }
 }

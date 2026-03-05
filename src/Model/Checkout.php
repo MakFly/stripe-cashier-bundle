@@ -7,8 +7,9 @@ namespace CashierBundle\Model;
 final class Checkout
 {
     public function __construct(
-        private readonly object $session
-    ) {}
+        private readonly object $session,
+    ) {
+    }
 
     public function id(): string
     {

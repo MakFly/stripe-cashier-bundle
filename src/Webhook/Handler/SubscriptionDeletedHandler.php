@@ -14,7 +14,7 @@ final readonly class SubscriptionDeletedHandler extends AbstractWebhookHandler
 {
     public function __construct(
         private SubscriptionRepository $subscriptionRepository,
-        private EventDispatcherInterface $dispatcher
+        private EventDispatcherInterface $dispatcher,
     ) {
     }
 

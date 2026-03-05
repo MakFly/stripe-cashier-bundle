@@ -12,8 +12,9 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 class ProcessInvoiceHandler
 {
     public function __construct(
-        private readonly InvoiceService $invoiceService
-    ) {}
+        private readonly InvoiceService $invoiceService,
+    ) {
+    }
 
     public function __invoke(ProcessInvoiceMessage $message): void
     {

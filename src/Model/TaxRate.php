@@ -9,8 +9,9 @@ use Stripe\TaxRate as StripeTaxRate;
 final class TaxRate
 {
     public function __construct(
-        private readonly StripeTaxRate $taxRate
-    ) {}
+        private readonly StripeTaxRate $taxRate,
+    ) {
+    }
 
     public function id(): string
     {

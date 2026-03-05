@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace CashierBundle\Model;
 
-use Stripe\PaymentIntent;
-
 final class Payment
 {
     public function __construct(
-        private readonly object $paymentIntent
-    ) {}
+        private readonly object $paymentIntent,
+    ) {
+    }
 
     public function id(): string
     {

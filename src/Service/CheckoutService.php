@@ -14,7 +14,7 @@ use Stripe\Exception\ApiErrorException;
 class CheckoutService
 {
     public function __construct(
-        private readonly StripeClient $stripe
+        private readonly StripeClient $stripe,
     ) {
     }
 
@@ -46,7 +46,7 @@ class CheckoutService
             throw new \RuntimeException(
                 sprintf('Failed to create checkout session: %s', $e->getMessage()),
                 0,
-                $e
+                $e,
             );
         }
     }
@@ -84,7 +84,7 @@ class CheckoutService
             throw new \RuntimeException(
                 sprintf('Failed to create checkout charge session: %s', $e->getMessage()),
                 0,
-                $e
+                $e,
             );
         }
     }
@@ -109,7 +109,7 @@ class CheckoutService
             throw new \RuntimeException(
                 sprintf('Failed to create billing portal session: %s', $e->getMessage()),
                 0,
-                $e
+                $e,
             );
         }
     }
@@ -153,7 +153,7 @@ class CheckoutService
             throw new \RuntimeException(
                 sprintf('Failed to create subscription checkout session: %s', $e->getMessage()),
                 0,
-                $e
+                $e,
             );
         }
     }

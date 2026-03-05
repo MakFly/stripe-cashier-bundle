@@ -12,8 +12,9 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 class RetryPaymentHandler
 {
     public function __construct(
-        private readonly PaymentService $paymentService
-    ) {}
+        private readonly PaymentService $paymentService,
+    ) {
+    }
 
     public function __invoke(RetryPaymentMessage $message): void
     {

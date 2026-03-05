@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace CashierBundle\Logger;
 
 use Psr\Log\LoggerInterface;
-use Psr\Log\LogLevel;
 
 class StripeLogger implements LoggerInterface
 {
     public function __construct(
-        private readonly LoggerInterface $logger
+        private readonly LoggerInterface $logger,
     ) {
     }
 

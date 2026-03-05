@@ -9,8 +9,9 @@ use Stripe\SetupIntent as StripeSetupIntent;
 final class SetupIntent
 {
     public function __construct(
-        private readonly StripeSetupIntent $setupIntent
-    ) {}
+        private readonly StripeSetupIntent $setupIntent,
+    ) {
+    }
 
     public function id(): string
     {

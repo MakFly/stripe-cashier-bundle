@@ -9,8 +9,9 @@ use Stripe\Discount as StripeDiscount;
 final class Discount
 {
     public function __construct(
-        private readonly StripeDiscount $discount
-    ) {}
+        private readonly StripeDiscount $discount,
+    ) {
+    }
 
     public function coupon(): Coupon
     {

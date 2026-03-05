@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace CashierBundle\Tests\Integration\Event;
 
 use CashierBundle\Entity\Subscription;
-use CashierBundle\Event\SubscriptionCreatedEvent;
-use CashierBundle\Event\SubscriptionUpdatedEvent;
-use CashierBundle\Event\SubscriptionDeletedEvent;
-use CashierBundle\Event\PaymentSucceededEvent;
 use CashierBundle\Event\PaymentFailedEvent;
+use CashierBundle\Event\PaymentSucceededEvent;
+use CashierBundle\Event\SubscriptionCreatedEvent;
+use CashierBundle\Event\SubscriptionDeletedEvent;
+use CashierBundle\Event\SubscriptionUpdatedEvent;
 use PHPUnit\Framework\TestCase;
 use Symfony\Contracts\EventDispatcher\Event;
 
@@ -48,7 +48,7 @@ final class EventTest extends TestCase
             customerId: 'cus_test_123',
             paymentIntentId: 'pi_test',
             amount: 1000,
-            currency: 'usd'
+            currency: 'usd',
         );
 
         $this->assertInstanceOf(Event::class, $event);
@@ -64,7 +64,7 @@ final class EventTest extends TestCase
             customerId: 'cus_test_456',
             paymentIntentId: 'pi_test_2',
             amount: 2000,
-            currency: 'eur'
+            currency: 'eur',
         );
 
         $this->assertInstanceOf(Event::class, $event);

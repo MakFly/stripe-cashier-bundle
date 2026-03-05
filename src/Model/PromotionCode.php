@@ -9,8 +9,9 @@ use Stripe\PromotionCode as StripePromotionCode;
 final class PromotionCode
 {
     public function __construct(
-        private readonly StripePromotionCode $promotionCode
-    ) {}
+        private readonly StripePromotionCode $promotionCode,
+    ) {
+    }
 
     public function id(): string
     {

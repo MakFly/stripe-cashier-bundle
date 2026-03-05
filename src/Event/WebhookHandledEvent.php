@@ -10,7 +10,7 @@ use Symfony\Contracts\EventDispatcher\Event;
 final class WebhookHandledEvent extends Event
 {
     public function __construct(
-        public readonly StripeEvent $stripeEvent
+        public readonly StripeEvent $stripeEvent,
     ) {
     }
 

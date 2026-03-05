@@ -18,7 +18,7 @@ use Stripe\PaymentMethod as StripePaymentMethod;
 class PaymentMethodService
 {
     public function __construct(
-        private readonly StripeClient $stripe
+        private readonly StripeClient $stripe,
     ) {
     }
 
@@ -38,7 +38,7 @@ class PaymentMethodService
             throw new InvalidPaymentMethodException(
                 sprintf('Failed to add payment method: %s', $e->getMessage()),
                 0,
-                $e
+                $e,
             );
         }
     }
@@ -64,7 +64,7 @@ class PaymentMethodService
             throw new InvalidPaymentMethodException(
                 sprintf('Failed to update default payment method: %s', $e->getMessage()),
                 0,
-                $e
+                $e,
             );
         }
     }
@@ -90,8 +90,8 @@ class PaymentMethodService
             return new ArrayCollection(
                 array_map(
                     fn (StripePaymentMethod $pm) => new PaymentMethod($pm),
-                    $paymentMethods->data
-                )
+                    $paymentMethods->data,
+                ),
             );
         } catch (ApiErrorException $e) {
             return new ArrayCollection();
@@ -141,7 +141,7 @@ class PaymentMethodService
             throw new \RuntimeException(
                 sprintf('Failed to remove payment method: %s', $e->getMessage()),
                 0,
-                $e
+                $e,
             );
         }
     }

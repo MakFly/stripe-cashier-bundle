@@ -12,7 +12,7 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 final readonly class InvoicePaymentFailedHandler extends AbstractWebhookHandler
 {
     public function __construct(
-        private EventDispatcherInterface $dispatcher
+        private EventDispatcherInterface $dispatcher,
     ) {
     }
 
@@ -32,7 +32,7 @@ final readonly class InvoicePaymentFailedHandler extends AbstractWebhookHandler
             $invoice->customer,
             $invoice->payment_intent,
             $invoice->amount_due,
-            $invoice->currency
+            $invoice->currency,
         ));
     }
 }

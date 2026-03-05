@@ -11,7 +11,7 @@ use Stripe\Event;
 final readonly class CustomerDeletedHandler extends AbstractWebhookHandler
 {
     public function __construct(
-        private StripeCustomerRepository $customerRepository
+        private StripeCustomerRepository $customerRepository,
     ) {
     }
 

@@ -23,7 +23,7 @@ class SubscriptionService
         private readonly StripeClient $stripe,
         private readonly SubscriptionRepository $repository,
         private readonly StripeCustomerRepository $customerRepository,
-        private readonly EntityManagerInterface $entityManager
+        private readonly EntityManagerInterface $entityManager,
     ) {
     }
 
@@ -65,7 +65,7 @@ class SubscriptionService
         try {
             $stripeSubscription = $this->stripe->subscriptions->update(
                 $subscription->getStripeId(),
-                $options
+                $options,
             );
 
             return $this->syncSubscription($stripeSubscription, $subscription->getCustomer(), $subscription->getType());
@@ -73,7 +73,7 @@ class SubscriptionService
             throw new SubscriptionUpdateFailureException(
                 sprintf('Failed to update subscription %s: %s', $subscription->getStripeId(), $e->getMessage()),
                 0,
-                $e
+                $e,
             );
         }
     }
@@ -85,14 +85,14 @@ class SubscriptionService
         try {
             $stripeSubscription = $this->stripe->subscriptions->cancel(
                 $subscription->getStripeId(),
-                $options
+                $options,
             );
 
             $synced = $this->syncSubscription($stripeSubscription, $subscription->getCustomer(), $subscription->getType());
 
             if (!$immediately && $stripeSubscription->cancel_at_period_end) {
                 $synced->setEndsAt(
-                    \DateTimeImmutable::createFromFormat('U', (string) $stripeSubscription->current_period_end) ?: null
+                    \DateTimeImmutable::createFromFormat('U', (string) $stripeSubscription->current_period_end) ?: null,
                 );
                 $this->repository->save($synced, true);
             }
@@ -102,7 +102,7 @@ class SubscriptionService
             throw new SubscriptionUpdateFailureException(
                 sprintf('Failed to cancel subscription %s: %s', $subscription->getStripeId(), $e->getMessage()),
                 0,
-                $e
+                $e,
             );
         }
     }
@@ -119,7 +119,7 @@ class SubscriptionService
                 [
                     'cancel_at_period_end' => false,
                     'trial_end' => 'now',
-                ]
+                ],
             );
 
             $synced = $this->syncSubscription($stripeSubscription, $subscription->getCustomer(), $subscription->getType());
@@ -131,7 +131,7 @@ class SubscriptionService
             throw new SubscriptionUpdateFailureException(
                 sprintf('Failed to resume subscription %s: %s', $subscription->getStripeId(), $e->getMessage()),
                 0,
-                $e
+                $e,
             );
         }
     }
@@ -166,7 +166,7 @@ class SubscriptionService
         try {
             $stripeSubscription = $this->stripe->subscriptions->update(
                 $subscription->getStripeId(),
-                $payload
+                $payload,
             );
 
             return $this->syncSubscription($stripeSubscription, $subscription->getCustomer(), $subscription->getType());
@@ -174,7 +174,7 @@ class SubscriptionService
             throw new SubscriptionUpdateFailureException(
                 sprintf('Failed to swap subscription %s: %s', $subscription->getStripeId(), $e->getMessage()),
                 0,
-                $e
+                $e,
             );
         }
     }
@@ -203,7 +203,7 @@ class SubscriptionService
                         ],
                     ],
                     'proration_behavior' => 'create_prorations',
-                ]
+                ],
             );
 
             return $this->syncSubscription($stripeSubscription, $subscription->getCustomer(), $subscription->getType());
@@ -211,7 +211,7 @@ class SubscriptionService
             throw new SubscriptionUpdateFailureException(
                 sprintf('Failed to update quantity for subscription %s: %s', $subscription->getStripeId(), $e->getMessage()),
                 0,
-                $e
+                $e,
             );
         }
     }
@@ -236,7 +236,7 @@ class SubscriptionService
 
         if ($stripeSubscription->trial_end !== null && $stripeSubscription->trial_end > time()) {
             $subscription->setTrialEndsAt(
-                \DateTimeImmutable::createFromFormat('U', (string) $stripeSubscription->trial_end) ?: null
+                \DateTimeImmutable::createFromFormat('U', (string) $stripeSubscription->trial_end) ?: null,
             );
         } else {
             $subscription->setTrialEndsAt(null);
@@ -244,11 +244,11 @@ class SubscriptionService
 
         if ($stripeSubscription->cancel_at_period_end && $stripeSubscription->cancel_at !== null) {
             $subscription->setEndsAt(
-                \DateTimeImmutable::createFromFormat('U', (string) $stripeSubscription->cancel_at) ?: null
+                \DateTimeImmutable::createFromFormat('U', (string) $stripeSubscription->cancel_at) ?: null,
             );
         } elseif ($stripeSubscription->canceled_at !== null) {
             $subscription->setEndsAt(
-                \DateTimeImmutable::createFromFormat('U', (string) $stripeSubscription->canceled_at) ?: null
+                \DateTimeImmutable::createFromFormat('U', (string) $stripeSubscription->canceled_at) ?: null,
             );
         }
 
@@ -256,7 +256,7 @@ class SubscriptionService
 
         foreach ($stripeSubscription->items->data as $stripeItem) {
             $item = $subscription->getItems()->filter(
-                fn (SubscriptionItem $i) => $i->getStripeId() === $stripeItem->id
+                fn (SubscriptionItem $i) => $i->getStripeId() === $stripeItem->id,
             )->first() ?: new SubscriptionItem();
 
             if (!$item instanceof SubscriptionItem) {

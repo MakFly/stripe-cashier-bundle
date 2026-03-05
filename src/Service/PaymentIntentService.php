@@ -13,7 +13,7 @@ use Stripe\PaymentIntent as StripePaymentIntent;
 class PaymentIntentService
 {
     public function __construct(
-        private readonly StripeClient $stripe
+        private readonly StripeClient $stripe,
     ) {
     }
 
@@ -38,7 +38,7 @@ class PaymentIntentService
             throw new \RuntimeException(
                 sprintf('Failed to create payment intent: %s', $e->getMessage()),
                 0,
-                $e
+                $e,
             );
         }
     }
@@ -67,7 +67,7 @@ class PaymentIntentService
             throw new \RuntimeException(
                 sprintf('Failed to capture payment intent %s: %s', $id, $e->getMessage()),
                 0,
-                $e
+                $e,
             );
         }
     }
@@ -85,7 +85,7 @@ class PaymentIntentService
             throw new \RuntimeException(
                 sprintf('Failed to cancel payment intent %s: %s', $id, $e->getMessage()),
                 0,
-                $e
+                $e,
             );
         }
     }
@@ -108,7 +108,7 @@ class PaymentIntentService
             throw new \RuntimeException(
                 sprintf('Failed to confirm payment intent %s: %s', $id, $e->getMessage()),
                 0,
-                $e
+                $e,
             );
         }
     }
@@ -126,7 +126,7 @@ class PaymentIntentService
             throw new \RuntimeException(
                 sprintf('Failed to update payment intent %s: %s', $id, $e->getMessage()),
                 0,
-                $e
+                $e,
             );
         }
     }
@@ -169,7 +169,7 @@ class PaymentIntentService
             throw new InvalidPaymentMethodException(
                 sprintf('Failed to authorize payment: %s', $e->getMessage()),
                 0,
-                $e
+                $e,
             );
         }
     }

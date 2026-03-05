@@ -18,7 +18,7 @@ use Stripe\Refund;
 class PaymentService
 {
     public function __construct(
-        private readonly StripeClient $stripe
+        private readonly StripeClient $stripe,
     ) {
     }
 
@@ -47,7 +47,7 @@ class PaymentService
             throw new InvalidPaymentMethodException(
                 sprintf('Failed to create payment intent: %s', $e->getMessage()),
                 0,
-                $e
+                $e,
             );
         }
 
@@ -95,7 +95,7 @@ class PaymentService
             throw new \RuntimeException(
                 sprintf('Failed to refund payment intent %s: %s', $paymentIntent, $e->getMessage()),
                 0,
-                $e
+                $e,
             );
         }
     }
@@ -116,7 +116,7 @@ class PaymentService
             throw new \RuntimeException(
                 sprintf('Failed to refund payment intent %s: %s', $paymentIntent, $e->getMessage()),
                 0,
-                $e
+                $e,
             );
         }
     }

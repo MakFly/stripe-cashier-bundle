@@ -11,7 +11,7 @@ use Stripe\PaymentMethod as StripePaymentMethod;
 final readonly class PaymentMethodUpdatedHandler extends AbstractWebhookHandler
 {
     public function __construct(
-        private StripeCustomerRepository $customerRepository
+        private StripeCustomerRepository $customerRepository,
     ) {
     }
 

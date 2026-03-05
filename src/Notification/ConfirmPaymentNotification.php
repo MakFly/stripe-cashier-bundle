@@ -14,7 +14,7 @@ class ConfirmPaymentNotification
 {
     public function __construct(
         private readonly BillableInterface $billable,
-        private readonly Payment $payment
+        private readonly Payment $payment,
     ) {
     }
 
@@ -170,7 +170,7 @@ TEXT;
         return sprintf(
             '%s/cashier/payment/%s',
             config('app.url', 'http://localhost'),
-            $this->payment->id()
+            $this->payment->id(),
         );
     }
 }

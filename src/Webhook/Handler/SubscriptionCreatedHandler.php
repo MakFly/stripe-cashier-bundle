@@ -21,7 +21,7 @@ final readonly class SubscriptionCreatedHandler extends AbstractWebhookHandler
         private SubscriptionRepository $subscriptionRepository,
         private EventDispatcherInterface $dispatcher,
         #[Autowire(param: 'cashier.default_subscription_type')]
-        private string $defaultSubscriptionType = 'default'
+        private string $defaultSubscriptionType = 'default',
     ) {
     }
 
@@ -53,7 +53,7 @@ final readonly class SubscriptionCreatedHandler extends AbstractWebhookHandler
 
     private function createSubscriptionFromStripe(
         StripeSubscription $stripeSubscription,
-        StripeCustomer $customer
+        StripeCustomer $customer,
     ): Subscription {
         $subscription = new Subscription();
         $subscription->setCustomer($customer);
