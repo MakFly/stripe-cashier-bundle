@@ -17,7 +17,7 @@ Stripe subscription billing for Symfony 8.X, inspired by [Laravel Cashier](https
 ## Installation
 
 ```bash
-composer require cashier/cashier-bundle
+composer require makfly/stripe-cashier-bundle
 ```
 
 ## Configuration
@@ -164,11 +164,11 @@ Listen to these events in your application:
 
 ## Documentation
 
-Full documentation available at [cashier-bundle.dev](https://cashier-bundle.dev)
+Full documentation available at [cashier-symfony.vercel.app](https://cashier-symfony.vercel.app)
 
-- [Installation Guide](https://cashier-bundle.dev/docs/installation)
-- [Subscriptions](https://cashier-bundle.dev/docs/subscriptions)
-- [Webhooks](https://cashier-bundle.dev/docs/webhooks)
+- [Installation Guide](https://cashier-symfony.vercel.app/docs/installation)
+- [Subscriptions](https://cashier-symfony.vercel.app/docs/subscriptions)
+- [Webhooks](https://cashier-symfony.vercel.app/docs/webhooks)
 
 ## Requirements
 
