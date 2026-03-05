@@ -7,6 +7,7 @@ namespace CashierBundle\Command;
 use CashierBundle\Service\WebhookEnvFileManager;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Formatter\OutputFormatter;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -156,7 +157,7 @@ class WebhookListenCommand extends Command
                     continue;
                 }
 
-                $io->write($chunk);
+                $this->writeStyledChunk($io, $chunk);
                 $secretFromChunk = $this->extractSecret($chunk);
                 if ($secretFromChunk !== null) {
                     $secret = $secretFromChunk;
@@ -172,7 +173,7 @@ class WebhookListenCommand extends Command
             if (isset($pipes[$index]) && is_resource($pipes[$index])) {
                 $remaining = stream_get_contents($pipes[$index]);
                 if (is_string($remaining) && $remaining !== '') {
-                    $io->write($remaining);
+                    $this->writeStyledChunk($io, $remaining);
                     $secretFromChunk = $this->extractSecret($remaining);
                     if ($secretFromChunk !== null) {
                         $secret = $secretFromChunk;
@@ -224,6 +225,57 @@ class WebhookListenCommand extends Command
         )));
 
         return implode(',', $normalized);
+    }
+
+    protected function writeStyledChunk(SymfonyStyle $io, string $chunk): void
+    {
+        foreach (preg_split("/(\r\n|\n|\r)/", $chunk, -1, PREG_SPLIT_DELIM_CAPTURE) ?: [] as $part) {
+            if ($part === '') {
+                continue;
+            }
+
+            if ($part === "\n" || $part === "\r" || $part === "\r\n") {
+                $io->write($part);
+
+                continue;
+            }
+
+            $io->write($this->styleLine($part));
+        }
+    }
+
+    protected function styleLine(string $line): string
+    {
+        $escaped = OutputFormatter::escape($line);
+
+        if (preg_match('/<--\s+\[(\d{3})\]/', $line, $matches) === 1) {
+            $statusCode = (int) $matches[1];
+
+            return match (true) {
+                $statusCode >= 500 => sprintf('<error>%s</error>', $escaped),
+                $statusCode >= 400 => sprintf('<fg=yellow;options=bold>%s</>', $escaped),
+                $statusCode >= 300 => sprintf('<fg=magenta;options=bold>%s</>', $escaped),
+                default => sprintf('<fg=green;options=bold>%s</>', $escaped),
+            };
+        }
+
+        if (str_contains($line, '-->')) {
+            return sprintf('<fg=cyan>%s</>', $escaped);
+        }
+
+        if (str_contains($line, 'level=error') || str_contains($line, 'Error when writing ping message')) {
+            return sprintf('<fg=red;options=bold>%s</>', $escaped);
+        }
+
+        if (str_contains($line, 'A newer version of the Stripe CLI is available')) {
+            return sprintf('<fg=yellow>%s</>', $escaped);
+        }
+
+        if (str_contains($line, 'Ready!')) {
+            return sprintf('<fg=green>%s</>', $escaped);
+        }
+
+        return $escaped;
     }
 
     private function extractSecret(string $chunk): ?string

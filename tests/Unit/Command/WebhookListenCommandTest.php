@@ -154,4 +154,24 @@ final class WebhookListenCommandTest extends TestCase
         self::assertSame(Command::FAILURE, $exit);
         self::assertStringContainsString('Stripe CLI not found', $tester->getDisplay());
     }
+
+    public function testStylesWebhookLinesByStatusCode(): void
+    {
+        $command = new class (['events' => []], 'stripe', $this->projectDir, new WebhookEnvFileManager()) extends WebhookListenCommand {
+            public function publicStyleLine(string $line): string
+            {
+                return $this->styleLine($line);
+            }
+
+            protected function isStripeCliAvailable(): bool
+            {
+                return true;
+            }
+        };
+
+        self::assertStringContainsString('<fg=green;options=bold>', $command->publicStyleLine('2026-03-05 <-- [200] POST http://localhost'));
+        self::assertStringContainsString('<fg=yellow;options=bold>', $command->publicStyleLine('2026-03-05 <-- [404] POST http://localhost'));
+        self::assertStringContainsString('<error>', $command->publicStyleLine('2026-03-05 <-- [500] POST http://localhost'));
+        self::assertStringContainsString('<fg=red;options=bold>', $command->publicStyleLine('time="Thu, 05 Mar 2026 22:24:26 CET" level=error msg="Error when writing ping message: websocket: close sent"'));
+    }
 }
