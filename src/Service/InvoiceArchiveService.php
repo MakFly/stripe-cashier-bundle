@@ -47,7 +47,7 @@ final readonly class InvoiceArchiveService
         $generatedInvoice = (new GeneratedInvoice())
             ->setCustomer($customer)
             ->setStripeInvoiceId($invoice->id())
-            ->setStripePaymentIntentId($event->getPaymentIntentId())
+            ->setStripePaymentIntentId($event->getPaymentIntentId() ?? $invoice->paymentIntentId())
             ->setStripeCheckoutSessionId($event->getCheckoutSessionId())
             ->setCurrency($event->getCurrency())
             ->setAmountTotal($event->getAmount())
@@ -60,7 +60,9 @@ final readonly class InvoiceArchiveService
             ->setPayload([
                 'stripe_invoice_id' => $invoice->id(),
                 'stripe_checkout_session_id' => $event->getCheckoutSessionId(),
+                'stripe_payment_intent_id' => $event->getPaymentIntentId() ?? $invoice->paymentIntentId(),
                 'hosted_invoice_url' => $stripeInvoice->hosted_invoice_url ?? null,
+                'metadata' => $this->normalizeMetadata($stripeInvoice),
             ])
         ;
 
@@ -78,5 +80,19 @@ final readonly class InvoiceArchiveService
         return $this->stripe->invoices->retrieve($invoiceId, [
             'expand' => ['customer', 'payment_intent'],
         ]);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function normalizeMetadata(\Stripe\Invoice $invoice): array
+    {
+        if (!isset($invoice->metadata) || !method_exists($invoice->metadata, 'toArray')) {
+            return [];
+        }
+
+        $metadata = $invoice->metadata->toArray();
+
+        return is_array($metadata) ? $metadata : [];
     }
 }

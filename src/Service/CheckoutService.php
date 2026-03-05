@@ -30,11 +30,20 @@ class CheckoutService
             throw new \RuntimeException('Billable must have a Stripe customer ID.');
         }
 
+        $metadata = [];
+        if (isset($options['metadata']) && is_array($options['metadata'])) {
+            /** @var array<string, mixed> $metadata */
+            $metadata = $options['metadata'];
+        }
+
         $payload = array_merge([
             'customer' => $stripeId,
             'mode' => 'payment',
             'invoice_creation' => [
                 'enabled' => true,
+                'invoice_data' => [
+                    'metadata' => $metadata,
+                ],
             ],
             'line_items' => array_map(
                 static fn (array $item): array => self::normalizeLineItem($item),

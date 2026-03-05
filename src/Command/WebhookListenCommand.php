@@ -69,6 +69,7 @@ class WebhookListenCommand extends Command
         if ($events !== '') {
             $io->writeln(sprintf('Events: <comment>%s</comment>', $events));
         }
+        $io->writeln('Legend: <fg=cyan>incoming event</> · <fg=green;options=bold>2xx</> · <fg=yellow;options=bold>4xx</> · <error>5xx / CLI errors</error>');
         $io->newLine();
 
         [$exitCode, $secret] = $this->listen($command, $io);

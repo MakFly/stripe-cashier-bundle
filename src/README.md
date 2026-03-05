@@ -121,6 +121,26 @@ Priorité de résolution de langue:
 - `preferred_locales` du customer Stripe
 - `cashier.invoices.default_locale`
 
+## Politique de compatibilité
+
+À partir de `v1.0.0`, le bundle suit une politique SemVer stricte sur ses APIs publiques documentées:
+
+- configuration `cashier.*`
+- commandes console documentées
+- services et contrats documentés
+- events publics destinés à l'intégration applicative
+
+Les breaking changes ne doivent arriver qu'en nouvelle version majeure.
+
+## Checklist production
+
+- clés Stripe et webhook secret valides
+- endpoint webhook accessible
+- dossier de stockage facture inscriptible
+- stratégie Messenger décidée si webhooks async
+- `cashier:install` exécuté
+- runtime PHP conforme aux prérequis documentés
+
 ## 🚀 Utilisation rapide
 
 ### Créer un abonnement
