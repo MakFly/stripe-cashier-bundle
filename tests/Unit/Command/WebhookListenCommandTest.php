@@ -139,6 +139,36 @@ final class WebhookListenCommandTest extends TestCase
         );
     }
 
+    public function testConfiguredEventsAreMergedWithDefaultEvents(): void
+    {
+        $command = new class (['events' => ['invoice.paid', 'payment_intent.succeeded']], 'stripe', $this->projectDir, new WebhookEnvFileManager()) extends WebhookListenCommand {
+            /** @var list<string> */
+            public array $capturedCommand = [];
+
+            protected function listen(array $command, SymfonyStyle $io): array
+            {
+                $this->capturedCommand = $command;
+
+                return [0, 'whsec_events'];
+            }
+
+            protected function isStripeCliAvailable(): bool
+            {
+                return true;
+            }
+        };
+
+        $tester = new CommandTester($command);
+        $exit = $tester->execute(['--no-write-env' => true]);
+
+        self::assertSame(Command::SUCCESS, $exit);
+        $events = $command->capturedCommand[5] ?? '';
+        self::assertStringContainsString('customer.subscription.created', $events);
+        self::assertStringContainsString('customer.subscription.updated', $events);
+        self::assertStringContainsString('invoice.paid', $events);
+        self::assertStringContainsString('payment_intent.succeeded', $events);
+    }
+
     public function testFailsWhenStripeCliMissing(): void
     {
         $command = new class (['events' => []], 'stripe', $this->projectDir, new WebhookEnvFileManager()) extends WebhookListenCommand {

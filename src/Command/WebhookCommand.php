@@ -55,7 +55,7 @@ class WebhookCommand extends Command
         $io = new SymfonyStyle($input, $output);
 
         $url = $input->getOption('url') ?? $this->guessUrl();
-        $events = $this->webhookConfig['events'] ?? self::DEFAULT_EVENTS;
+        $events = $this->resolveEvents();
 
         $webhook = $this->stripe->webhookEndpoints->create([
             'url' => $url,
@@ -82,6 +82,24 @@ class WebhookCommand extends Command
         }
 
         return Command::SUCCESS;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function resolveEvents(): array
+    {
+        $configuredEvents = $this->webhookConfig['events'] ?? [];
+        if (!is_array($configuredEvents)) {
+            return self::DEFAULT_EVENTS;
+        }
+
+        $normalized = array_values(array_filter(array_map(
+            static fn (mixed $event): string => is_string($event) ? trim($event) : '',
+            $configuredEvents,
+        )));
+
+        return array_values(array_unique([...self::DEFAULT_EVENTS, ...$normalized]));
     }
 
     private function guessUrl(): string

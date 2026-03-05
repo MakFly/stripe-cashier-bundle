@@ -102,6 +102,82 @@ final class InvoiceArchiveServiceTest extends TestCase
         self::assertSame('starter', $generatedInvoice->getPlanCode());
     }
 
+    public function testArchiveFromPaymentSuccessFallsBackToSubscriptionMetadataWhenInvoiceMetadataIsEmpty(): void
+    {
+        $stripe = (new TestStripeClient())->withService('invoices', new class () {
+            /**
+             * @param array<string, mixed> $options
+             */
+            public function retrieve(string $invoiceId, array $options = []): StripeInvoice
+            {
+                $invoice = new StripeInvoice($invoiceId);
+                $invoice->number = 'INV-2026-200';
+                $invoice->status = 'paid';
+                $invoice->currency = 'eur';
+                $invoice->total = 1999;
+                $invoice->payment_intent = 'pi_sub_123';
+                $invoice->created = time();
+                $invoice->metadata = \Stripe\StripeObject::constructFrom([]);
+                /** @phpstan-ignore-next-line test fixture uses Stripe dynamic properties */
+                $invoice->parent = \Stripe\StripeObject::constructFrom([
+                    'subscription_details' => [
+                        'metadata' => [
+                            'app_resource_type' => 'subscription_plan',
+                            'app_resource_id' => 'pro',
+                            'plan_code' => 'pro',
+                        ],
+                    ],
+                ]);
+
+                return $invoice;
+            }
+        });
+
+        $renderer = new class () implements InvoiceRendererInterface {
+            public function render(Invoice $invoice, array $data = []): Response
+            {
+                return new Response('%PDF');
+            }
+
+            public function renderBinary(Invoice $invoice, array $data = []): string
+            {
+                return '%PDF test';
+            }
+
+            public function stream(Invoice $invoice, array $data = []): Response
+            {
+                return new Response('%PDF');
+            }
+        };
+
+        $storage = $this->createMock(InvoiceStorageInterface::class);
+        $storage->method('store')
+            ->willReturn(new StoredInvoice('/tmp/subscription.pdf', 'var/data/invoices/subscription.pdf', 'subscription.pdf', 'application/pdf', 10, 'hash'));
+
+        $generatedInvoiceRepo = $this->createMock(GeneratedInvoiceRepository::class);
+        $generatedInvoiceRepo->method('findOneForStripeInvoice')->willReturn(null);
+
+        $customerRepo = $this->createMock(StripeCustomerRepository::class);
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager->expects(self::once())->method('persist')->with(self::isInstanceOf(GeneratedInvoice::class));
+        $entityManager->expects(self::once())->method('flush');
+
+        $service = new InvoiceArchiveService($stripe, $renderer, $storage, $customerRepo, $generatedInvoiceRepo, $entityManager);
+
+        $generatedInvoice = $service->archiveFromPaymentSuccess(new PaymentSucceededEvent(
+            'cus_123',
+            'pi_sub_123',
+            1999,
+            'eur',
+            'in_sub_123',
+        ));
+
+        self::assertInstanceOf(GeneratedInvoice::class, $generatedInvoice);
+        self::assertSame('subscription_plan', $generatedInvoice->getResourceType());
+        self::assertSame('pro', $generatedInvoice->getResourceId());
+        self::assertSame('pro', $generatedInvoice->getPlanCode());
+    }
+
     public function testArchiveFromPaymentSuccessReturnsExistingInvoiceWithoutWritingAgain(): void
     {
         $existing = (new GeneratedInvoice())

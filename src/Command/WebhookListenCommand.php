@@ -216,8 +216,8 @@ class WebhookListenCommand extends Command
         }
 
         $events = $this->webhookConfig['events'] ?? [];
-        if (!is_array($events) || $events === []) {
-            return '';
+        if (!is_array($events)) {
+            $events = [];
         }
 
         $normalized = array_values(array_filter(array_map(
@@ -225,7 +225,12 @@ class WebhookListenCommand extends Command
             $events,
         )));
 
-        return implode(',', $normalized);
+        $merged = array_values(array_unique([
+            ...WebhookCommand::DEFAULT_EVENTS,
+            ...$normalized,
+        ]));
+
+        return implode(',', $merged);
     }
 
     protected function writeStyledChunk(SymfonyStyle $io, string $chunk): void

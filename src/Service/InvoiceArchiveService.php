@@ -91,13 +91,19 @@ final readonly class InvoiceArchiveService
      */
     private function normalizeMetadata(\Stripe\Invoice $invoice): array
     {
-        if (!isset($invoice->metadata) || !method_exists($invoice->metadata, 'toArray')) {
-            return [];
+        $sources = [
+            $this->stripeObjectToArray($invoice->metadata ?? null),
+            $this->extractParentSubscriptionMetadata($invoice),
+            $this->extractFirstLineMetadata($invoice),
+        ];
+
+        foreach ($sources as $metadata) {
+            if ($metadata !== []) {
+                return $metadata;
+            }
         }
 
-        $metadata = $invoice->metadata->toArray();
-
-        return is_array($metadata) ? $metadata : [];
+        return [];
     }
 
     /**
@@ -132,5 +138,46 @@ final readonly class InvoiceArchiveService
         $value = $metadata['plan_code'] ?? null;
 
         return is_string($value) && $value !== '' ? $value : null;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function extractParentSubscriptionMetadata(\Stripe\Invoice $invoice): array
+    {
+        $parent = $this->stripeObjectToArray($invoice->parent ?? null);
+        $details = is_array($parent['subscription_details'] ?? null) ? $parent['subscription_details'] : [];
+
+        return is_array($details['metadata'] ?? null) ? $details['metadata'] : [];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function extractFirstLineMetadata(\Stripe\Invoice $invoice): array
+    {
+        $lines = $this->stripeObjectToArray($invoice->lines ?? null);
+        $data = is_array($lines['data'] ?? null) ? $lines['data'] : [];
+        $first = $data[0] ?? null;
+
+        return is_array($first['metadata'] ?? null) ? $first['metadata'] : [];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function stripeObjectToArray(mixed $value): array
+    {
+        if (is_array($value)) {
+            return $value;
+        }
+
+        if (is_object($value) && method_exists($value, 'toArray')) {
+            $array = $value->toArray();
+
+            return is_array($array) ? $array : [];
+        }
+
+        return [];
     }
 }
