@@ -6,9 +6,7 @@ namespace CashierBundle\MessageHandler;
 
 use CashierBundle\Message\CancelSubscriptionMessage;
 use CashierBundle\Service\SubscriptionService;
-use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
-#[AsMessageHandler]
 class CancelSubscriptionHandler
 {
     public function __construct(

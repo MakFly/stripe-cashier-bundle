@@ -6,9 +6,7 @@ namespace CashierBundle\MessageHandler;
 
 use CashierBundle\Message\RetryPaymentMessage;
 use CashierBundle\Service\PaymentService;
-use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
-#[AsMessageHandler]
 class RetryPaymentHandler
 {
     public function __construct(

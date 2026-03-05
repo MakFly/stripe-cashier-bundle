@@ -23,6 +23,7 @@ services:
             - '../../Command/'
             - '../../Resources/'
             - '../../Kernel.php'
+            - '../../MessageHandler/'
 
     # Stripe Client Service
     Stripe\StripeClient:
