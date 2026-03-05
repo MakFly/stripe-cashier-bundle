@@ -6,6 +6,7 @@ namespace CashierBundle\Model;
 
 use CashierBundle\Contract\InvoiceRendererInterface;
 use Stripe\Invoice as StripeInvoice;
+use Stripe\InvoiceLineItem as StripeInvoiceLineItem;
 use Symfony\Component\HttpFoundation\Response;
 
 final class Invoice
@@ -78,9 +79,12 @@ final class Invoice
      */
     public function items(): array
     {
+        /** @var list<StripeInvoiceLineItem> $lineItems */
+        $lineItems = iterator_to_array($this->invoice->lines->autoPagingIterator(), false);
+
         return array_map(
-            static fn (StripeInvoice\LineItem $item) => new InvoiceLineItem($item),
-            $this->invoice->lines->autoPagingIterator()->toArray(),
+            static fn (StripeInvoiceLineItem $item) => new InvoiceLineItem($item),
+            $lineItems,
         );
     }
 
