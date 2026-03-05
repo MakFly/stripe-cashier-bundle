@@ -85,6 +85,8 @@ class User implements BillableEntityInterface
 }
 ```
 
+`BillableTrait` fonctionne sans méthode custom supplémentaire dans votre entité.
+
 ### 5. Base de données
 
 ```bash

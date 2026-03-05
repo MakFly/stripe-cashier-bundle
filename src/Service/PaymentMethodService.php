@@ -129,6 +129,19 @@ class PaymentMethodService
         return $this->default($billable) !== null;
     }
 
+    /**
+     * @return Collection<int, PaymentMethod>
+     */
+    public function all(BillableInterface $billable, ?string $type = null): Collection
+    {
+        return $this->list($billable, $type);
+    }
+
+    public function getDefault(BillableInterface $billable): ?PaymentMethod
+    {
+        return $this->default($billable);
+    }
+
     public function remove(BillableInterface $billable, string $paymentMethod): void
     {
         $stripeId = $billable->stripeId();

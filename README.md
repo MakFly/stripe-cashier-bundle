@@ -118,6 +118,8 @@ class User implements BillableEntityInterface
 }
 ```
 
+`BillableTrait` is self-contained: you do not need to add a custom `getCashierService()` method to your entity.
+
 ### 6. Database
 
 ```bash

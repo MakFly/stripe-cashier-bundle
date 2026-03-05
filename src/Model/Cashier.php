@@ -10,6 +10,11 @@ final class Cashier
 
     private static string $locale = 'en';
 
+    /**
+     * @var null|\Closure(string): object
+     */
+    private static ?\Closure $serviceResolver = null;
+
     public static function formatAmount(int $amount, ?string $currency = null, ?string $locale = null): string
     {
         $currency = $currency ?? self::$currency;
@@ -40,6 +45,28 @@ final class Cashier
     public static function getLocale(): string
     {
         return self::$locale;
+    }
+
+    /**
+     * @param callable(string): object $resolver
+     */
+    public static function resolveServicesUsing(callable $resolver): void
+    {
+        self::$serviceResolver = $resolver(...);
+    }
+
+    public static function clearServiceResolver(): void
+    {
+        self::$serviceResolver = null;
+    }
+
+    public static function service(string $service): object
+    {
+        if (self::$serviceResolver === null) {
+            throw new \LogicException('Cashier service resolver is not configured. Boot the bundle before using BillableTrait methods.');
+        }
+
+        return (self::$serviceResolver)($service);
     }
 
     private static function formatCurrency(float $amount, string $currency, string $locale): string

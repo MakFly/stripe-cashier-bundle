@@ -26,6 +26,19 @@ services:
             - '%cashier.secret%'
         public: false
 
+    cashier.billable_service_locator:
+        class: Symfony\Component\DependencyInjection\ServiceLocator
+        arguments:
+            -
+                customer: '@CashierBundle\Service\CustomerService'
+                subscription: '@CashierBundle\Service\SubscriptionService'
+                payment_method: '@CashierBundle\Service\PaymentMethodService'
+                invoice: '@CashierBundle\Service\InvoiceService'
+                charge: '@CashierBundle\Service\PaymentService'
+                checkout: '@CashierBundle\Service\CheckoutService'
+                portal: '@CashierBundle\Service\CheckoutService'
+                tax: '@CashierBundle\Service\TaxService'
+
     # controllers are imported separately to make sure services can be injected
     # as action arguments even if you don't extend any base controller class
     CashierBundle\Controller\:
