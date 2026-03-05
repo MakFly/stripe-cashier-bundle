@@ -40,9 +40,12 @@ jobs:
           last_tag="$(git tag --list 'v*.*.*' --sort=-version:refname | head -n 1)"
           if [ -z "$last_tag" ]; then
             echo "version=v0.1.0" >> "$GITHUB_OUTPUT"
+            echo "previous_tag=" >> "$GITHUB_OUTPUT"
             echo "skip=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
+
+          echo "previous_tag=$last_tag" >> "$GITHUB_OUTPUT"
 
           head_message="$(git log -1 --format=%B HEAD)"
           bump="patch"
@@ -81,6 +84,37 @@ jobs:
         run: |
           git tag "${{ steps.version.outputs.version }}"
           git push origin "refs/tags/${{ steps.version.outputs.version }}"
+
+      - name: Create GitHub release
+        if: steps.version.outputs.skip != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+          PREVIOUS_TAG: ${{ steps.version.outputs.previous_tag }}
+        run: |
+          set -euo pipefail
+
+          notes_file="$(mktemp)"
+          {
+            echo "## Installation"
+            echo '```bash'
+            echo "composer require makfly/stripe-cashier-bundle ${VERSION}"
+            echo '```'
+            echo
+            echo "## Changes"
+
+            if [ -n "${PREVIOUS_TAG}" ]; then
+              git log --pretty=format:'- %s (%h)' "${PREVIOUS_TAG}..HEAD"
+              echo
+            else
+              echo "Initial release"
+            fi
+          } > "${notes_file}"
+
+          gh release create "${VERSION}" \
+            --repo "${GITHUB_REPOSITORY}" \
+            --title "Release ${VERSION}" \
+            --notes-file "${notes_file}"
 
       - name: Skip summary
         if: steps.version.outputs.skip == 'true'
