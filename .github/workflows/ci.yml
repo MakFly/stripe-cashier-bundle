@@ -1,6 +1,7 @@
 name: CI
 
 on:
+  workflow_dispatch:
   push:
     branches: [main]
   pull_request:
@@ -10,9 +11,16 @@ jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-        php: ['8.2', '8.3']
+        php: ['8.2', '8.3', '8.4', '8.5']
         symfony: ['7.*', '8.*']
+        dependencies: ['lowest', 'highest']
+        exclude:
+          - php: '8.2'
+            symfony: '8.*'
+          - php: '8.3'
+            symfony: '8.*'
 
     steps:
       - uses: actions/checkout@v4
@@ -24,7 +32,20 @@ jobs:
           extensions: mbstring, xml, ctype, iconv, intl
 
       - name: Install dependencies
-        run: composer install --prefer-dist --no-progress
+        env:
+          SYMFONY_REQUIRE: ${{ matrix.symfony }}
+        run: |
+          if [ "${{ matrix.dependencies }}" = "lowest" ]; then
+            composer update --prefer-lowest --prefer-stable --no-interaction --no-progress
+          else
+            composer update --prefer-dist --no-interaction --no-progress
+          fi
+
+      - name: Show resolved versions
+        run: |
+          php -v
+          composer show symfony/framework-bundle --no-ansi | head -n 8
+          composer show symfony/doctrine-bridge --no-ansi | head -n 8
 
       - name: Run tests
-        run: ./vendor/bin/phpunit --configuration phpunit.xml.dist
+        run: ./vendor/bin/phpunit --configuration phpunit.xml

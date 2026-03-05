@@ -1,6 +1,6 @@
 # CashierBundle
 
-Stripe subscription billing for Symfony 8.X, inspired by [Laravel Cashier](https://github.com/laravel/cashier-stripe).
+Stripe subscription billing for Symfony 7.x and 8.x, inspired by [Laravel Cashier](https://github.com/laravel/cashier-stripe).
 
 ## Features
 
@@ -172,8 +172,8 @@ Full documentation available at [cashier-symfony.vercel.app](https://cashier-sym
 
 ## Requirements
 
-- PHP 8.2+
-- Symfony 7.0+ or 8.0+
+- PHP 8.2 to 8.5 (tested in CI)
+- Symfony 7.x or 8.x
 - Doctrine ORM 3.0+
 - Stripe PHP SDK ^16.0
 
