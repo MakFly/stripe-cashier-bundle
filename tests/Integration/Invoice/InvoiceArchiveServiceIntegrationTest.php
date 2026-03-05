@@ -81,6 +81,11 @@ final class InvoiceArchiveServiceIntegrationTest extends TestCase
                 $invoice->created = time();
                 $invoice->customer = 'cus_123';
                 $invoice->payment_intent = 'pi_777';
+                $invoice->metadata = \Stripe\StripeObject::constructFrom([
+                    'app_resource_type' => 'order',
+                    'app_resource_id' => '77',
+                    'plan_code' => 'starter',
+                ]);
 
                 return $invoice;
             }
@@ -119,6 +124,9 @@ final class InvoiceArchiveServiceIntegrationTest extends TestCase
 
         self::assertInstanceOf(GeneratedInvoice::class, $first);
         self::assertSame($first->getId(), $second?->getId());
+        self::assertSame('order', $first->getResourceType());
+        self::assertSame('77', $first->getResourceId());
+        self::assertSame('starter', $first->getPlanCode());
         self::assertSame(
             1,
             (int) $this->entityManager
@@ -130,6 +138,10 @@ final class InvoiceArchiveServiceIntegrationTest extends TestCase
         );
         self::assertFileExists($this->storagePath . '/INV-2026-777.pdf');
         self::assertSame('%PDF integration', (string) file_get_contents($this->storagePath . '/INV-2026-777.pdf'));
+        self::assertNotNull(
+            (new GeneratedInvoiceRepository(new TestManagerRegistry($this->entityManager, $this->entityManager->getConnection())))
+                ->findOneForResource('order', '77'),
+        );
     }
 
     private function removeDirectory(string $path): void

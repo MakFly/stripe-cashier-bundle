@@ -36,6 +36,11 @@ final class InvoiceArchiveServiceTest extends TestCase
                 $invoice->total = 4999;
                 $invoice->payment_intent = 'pi_123';
                 $invoice->created = time();
+                $invoice->metadata = \Stripe\StripeObject::constructFrom([
+                    'app_resource_type' => 'order',
+                    'app_resource_id' => '42',
+                    'plan_code' => 'starter',
+                ]);
 
                 return $invoice;
             }
@@ -92,6 +97,9 @@ final class InvoiceArchiveServiceTest extends TestCase
         self::assertInstanceOf(GeneratedInvoice::class, $generatedInvoice);
         self::assertSame('in_123', $generatedInvoice->getStripeInvoiceId());
         self::assertSame('invoice.pdf', $generatedInvoice->getFilename());
+        self::assertSame('order', $generatedInvoice->getResourceType());
+        self::assertSame('42', $generatedInvoice->getResourceId());
+        self::assertSame('starter', $generatedInvoice->getPlanCode());
     }
 
     public function testArchiveFromPaymentSuccessReturnsExistingInvoiceWithoutWritingAgain(): void
