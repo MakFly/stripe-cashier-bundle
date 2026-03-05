@@ -36,13 +36,13 @@ class Subscription
     #[ORM\Column(length: 255)]
     private string $type = 'default';
 
-    #[ORM\Column(length: 255, unique: true)]
+    #[ORM\Column(name: 'stripe_id', length: 255, unique: true)]
     private string $stripeId;
 
-    #[ORM\Column(length: 50)]
+    #[ORM\Column(name: 'stripe_status', length: 50)]
     private string $stripeStatus;
 
-    #[ORM\Column(length: 255, nullable: true)]
+    #[ORM\Column(name: 'stripe_price', length: 255, nullable: true)]
     private ?string $stripePrice = null;
 
     #[ORM\Column(type: 'integer', nullable: true)]

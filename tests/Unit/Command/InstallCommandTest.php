@@ -33,9 +33,12 @@ final class InstallCommandTest extends TestCase
         $exitCode = $tester->execute([]);
 
         self::assertSame(Command::SUCCESS, $exitCode);
+        self::assertStringContainsString('created directory var/data', $tester->getDisplay());
+        self::assertStringContainsString('created directory var/data/invoices', $tester->getDisplay());
         self::assertStringContainsString('created config/packages/cashier.yaml', $tester->getDisplay());
         self::assertStringContainsString('created config/packages/cashier_doctrine.yaml', $tester->getDisplay());
         self::assertStringContainsString('created config/routes/cashier.yaml', $tester->getDisplay());
+        self::assertDirectoryExists($this->projectDir . '/var/data/invoices');
         self::assertStringNotContainsString(
             'resolve_target_entities',
             (string) file_get_contents($this->projectDir . '/config/packages/cashier_doctrine.yaml'),

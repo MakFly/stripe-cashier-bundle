@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CashierBundle\DependencyInjection;
 
+use CashierBundle\Contract\InvoiceRendererInterface;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\Extension;
@@ -39,8 +40,12 @@ final class CashierExtension extends Extension
         $container->setParameter('cashier.currency_locale', $config['currency_locale']);
         $container->setParameter('cashier.default_subscription_type', $config['default_subscription_type']);
         $container->setParameter('cashier.invoices.renderer', $config['invoices']['renderer']);
+        $container->setParameter('cashier.invoices.storage.driver', $config['invoices']['storage']['driver']);
+        $container->setParameter('cashier.invoices.storage.path', $config['invoices']['storage']['path']);
         $container->setParameter('cashier.invoices.options.paper', $config['invoices']['options']['paper']);
         $container->setParameter('cashier.invoices.options.remote_enabled', $config['invoices']['options']['remote_enabled']);
         $container->setParameter('cashier.logger', $config['logger']);
+
+        $container->setAlias(InvoiceRendererInterface::class, $config['invoices']['renderer']);
     }
 }

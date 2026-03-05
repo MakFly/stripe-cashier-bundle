@@ -22,12 +22,26 @@ final class InstallFileManager
     }
 
     /**
-     * @return array{created: list<string>, skipped: list<string>, envUpdated: list<string>}
+     * @return array{created: list<string>, skipped: list<string>, directoriesCreated: list<string>, directoriesSkipped: list<string>, envUpdated: list<string>}
      */
     public function install(string $projectDir, ?string $envFile = null): array
     {
         $created = [];
         $skipped = [];
+        $directoriesCreated = [];
+        $directoriesSkipped = [];
+
+        foreach (['var/data', 'var/data/invoices'] as $relativeDirectory) {
+            $targetDirectory = rtrim($projectDir, '/') . '/' . $relativeDirectory;
+
+            if ($this->filesystem->exists($targetDirectory)) {
+                $directoriesSkipped[] = $relativeDirectory;
+                continue;
+            }
+
+            $this->filesystem->mkdir($targetDirectory);
+            $directoriesCreated[] = $relativeDirectory;
+        }
 
         $files = [
             'config/packages/cashier.yaml' => [
@@ -63,6 +77,8 @@ final class InstallFileManager
         return [
             'created' => $created,
             'skipped' => $skipped,
+            'directoriesCreated' => $directoriesCreated,
+            'directoriesSkipped' => $directoriesSkipped,
             'envUpdated' => $envUpdated,
         ];
     }

@@ -33,6 +33,9 @@ class CheckoutService
         $payload = array_merge([
             'customer' => $stripeId,
             'mode' => 'payment',
+            'invoice_creation' => [
+                'enabled' => true,
+            ],
             'line_items' => array_map(
                 static fn (array $item): array => self::normalizeLineItem($item),
                 $items,
@@ -65,6 +68,9 @@ class CheckoutService
         $payload = array_merge([
             'customer' => $stripeId,
             'mode' => 'payment',
+            'invoice_creation' => [
+                'enabled' => true,
+            ],
             'line_items' => [[
                 'price_data' => [
                     'currency' => Cashier::$currency,

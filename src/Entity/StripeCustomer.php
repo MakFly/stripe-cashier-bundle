@@ -30,7 +30,7 @@ class StripeCustomer
 
     private ?BillableEntityInterface $billable = null;
 
-    #[ORM\Column(length: 255, unique: true)]
+    #[ORM\Column(name: 'stripe_id', length: 255, unique: true)]
     private string $stripeId;
 
     #[ORM\Column(length: 255, nullable: true)]

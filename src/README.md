@@ -50,6 +50,9 @@ cashier:
     default_subscription_type: 'default'
     invoices:
         renderer: 'CashierBundle\Service\InvoiceRenderer\DompdfInvoiceRenderer'
+        storage:
+            driver: 'local'
+            path: '%kernel.project_dir%/var/data/invoices'
         options:
             paper: 'letter'
 ```
@@ -93,6 +96,20 @@ class User implements BillableEntityInterface
 php bin/console doctrine:migrations:diff
 php bin/console doctrine:migrations:migrate
 ```
+
+### 6. Factures PDF
+
+`cashier:install` prépare automatiquement:
+
+- `var/data`
+- `var/data/invoices`
+
+Les factures Stripe payées sont ensuite archivées automatiquement en PDF dans `var/data/invoices`.
+
+La personnalisation se fait soit:
+
+- par surcharge Twig via `templates/bundles/CashierBundle/invoice/default.html.twig`
+- par remplacement du service renderer configuré dans `cashier.invoices.renderer`
 
 ## 🚀 Utilisation rapide
 
