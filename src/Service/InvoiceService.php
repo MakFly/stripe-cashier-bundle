@@ -13,6 +13,7 @@ use CashierBundle\Model\Payment;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Stripe\Exception\ApiErrorException;
+use Stripe\StripeClient;
 
 /**
  * @implements \CashierBundle\Concerns\ManagesInvoices<BillableInterface>
@@ -180,7 +181,7 @@ class InvoiceService
 
             return array_map(
                 fn (\Stripe\InvoiceLineItem $line) => new InvoiceLineItem($line),
-                $invoice->lines->autoPagingIterator()->toArray(),
+                iterator_to_array($invoice->lines->autoPagingIterator()),
             );
         } catch (ApiErrorException $e) {
             return [];

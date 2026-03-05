@@ -11,6 +11,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Stripe\Exception\ApiErrorException;
 use Stripe\PaymentMethod as StripePaymentMethod;
+use Stripe\StripeClient;
 
 /**
  * @implements \CashierBundle\Concerns\ManagesPaymentMethods<BillableInterface>

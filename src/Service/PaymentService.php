@@ -11,6 +11,7 @@ use CashierBundle\Model\Payment;
 use Stripe\Exception\ApiErrorException;
 use Stripe\PaymentIntent;
 use Stripe\Refund;
+use Stripe\StripeClient;
 
 /**
  * @implements \CashierBundle\Concerns\PerformsCharges<BillableInterface>

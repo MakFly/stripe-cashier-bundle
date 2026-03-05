@@ -6,6 +6,7 @@ namespace CashierBundle\Service;
 
 use CashierBundle\Model\SetupIntent;
 use Stripe\Exception\ApiErrorException;
+use Stripe\StripeClient;
 
 class SetupIntentService
 {
