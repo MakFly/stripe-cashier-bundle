@@ -1,0 +1,559 @@
+# Modèles
+
+Les modèles sont des objets légers qui enveloppent les réponses de l'API Stripe pour fournir une interface plus pratique.
+
+## Payment
+
+Représente un PaymentIntent Stripe.
+
+### Emplacement
+
+```php
+namespace CashierBundle\Model;
+
+class Payment
+```
+
+### Méthodes
+
+#### Identification
+
+```php
+// ID du PaymentIntent
+$payment->id(): string
+```
+
+#### Montant
+
+```php
+// Montant formaté (ex: "10.00")
+$payment->amount(): string
+
+// Montant brut en centimes (ex: 1000)
+$payment->rawAmount(): int
+
+// Devise (ex: "eur")
+$payment->currency(): string
+```
+
+#### État
+
+```php
+// Statut du paiement
+$payment->status(): string
+
+// Vérifie si un moyen de paiement est requis
+$payment->requiresPaymentMethod(): bool
+
+// Vérifie si une action supplémentaire est requise (3D Secure, etc.)
+$payment->requiresAction(): bool
+
+// Vérifie si une confirmation est requise
+$payment->requiresConfirmation(): bool
+
+// Vérifie si une capture est requise
+$payment->requiresCapture(): bool
+
+// Vérifie si le paiement est annulé
+$payment->isCanceled(): bool
+
+// Vérifie si le paiement a réussi
+$payment->isSucceeded(): bool
+
+// Vérifie si le paiement est en cours de traitement
+$payment->isProcessing(): bool
+```
+
+#### Actions
+
+```php
+// Capture un paiement autorisé
+$payment->capture(): self
+
+// Annule un paiement
+$payment->cancel(): self
+```
+
+#### Client Secret
+
+```php
+// Client Secret pour la confirmation frontend
+$payment->clientSecret(): ?string
+```
+
+#### Objet Stripe brut
+
+```php
+// Récupère l'objet PaymentIntent Stripe original
+$payment->asStripePaymentIntent(): object
+```
+
+## Invoice
+
+Représente une facture Stripe.
+
+### Emplacement
+
+```php
+namespace CashierBundle\Model;
+
+class Invoice
+```
+
+### Méthodes
+
+#### Identification
+
+```php
+// ID de la facture
+$invoice->id(): string
+```
+
+#### Dates
+
+```php
+// Date de création de la facture
+$invoice->date(): \DateTimeImmutable
+
+// Date d'échéance (si définie)
+$invoice->dueDate(): ?\DateTimeImmutable
+```
+
+#### Montants
+
+```php
+// Montant total formaté
+$invoice->total(): string
+
+// Montant total brut en centimes
+$invoice->rawTotal(): int
+
+// Sous-total formaté
+$invoice->subtotal(): string
+
+// Montant des taxes formaté
+$invoice->tax(): string
+
+// Devise de la facture
+$invoice->currency(): string
+```
+
+#### Contenu
+
+```php
+// Lignes de la facture
+$invoice->items(): array
+
+// Taxes appliquées
+$invoice->taxes(): array
+
+// Paiements associés
+$invoice->payments(): array
+
+// Remises appliquées
+$invoice->discounts(): array
+```
+
+#### Actions
+
+```php
+// Télécharge la facture en PDF
+$invoice->download(array $data = []): Response
+
+// Paiement la facture
+$invoice->pay(): Payment
+```
+
+#### Objet Stripe brut
+
+```php
+// Récupère l'objet Invoice Stripe original
+$invoice->asStripeInvoice(): \Stripe\Invoice
+```
+
+### Exemple d'utilisation
+
+```php
+$invoice = $user->invoice();
+
+echo "Facture #{$invoice->id()}";
+echo "Total: {$invoice->total()} {$invoice->currency()}";
+echo "Date: {$invoice->date()->format('d/m/Y')}";
+
+foreach ($invoice->items() as $item) {
+    echo "- {$item->description()}: {$item->amount()}";
+}
+```
+
+## PaymentMethod
+
+Représente un moyen de paiement Stripe.
+
+### Emplacement
+
+```php
+namespace CashierBundle\Model;
+
+class PaymentMethod
+```
+
+### Méthodes
+
+#### Identification
+
+```php
+// ID du moyen de paiement
+$paymentMethod->id(): string
+
+// Type (card, sepa_debit, etc.)
+$paymentMethod->type(): string
+```
+
+#### Carte bancaire
+
+```php
+// Marque de la carte (visa, mastercard, etc.)
+$paymentMethod->brand(): ?string
+
+// 4 derniers chiffres
+$paymentMethod->lastFour(): ?string
+
+// Mois d'expiration
+$paymentMethod->expiryMonth(): ?int
+
+// Année d'expiration
+$paymentMethod->expiryYear(): ?int
+```
+
+#### SEPA Debit
+
+```php
+// Nom de la banque
+$paymentMethod->bank(): ?string
+```
+
+#### État
+
+```php
+// Vérifie si c'est le moyen par défaut
+$paymentMethod->isDefault(): bool
+```
+
+#### Objet Stripe brut
+
+```php
+// Récupère l'objet PaymentMethod Stripe original
+$paymentMethod->asStripePaymentMethod(): \Stripe\PaymentMethod
+```
+
+## Checkout
+
+Représente une session Checkout Stripe.
+
+### Emplacement
+
+```php
+namespace CashierBundle\Model;
+
+class Checkout
+```
+
+### Méthodes
+
+#### Identification
+
+```php
+// ID de la session
+$checkout->id(): string
+
+// URL de la session Checkout
+$checkout->url(): ?string
+```
+
+#### Informations liées
+
+```php
+// ID du PaymentIntent (pour les paiements)
+$checkout->paymentIntentId(): ?string
+
+// ID du SetupIntent (pour la configuration)
+$checkout->setupIntentId(): ?string
+
+// ID du client
+$checkout->customerId(): ?string
+
+// ID de l'abonnement créé
+$checkout->subscriptionId(): ?string
+```
+
+#### État
+
+```php
+// Statut de la session
+$checkout->status(): string
+
+// Vérifie si la session est complète
+$checkout->isComplete(): bool
+
+// Vérifie si la session est expirée
+$checkout->isExpired(): bool
+
+// Vérifie si la session est ouverte
+$checkout->isOpen(): bool
+```
+
+#### Objet Stripe brut
+
+```php
+// Récupère l'objet Session Stripe original
+$checkout->asStripeCheckoutSession(): object
+```
+
+## Coupon
+
+Représente un coupon Stripe.
+
+### Emplacement
+
+```php
+namespace CashierBundle\Model;
+
+class Coupon
+```
+
+### Méthodes
+
+#### Identification
+
+```php
+// ID du coupon
+$coupon->id(): string
+
+// Nom du coupon
+$coupon->name(): ?string
+```
+
+#### Type de réduction
+
+```php
+// Pourcentage de réduction
+$coupon->percentOff(): ?float
+
+// Montant de réduction fixe
+$coupon->amountOff(): ?int
+
+// Devise (pour les réductions fixes)
+$coupon->currency(): ?string
+
+// Vérifie si c'est une réduction en pourcentage
+$coupon->isPercentage(): bool
+
+// Vérifie si c'est une réduction à montant fixe
+$coupon->isFixedAmount(): bool
+```
+
+#### Durée
+
+```php
+// Type de durée (forever, once, repeating)
+$coupon->duration(): string
+
+// Nombre de mois (si duration = repeating)
+$coupon->durationInMonths(): ?int
+```
+
+#### Validité
+
+```php
+// Vérifie si le coupon est valide
+$coupon->valid(): bool
+```
+
+## CustomerBalanceTransaction
+
+Représente une transaction de solde client.
+
+### Emplacement
+
+```php
+namespace CashierBundle\Model;
+
+class CustomerBalanceTransaction
+```
+
+### Méthodes
+
+#### Identification
+
+```php
+// ID de la transaction
+$transaction->id(): string
+```
+
+#### Montant
+
+```php
+// Montant formaté
+$transaction->amount(): string
+
+// Montant brut en centimes
+$transaction->rawAmount(): int
+
+// Devise
+$transaction->currency(): string
+```
+
+#### Type et description
+
+```php
+// Type (credit ou debit)
+$transaction->type(): string
+
+// Description de la transaction
+$transaction->description(): ?string
+
+// Vérifie si c'est un crédit
+$transaction->isCredit(): bool
+
+// Vérifie si c'est un débit
+$transaction->isDebit(): bool
+```
+
+## TaxRate
+
+Représente un taux de taxe Stripe.
+
+### Emplacement
+
+```php
+namespace CashierBundle\Model;
+
+class TaxRate
+```
+
+### Méthodes
+
+#### Identification
+
+```php
+// ID du taux de taxe
+$taxRate->id(): string
+
+// Nom d'affichage
+$taxRate->displayName(): string
+```
+
+#### Taux
+
+```php
+// Pourcentage de taxe
+$taxRate->percentage(): float
+
+// Vérifie si la taxe est incluse
+$taxRate->inclusive(): bool
+```
+
+#### État et localisation
+
+```php
+// Vérifie si le taux est actif
+$taxRate->active(): bool
+
+// Code pays
+$taxRate->country(): ?string
+
+// Code état/région
+$taxRate->state(): ?string
+
+// Description
+$taxRate->description(): ?string
+```
+
+## InvoiceLineItem
+
+Représente une ligne de facture.
+
+### Méthodes typiques
+
+```php
+// ID de l'item
+$item->id(): string
+
+// Description
+$item->description(): ?string
+
+// Montant
+$item->amount(): string
+
+// Quantité
+$item->quantity(): int
+
+// Prix unitaire
+$item->unitAmount(): int
+
+// Période de facturation
+$item->period(): array
+```
+
+## InvoicePayment
+
+Représente un paiement associé à une facture.
+
+### Méthodes typiques
+
+```php
+// ID du PaymentIntent
+$payment->id(): string
+
+// Montant formaté
+$payment->amount(): string
+
+// Montant brut
+$payment->rawAmount(): int
+
+// Devise
+$payment->currency(): string
+
+// Statut
+$payment->status(): string
+```
+
+## Discount
+
+Représente une remise appliquée à une facture.
+
+### Méthodes typiques
+
+```php
+// ID du coupon
+$discount->id(): string
+
+// Nom du coupon
+$discount->name(): ?string
+
+// Montant de la remise
+$discount->amount(): ?string
+
+// Pourcentage de remise
+$discount->percent(): ?float
+```
+
+## Tax
+
+Représente une taxe appliquée à une facture.
+
+### Méthodes typiques
+
+```php
+// Nom de la taxe
+$tax->name(): string
+
+// Pourcentage
+$tax->percentage(): float
+
+// Montant
+$tax->amount(): int
+
+// Inclus dans le prix
+$tax->inclusive(): bool
+```

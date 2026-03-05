@@ -1,24 +1,25 @@
 {
-  "name": "docs",
-  "type": "module",
-  "version": "0.0.1",
+  "name": "cashier-bundle-docs",
+  "version": "1.0.0",
+  "private": true,
   "scripts": {
-    "dev": "astro dev",
-    "build": "astro build",
-    "preview": "astro preview",
-    "astro": "astro"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "export": "next build"
   },
   "dependencies": {
-    "@astrojs/mdx": "^4.3.13",
-    "@astrojs/react": "^4.4.2",
-    "@tailwindcss/vite": "^4.2.1",
-    "@types/canvas-confetti": "^1.9.0",
-    "@types/react": "^19.2.14",
-    "@types/react-dom": "^19.2.3",
-    "astro": "^5.17.1",
-    "canvas-confetti": "^1.9.4",
-    "react": "^19.2.4",
-    "react-dom": "^19.2.4",
-    "tailwindcss": "^4.2.1"
+    "next": "^15.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "nextra": "^4.0.0",
+    "nextra-theme-docs": "^4.0.0",
+    "lucide-react": "^0.500.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "typescript": "^5.0.0"
   }
 }

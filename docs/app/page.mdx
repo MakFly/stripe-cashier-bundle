@@ -1,0 +1,140 @@
+---
+title: CashierBundle
+description: Stripe Cashier pour Symfony 8.X - Gérez vos abonnements avec élégance
+---
+
+# CashierBundle
+
+Stripe Cashier pour Symfony 8.X — Gérez vos abonnements avec élégance.
+
+<div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem' }}>
+  <a href="/docs/installation" style={{
+    padding: '0.6rem 1.2rem',
+    background: '#3b82f6',
+    color: 'white',
+    borderRadius: '6px',
+    textDecoration: 'none',
+    fontWeight: 500,
+    fontSize: '0.95rem',
+    display: 'inline-block'
+  }}>
+    Documentation
+  </a>
+  <a href="https://github.com/MakFly/cashier-symfony" style={{
+    padding: '0.6rem 1.2rem',
+    background: '#1f2937',
+    color: 'white',
+    borderRadius: '6px',
+    textDecoration: 'none',
+    fontWeight: 500,
+    fontSize: '0.95rem',
+    display: 'inline-block'
+  }}>
+    GitHub
+  </a>
+</div>
+
+## Fonctionnalités
+
+<div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem', marginTop: '1.5rem' }}>
+
+<div style={{
+  padding: '1.25rem',
+  borderRadius: '8px',
+  background: '#f8fafc',
+  border: '1px solid #e2e8f0'
+}}>
+  <div style={{ fontSize: '1.75rem', marginBottom: '0.4rem' }}>??</div>
+  <h4 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.4rem', marginTop: 0 }}>Abonnements récurrents</h4>
+  <p style={{ color: '#64748b', margin: 0, fontSize: '0.9rem' }}>Gérez facilement les abonnements mensuels et annuels avec Stripe.</p>
+</div>
+
+<div style={{
+  padding: '1.25rem',
+  borderRadius: '8px',
+  background: '#f8fafc',
+  border: '1px solid #e2e8f0'
+}}>
+  <div style={{ fontSize: '1.75rem', marginBottom: '0.4rem' }}>??</div>
+  <h4 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.4rem', marginTop: 0 }}>Périodes d'essai</h4>
+  <p style={{ color: '#64748b', margin: 0, fontSize: '0.9rem' }}>Offrez des périodes d'essai à vos nouveaux utilisateurs.</p>
+</div>
+
+<div style={{
+  padding: '1.25rem',
+  borderRadius: '8px',
+  background: '#f8fafc',
+  border: '1px solid #e2e8f0'
+}}>
+  <div style={{ fontSize: '1.75rem', marginBottom: '0.4rem' }}>??</div>
+  <h4 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.4rem', marginTop: 0 }}>Paiements ponctuels</h4>
+  <p style={{ color: '#64748b', margin: 0, fontSize: '0.9rem' }}>Gérez les paiements uniques et les factures.</p>
+</div>
+
+<div style={{
+  padding: '1.25rem',
+  borderRadius: '8px',
+  background: '#f8fafc',
+  border: '1px solid #e2e8f0'
+}}>
+  <div style={{ fontSize: '1.75rem', marginBottom: '0.4rem' }}>??</div>
+  <h4 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.4rem', marginTop: 0 }}>Factures PDF</h4>
+  <p style={{ color: '#64748b', margin: 0, fontSize: '0.9rem' }}>Génération automatique des factures au format PDF.</p>
+</div>
+
+<div style={{
+  padding: '1.25rem',
+  borderRadius: '8px',
+  background: '#f8fafc',
+  border: '1px solid #e2e8f0'
+}}>
+  <div style={{ fontSize: '1.75rem', marginBottom: '0.4rem' }}>??</div>
+  <h4 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.4rem', marginTop: 0 }}>Coupons et promotions</h4>
+  <p style={{ color: '#64748b', margin: 0, fontSize: '0.9rem' }}>Créez et gérez des codes promo pour vos utilisateurs.</p>
+</div>
+
+<div style={{
+  padding: '1.25rem',
+  borderRadius: '8px',
+  background: '#f8fafc',
+  border: '1px solid #e2e8f0'
+}}>
+  <div style={{ fontSize: '1.75rem', marginBottom: '0.4rem' }}>??</div>
+  <h4 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.4rem', marginTop: 0 }}>Webhooks intégrés</h4>
+  <p style={{ color: '#64748b', margin: 0, fontSize: '0.9rem' }}>Gestion transparente des événements Stripe.</p>
+</div>
+
+</div>
+
+## Installation rapide
+
+```bash
+composer require cashier/cashier-bundle
+```
+
+## Exemple d'utilisation
+
+```php
+$subscription = $user->newSubscription('default', 'price_premium')
+    ->trialDays(14)
+    ->create($paymentMethodId);
+```
+
+<div style={{ marginTop: '2rem', padding: '1.25rem', borderRadius: '8px', background: '#eff6ff', border: '1px solid #3b82f620' }}>
+  <h4 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.4rem', marginTop: 0 }}>?? Prêt à commencer ?</h4>
+  <p style={{ color: '#64748b', margin: '0 0 1rem 0', fontSize: '0.9rem' }}>
+    Découvrez la documentation complète pour configurer CashierBundle dans votre projet Symfony.
+  </p>
+  <a href="/docs/installation" style={{
+    padding: '0.6rem 1.2rem',
+    background: '#3b82f6',
+    color: 'white',
+    borderRadius: '6px',
+    textDecoration: 'none',
+    fontWeight: 500,
+    fontSize: '0.95rem',
+    display: 'inline-block'
+  }}>
+    Voir la documentation →
+  </a>
+</div>

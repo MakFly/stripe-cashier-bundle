@@ -4,7 +4,8 @@
 /docs/node_modules/
 
 # Build outputs
-/docs/dist/
+/docs/.next/
+/docs/out/
 .phpunit.cache/
 
 # IDE

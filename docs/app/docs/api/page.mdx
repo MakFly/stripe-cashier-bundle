@@ -1,0 +1,167 @@
+# Référence API
+
+Cette section documente l'API complète de Cashier Bundle pour Symfony. Vous y trouverez toutes les interfaces, entités, services, modèles, événements et exceptions disponibles.
+
+## Vue d'ensemble
+
+Le bundle est organisé autour de plusieurs concepts clés:
+
+### Interface Billable
+
+Le point d'entrée principal de l'API est l'interface `BillableInterface`. Toute entité qui doit être facturable (utilisateurs, organisations, etc.) doit implémenter cette interface.
+
+```php
+use CashierBundle\Contract\BillableInterface;
+use CashierBundle\Concerns\BillableTrait;
+
+class User implements BillableInterface
+{
+    use BillableTrait;
+
+    // L'interface est automatiquement satisfaite par le trait
+}
+```
+
+### Entités
+
+Les entités Doctrine stockent les informations synchronisées avec Stripe dans votre base de données:
+
+- **StripeCustomer**: Représente un client Stripe
+- **Subscription**: Représente un abonnement
+- **SubscriptionItem**: Représente un item d'abonnement
+
+### Services
+
+Les services encapsulent la logique métier et les interactions avec l'API Stripe:
+
+- **SubscriptionBuilder**: Builder fluide pour créer des abonnements
+- **SubscriptionService**: Gestion des abonnements
+- **PaymentService**: Gestion des paiements ponctuels
+- **PaymentMethodService**: Gestion des moyens de paiement
+- **InvoiceService**: Gestion des factures
+- **CheckoutService**: Gestion des sessions Checkout
+- **CustomerService**: Gestion des clients
+
+### Modèles
+
+Les modèles sont des objets légers qui enveloppent les réponses de l'API Stripe:
+
+- **Payment**: PaymentIntent
+- **Invoice**: Facture
+- **PaymentMethod**: Moyen de paiement
+- **Checkout**: Session Checkout
+- **Coupon**: Coupon de réduction
+- Et plus encore...
+
+## Conventions
+
+### Montants
+
+Tous les montants sont exprimés en **centimes** (entiers) pour éviter les erreurs d'arrondi:
+
+```php
+// 10.00 € = 1000 centimes
+$user->charge(1000, $paymentMethod);
+
+// 49.99 € = 4999 centimes
+$user->charge(4999, $paymentMethod);
+```
+
+### Identifiants Stripe
+
+Les identifiants Stripe sont stockés sous forme de chaînes de caractères et commencent généralement par un préfixe:
+
+- `cus_` pour les clients
+- `sub_` pour les abonnements
+- `pi_` pour les PaymentIntents
+- `pm_` pour les moyens de paiement
+- `in_` pour les factures
+- `price_` pour les prix
+
+### Collections
+
+Les méthodes qui retournent plusieurs éléments utilisent les `Collection` Doctrine:
+
+```php
+use Doctrine\Common\Collections\Collection;
+
+$subscriptions = $user->subscriptions(); // Collection<Subscription>
+$invoices = $user->invoices();           // Collection<Invoice>
+```
+
+### DateTime
+
+Toutes les dates utilisent `DateTimeImmutable` pour garantir l'immuabilité:
+
+```php
+$trialEndsAt = $subscription->getTrialEndsAt(); // ?DateTimeImmutable
+```
+
+### Nullable
+
+Les types nullable sont indiqués avec `?`:
+
+```php
+$stripeId = $user->stripeId(); // ?string (peut être null)
+```
+
+## Structure des espaces de noms
+
+```php
+CashierBundle\
+├── Contract\           # Interfaces et contrats
+│   ├── BillableInterface
+│   └── InvoiceRendererInterface
+├── Concerns\           # Traits implémentant les interfaces
+│   ├── BillableTrait
+│   ├── ManagesCustomer
+│   ├── ManagesInvoices
+│   └── ...
+├── Entity\            # Entités Doctrine
+│   ├── StripeCustomer
+│   ├── Subscription
+│   └── SubscriptionItem
+├── Service\           # Services métier
+│   ├── SubscriptionBuilder
+│   ├── SubscriptionService
+│   ├── PaymentService
+│   └── ...
+├── Model\             # Objets légers Stripe
+│   ├── Payment
+│   ├── Invoice
+│   ├── PaymentMethod
+│   └── ...
+├── Event\             # Événements Symfony
+│   ├── SubscriptionCreatedEvent
+│   ├── PaymentSucceededEvent
+│   └── ...
+└── Exception\         # Exceptions spécifiques
+    ├── InvalidCouponException
+    ├── IncompletePaymentException
+    └── ...
+```
+
+## Navigation
+
+- [Interface Billable](/api/billable) - Documentation complète de l'interface Billable
+- [Entités](/api/entities) - Entités Doctrine (StripeCustomer, Subscription, etc.)
+- [Services](/api/services) - Services métier et leurs méthodes
+- [Modèles](/api/models) - Objets enveloppant les réponses Stripe
+- [Événements](/api/events) - Événements Symfony déclenchés par le bundle
+- [Exceptions](/api/exceptions) - Exceptions spécifiques et leur gestion
+
+## Prochaines étapes
+
+Pour une utilisation pratique, consultez:
+
+- [Guide d'installation](/installation) - Configuration initiale du bundle
+- [Abonnements](/subscriptions) - Guide complet sur la gestion des abonnements
+- [Webhooks](/webhooks) - Configuration et gestion des webhooks Stripe
+
+## Support
+
+Si vous rencontrez des problèmes ou avez des questions:
+
+- Consultez la [documentation Stripe](https://stripe.com/docs)
+- Vérifiez les [exceptions](/api/exceptions) pour comprendre les erreurs courantes
+- Utilisez les [événements](/api/events) pour suivre les changements d'état
