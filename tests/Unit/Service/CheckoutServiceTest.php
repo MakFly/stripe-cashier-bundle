@@ -6,15 +6,15 @@ namespace CashierBundle\Tests\Unit\Service;
 
 use CashierBundle\Service\CheckoutService;
 use CashierBundle\Tests\Support\FakeBillable;
+use CashierBundle\Tests\Support\TestStripeClient;
 use PHPUnit\Framework\TestCase;
 use Stripe\Exception\InvalidRequestException;
-use Stripe\StripeClient;
 
 final class CheckoutServiceTest extends TestCase
 {
     public function testCreateThrowsWhenBillableHasNoStripeId(): void
     {
-        $service = new CheckoutService(new StripeClient('sk_test'));
+        $service = new CheckoutService(new TestStripeClient());
 
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('Billable must have a Stripe customer ID.');
@@ -24,9 +24,7 @@ final class CheckoutServiceTest extends TestCase
 
     public function testBillingPortalReturnsUrl(): void
     {
-        $stripe = new StripeClient('sk_test');
-        /** @phpstan-ignore-next-line test double assignment */
-        $stripe->billingPortal = (object) [
+        $stripe = (new TestStripeClient())->withService('billingPortal', (object) [
             'sessions' => new class () {
                 /**
                  * @param array<string, mixed> $payload
@@ -36,7 +34,7 @@ final class CheckoutServiceTest extends TestCase
                     return (object) ['url' => 'https://billing.example.test/session'];
                 }
             },
-        ];
+        ]);
 
         $service = new CheckoutService($stripe);
 
@@ -48,16 +46,14 @@ final class CheckoutServiceTest extends TestCase
 
     public function testFindSessionReturnsNullOnStripeError(): void
     {
-        $stripe = new StripeClient('sk_test');
-        /** @phpstan-ignore-next-line test double assignment */
-        $stripe->checkout = (object) [
+        $stripe = (new TestStripeClient())->withService('checkout', (object) [
             'sessions' => new class () {
                 public function retrieve(string $sessionId): object
                 {
                     throw new InvalidRequestException('missing');
                 }
             },
-        ];
+        ]);
 
         $service = new CheckoutService($stripe);
 
@@ -66,9 +62,7 @@ final class CheckoutServiceTest extends TestCase
 
     public function testCreateSubscriptionReturnsCheckout(): void
     {
-        $stripe = new StripeClient('sk_test');
-        /** @phpstan-ignore-next-line test double assignment */
-        $stripe->checkout = (object) [
+        $stripe = (new TestStripeClient())->withService('checkout', (object) [
             'sessions' => new class () {
                 /**
                  * @param array<string, mixed> $payload
@@ -86,7 +80,7 @@ final class CheckoutServiceTest extends TestCase
                     ];
                 }
             },
-        ];
+        ]);
 
         $service = new CheckoutService($stripe);
 

@@ -6,16 +6,16 @@ namespace CashierBundle\Tests\Unit\Service;
 
 use CashierBundle\Service\PaymentMethodService;
 use CashierBundle\Tests\Support\FakeBillable;
+use CashierBundle\Tests\Support\TestStripeClient;
 use PHPUnit\Framework\TestCase;
 use Stripe\PaymentMethod;
-use Stripe\StripeClient;
 use Stripe\StripeObject;
 
 final class PaymentMethodServiceTest extends TestCase
 {
     public function testHasDefaultReturnsFalseWhenNoStripeId(): void
     {
-        $service = new PaymentMethodService(new StripeClient('sk_test'));
+        $service = new PaymentMethodService(new TestStripeClient());
 
         self::assertFalse($service->hasDefault(new FakeBillable(null)));
     }
@@ -31,9 +31,7 @@ final class PaymentMethodServiceTest extends TestCase
             'exp_year' => 2030,
         ]);
 
-        $stripe = new StripeClient('sk_test');
-        /** @phpstan-ignore-next-line test double assignment */
-        $stripe->customers = new class () {
+        $stripe = (new TestStripeClient())->withService('customers', new class () {
             /**
              * @param array<string, mixed> $opts
              */
@@ -45,9 +43,7 @@ final class PaymentMethodServiceTest extends TestCase
                     ],
                 ];
             }
-        };
-        /** @phpstan-ignore-next-line test double assignment */
-        $stripe->paymentMethods = new class ($pm) {
+        })->withService('paymentMethods', new class ($pm) {
             public function __construct(private PaymentMethod $pm)
             {
             }
@@ -56,7 +52,7 @@ final class PaymentMethodServiceTest extends TestCase
             {
                 return $this->pm;
             }
-        };
+        });
 
         $service = new PaymentMethodService($stripe);
         $default = $service->default(new FakeBillable('cus_123'));
@@ -71,9 +67,7 @@ final class PaymentMethodServiceTest extends TestCase
         $pm = new PaymentMethod('pm_123');
         $pm->type = 'card';
 
-        $stripe = new StripeClient('sk_test');
-        /** @phpstan-ignore-next-line test double assignment */
-        $stripe->paymentMethods = new class ($pm) {
+        $stripe = (new TestStripeClient())->withService('paymentMethods', new class ($pm) {
             public function __construct(private PaymentMethod $pm)
             {
             }
@@ -85,7 +79,7 @@ final class PaymentMethodServiceTest extends TestCase
             {
                 return (object) ['data' => [$this->pm]];
             }
-        };
+        });
 
         $service = new PaymentMethodService($stripe);
         $list = $service->list(new FakeBillable('cus_123'));

@@ -7,17 +7,15 @@ namespace CashierBundle\Tests\Unit\Service;
 use CashierBundle\Exception\IncompletePaymentException;
 use CashierBundle\Exception\InvalidPaymentMethodException;
 use CashierBundle\Service\PaymentIntentService;
+use CashierBundle\Tests\Support\TestStripeClient;
 use PHPUnit\Framework\TestCase;
 use Stripe\Exception\InvalidRequestException;
-use Stripe\StripeClient;
 
 final class PaymentIntentServiceTest extends TestCase
 {
     public function testCreateReturnsPaymentModel(): void
     {
-        $stripe = new StripeClient('sk_test');
-        /** @phpstan-ignore-next-line test double assignment */
-        $stripe->paymentIntents = new class () {
+        $stripe = (new TestStripeClient())->withService('paymentIntents', new class () {
             /**
              * @param array<string, mixed> $payload
              */
@@ -31,7 +29,7 @@ final class PaymentIntentServiceTest extends TestCase
                     'status' => 'succeeded',
                 ];
             }
-        };
+        });
 
         $service = new PaymentIntentService($stripe);
         $payment = $service->create(1500, 'eur');
@@ -42,9 +40,7 @@ final class PaymentIntentServiceTest extends TestCase
 
     public function testConfirmThrowsIncompletePaymentWhenActionRequired(): void
     {
-        $stripe = new StripeClient('sk_test');
-        /** @phpstan-ignore-next-line test double assignment */
-        $stripe->paymentIntents = new class () {
+        $stripe = (new TestStripeClient())->withService('paymentIntents', new class () {
             /**
              * @param array<string, mixed> $payload
              */
@@ -58,7 +54,7 @@ final class PaymentIntentServiceTest extends TestCase
                     'status' => 'requires_action',
                 ];
             }
-        };
+        });
 
         $service = new PaymentIntentService($stripe);
 
@@ -69,9 +65,7 @@ final class PaymentIntentServiceTest extends TestCase
 
     public function testAuthorizeWrapsStripeError(): void
     {
-        $stripe = new StripeClient('sk_test');
-        /** @phpstan-ignore-next-line test double assignment */
-        $stripe->paymentIntents = new class () {
+        $stripe = (new TestStripeClient())->withService('paymentIntents', new class () {
             /**
              * @param array<string, mixed> $payload
              */
@@ -79,7 +73,7 @@ final class PaymentIntentServiceTest extends TestCase
             {
                 throw new InvalidRequestException('bad auth');
             }
-        };
+        });
 
         $service = new PaymentIntentService($stripe);
 
