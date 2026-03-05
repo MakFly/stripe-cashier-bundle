@@ -118,6 +118,12 @@ Or create automatically:
 php bin/console cashier:webhook --url=https://your-domain.com/stripe/webhook
 ```
 
+For local development with Stripe CLI (auto-detect secret + update `.env*`):
+
+```bash
+php bin/console cashier:webhook:listen
+```
+
 ## Webhook Events
 
 | Handler | Stripe Event |
@@ -155,6 +161,7 @@ Listen to these events in your application:
 | Command | Description |
 |---------|-------------|
 | `cashier:webhook` | Create Stripe webhook endpoint |
+| `cashier:webhook:listen` | Start Stripe CLI listener and export/update webhook secret |
 | `cashier:report-usage` | Report metered usage |
 | `cashier:cleanup-sessions` | Cleanup expired checkout sessions |
 
