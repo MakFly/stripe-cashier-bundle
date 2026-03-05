@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CashierBundle\Tests\Integration\Webhook;
 
+use CashierBundle\Contract\WebhookHandlerInterface;
 use CashierBundle\Event\WebhookHandledEvent;
 use CashierBundle\Event\WebhookReceivedEvent;
 use CashierBundle\Webhook\WebhookProcessor;
@@ -17,7 +18,7 @@ final class WebhookProcessorTest extends TestCase
 {
     private string $testSecret = 'whsec_test_secret_key_for_testing_purposes_only';
 
-    public function testProcessValidWebhook(): void
+    public function testProcessValidWebhookDispatchesEventsAndInvokesMatchingHandler(): void
     {
         $payload = json_encode([
             'id' => 'evt_test_123',
@@ -25,28 +26,33 @@ final class WebhookProcessorTest extends TestCase
             'type' => 'customer.subscription.created',
             'data' => [
                 'object' => [
+                    'object' => 'subscription',
                     'id' => 'sub_test_123',
                     'status' => 'active',
                 ],
             ],
-        ]);
+        ], JSON_THROW_ON_ERROR);
 
-        $timestamp = time();
-        $signature = $this->generateTestSignature($timestamp, $payload);
-
+        $signature = $this->generateTestSignature(time(), $payload);
         $eventDispatcher = new EventDispatcher();
-        $receivedCalled = false;
-        $handledCalled = false;
 
-        $eventDispatcher->addListener(WebhookReceivedEvent::class, function () use (&$receivedCalled) {
-            $receivedCalled = true;
+        $receivedCalled = 0;
+        $handledCalled = 0;
+        $matchedHandler = new TrackingHandler(['customer.subscription.created']);
+        $otherHandler = new TrackingHandler(['invoice.paid']);
+
+        $eventDispatcher->addListener(WebhookReceivedEvent::class, static function () use (&$receivedCalled): void {
+            ++$receivedCalled;
         });
 
-        $eventDispatcher->addListener(WebhookHandledEvent::class, function () use (&$handledCalled) {
-            $handledCalled = true;
+        $eventDispatcher->addListener(WebhookHandledEvent::class, static function () use (&$handledCalled): void {
+            ++$handledCalled;
         });
 
-        $handlers = $this->createMock(ContainerInterface::class);
+        $handlers = new TestServiceLocator([
+            'matched' => $matchedHandler,
+            'other' => $otherHandler,
+        ]);
 
         $processor = new WebhookProcessor(
             $handlers,
@@ -55,9 +61,12 @@ final class WebhookProcessorTest extends TestCase
             300,
         );
 
-        // Note: This test verifies the event dispatching logic
-        // The actual Stripe signature verification would need the real secret
-        $this->assertTrue(true); // Placeholder for actual test
+        $processor->process($payload, $signature);
+
+        self::assertSame(1, $matchedHandler->handledCount);
+        self::assertSame(0, $otherHandler->handledCount);
+        self::assertSame(1, $receivedCalled);
+        self::assertSame(1, $handledCalled);
     }
 
     public function testWebhookReceivedEventContainsStripeEvent(): void
@@ -65,7 +74,7 @@ final class WebhookProcessorTest extends TestCase
         $stripeEvent = $this->createMock(Event::class);
         $event = new WebhookReceivedEvent($stripeEvent);
 
-        $this->assertSame($stripeEvent, $event->stripeEvent);
+        self::assertSame($stripeEvent, $event->stripeEvent);
     }
 
     public function testWebhookHandledEventContainsStripeEvent(): void
@@ -73,7 +82,7 @@ final class WebhookProcessorTest extends TestCase
         $stripeEvent = $this->createMock(Event::class);
         $event = new WebhookHandledEvent($stripeEvent);
 
-        $this->assertSame($stripeEvent, $event->stripeEvent);
+        self::assertSame($stripeEvent, $event->stripeEvent);
     }
 
     public function testProcessThrowsWhenPayloadIsEmpty(): void
@@ -106,31 +115,73 @@ final class WebhookProcessorTest extends TestCase
 
     private function createProcessor(): WebhookProcessor
     {
-        $handlers = new class () implements ContainerInterface {
-            public function get(string $id)
-            {
-                throw new \RuntimeException('No handlers available in test container.');
-            }
-
-            public function has(string $id): bool
-            {
-                return false;
-            }
-
-            /**
-             * @return list<string>
-             */
-            public function getServiceIds(): array
-            {
-                return [];
-            }
-        };
-
         return new WebhookProcessor(
-            $handlers,
+            new TestServiceLocator([]),
             $this->createMock(EventDispatcherInterface::class),
             $this->testSecret,
             300,
         );
+    }
+}
+
+final class TestServiceLocator implements ContainerInterface
+{
+    /**
+     * @param array<string, object> $services
+     */
+    public function __construct(private array $services)
+    {
+    }
+
+    public function get(string $id)
+    {
+        if (!isset($this->services[$id])) {
+            throw new \RuntimeException(sprintf('Unknown service id "%s"', $id));
+        }
+
+        return $this->services[$id];
+    }
+
+    public function has(string $id): bool
+    {
+        return isset($this->services[$id]);
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function getServiceIds(): array
+    {
+        return array_keys($this->services);
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function getProvidedServices(): array
+    {
+        return array_fill_keys(array_keys($this->services), 'object');
+    }
+}
+
+final class TrackingHandler implements WebhookHandlerInterface
+{
+    public int $handledCount = 0;
+
+    /**
+     * @param list<string> $types
+     */
+    public function __construct(private array $types)
+    {
+    }
+
+    public function handles(): array
+    {
+        return $this->types;
+    }
+
+    public function handle(Event $event): void
+    {
+        ++$this->handledCount;
     }
 }
