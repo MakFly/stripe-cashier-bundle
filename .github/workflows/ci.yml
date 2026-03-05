@@ -48,4 +48,9 @@ jobs:
           composer show symfony/doctrine-bridge --no-ansi | head -n 8
 
       - name: Run tests
-        run: ./vendor/bin/phpunit --configuration phpunit.xml
+        run: |
+          if [ "${{ matrix.dependencies }}" = "lowest" ]; then
+            SYMFONY_DEPRECATIONS_HELPER=disabled ./vendor/bin/phpunit --configuration phpunit.xml
+          else
+            ./vendor/bin/phpunit --configuration phpunit.xml
+          fi
