@@ -23,7 +23,8 @@ final class InvoicePaidHandlerTest extends TestCase
                     && $event->customerId === 'cus_123'
                     && $event->paymentIntentId === 'pi_123'
                     && $event->amount === 1999
-                    && $event->currency === 'eur';
+                    && $event->currency === 'eur'
+                    && $event->invoiceId === 'in_123';
             }));
 
         $handler = new InvoicePaidHandler($dispatcher);

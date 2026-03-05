@@ -51,12 +51,14 @@ final class InstallCommand extends Command
 
         $io->title('Cashier installation');
         $io->listing(array_merge(
+            array_map(static fn (string $path): string => sprintf('created directory %s', $path), $result['directoriesCreated']),
+            array_map(static fn (string $path): string => sprintf('skipped directory %s', $path), $result['directoriesSkipped']),
             array_map(static fn (string $path): string => sprintf('created %s', $path), $result['created']),
             array_map(static fn (string $path): string => sprintf('skipped %s', $path), $result['skipped']),
             array_map(static fn (string $name): string => sprintf('env added %s', $name), $result['envUpdated']),
         ));
 
-        if ($result['created'] === [] && $result['envUpdated'] === []) {
+        if ($result['created'] === [] && $result['directoriesCreated'] === [] && $result['envUpdated'] === []) {
             $io->success('Cashier is already installed. Nothing changed.');
 
             return Command::SUCCESS;

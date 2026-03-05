@@ -118,6 +118,7 @@ final class CheckoutServiceTest extends TestCase
         self::assertSame('Blender Pro', $sessions->capturedPayload['line_items'][0]['price_data']['product_data']['name']);
         self::assertSame(2, $sessions->capturedPayload['line_items'][0]['quantity']);
         self::assertSame('cus_123', $sessions->capturedPayload['customer']);
+        self::assertTrue($sessions->capturedPayload['invoice_creation']['enabled']);
     }
 }
 

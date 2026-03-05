@@ -22,22 +22,22 @@ class SubscriptionItem
     #[ORM\JoinColumn(name: 'subscription_id', nullable: false)]
     private Subscription $subscription;
 
-    #[ORM\Column(length: 255, unique: true)]
+    #[ORM\Column(name: 'stripe_id', length: 255, unique: true)]
     private string $stripeId;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(name: 'stripe_product', length: 255)]
     private string $stripeProduct;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(name: 'stripe_price', length: 255)]
     private string $stripePrice;
 
     #[ORM\Column(type: 'integer', nullable: true)]
     private ?int $quantity = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
+    #[ORM\Column(name: 'meter_id', length: 255, nullable: true)]
     private ?string $meterId = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
+    #[ORM\Column(name: 'meter_event_name', length: 255, nullable: true)]
     private ?string $meterEventName = null;
 
     #[ORM\Column(type: 'datetime_immutable')]

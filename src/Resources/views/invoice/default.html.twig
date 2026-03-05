@@ -1,380 +1,319 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Invoice #{{ invoice.number|default(invoice.id) }}</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { box-sizing: border-box; }
         body {
-            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-            font-size: 14px;
-            line-height: 1.6;
-            color: #333;
-            background: #f5f5f5;
-            padding: 20px;
+            margin: 0;
+            padding: 32px;
+            background: #f6f9fc;
+            color: #0a2540;
+            font-family: Helvetica, Arial, sans-serif;
+            font-size: 13px;
+            line-height: 1.5;
         }
-
-        .invoice-container {
-            max-width: 800px;
+        .sheet {
+            max-width: 860px;
             margin: 0 auto;
-            background: white;
+            background: #ffffff;
+            border: 1px solid #e3e8ee;
+            border-radius: 18px;
             padding: 40px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
-
-        .header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 40px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #0570de;
+        .topbar {
+            width: 100%;
+            margin-bottom: 32px;
         }
-
-        .company-info h1 {
-            font-size: 28px;
-            color: #0570de;
-            margin-bottom: 10px;
+        .brand {
+            display: inline-block;
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: #635bff;
         }
-
-        .company-info p {
-            margin: 5px 0;
-            color: #666;
-        }
-
-        .invoice-info {
-            text-align: right;
-        }
-
-        .invoice-label {
-            font-size: 12px;
-            text-transform: uppercase;
-            color: #999;
-            margin-bottom: 5px;
-        }
-
-        .invoice-number {
-            font-size: 32px;
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 10px;
-        }
-
-        .invoice-meta {
-            font-size: 14px;
-            color: #666;
-        }
-
-        .customer-info {
-            margin-bottom: 30px;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 4px;
-        }
-
-        .customer-info h3 {
-            font-size: 14px;
-            text-transform: uppercase;
-            color: #999;
-            margin-bottom: 10px;
-        }
-
-        .customer-info p {
-            margin: 3px 0;
-        }
-
-        table {
+        .header-table,
+        .summary-table,
+        .items-table,
+        .meta-table {
             width: 100%;
             border-collapse: collapse;
-            margin: 20px 0;
         }
-
-        thead {
-            background: #f8f9fa;
-            border-bottom: 2px solid #0570de;
+        .header-table td {
+            vertical-align: top;
         }
-
-        th {
-            padding: 12px;
-            text-align: left;
-            font-weight: 600;
+        .invoice-title {
+            text-align: right;
+        }
+        .eyebrow {
+            color: #697386;
             text-transform: uppercase;
-            font-size: 12px;
-            color: #666;
+            font-size: 11px;
+            letter-spacing: 0.08em;
+            margin-bottom: 6px;
         }
-
-        td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #e0e0e0;
+        .invoice-number {
+            font-size: 28px;
+            font-weight: 700;
+            color: #0a2540;
+            margin: 0 0 8px;
         }
-
-        tbody tr:hover {
-            background: #f8f9fa;
-        }
-
-        .text-right {
-            text-align: right !important;
-        }
-
-        .text-center {
-            text-align: center !important;
-        }
-
-        tfoot {
-            border-top: 2px solid #e0e0e0;
-        }
-
-        tfoot tr {
-            border-bottom: none;
-        }
-
-        tfoot td {
-            padding: 15px 12px;
-            border-bottom: none;
-        }
-
-        .total-row {
-            font-weight: bold;
-            font-size: 18px;
-            color: #0570de;
-        }
-
-        .discount-row {
-            color: #28a745;
-        }
-
-        .footer {
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid #e0e0e0;
-            font-size: 12px;
-            color: #999;
-            text-align: center;
-        }
-
-        .footer p {
-            margin: 5px 0;
-        }
-
-        .status-badge {
+        .status-pill {
             display: inline-block;
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 600;
+            padding: 5px 10px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 700;
             text-transform: uppercase;
+            letter-spacing: 0.06em;
         }
-
-        .status-paid {
-            background: #d4edda;
-            color: #155724;
+        .status-paid { background: #d1f7dd; color: #0a7f42; }
+        .status-open, .status-pending { background: #fff3d6; color: #8b5e00; }
+        .status-draft { background: #e6ebf1; color: #566171; }
+        .card {
+            border: 1px solid #e3e8ee;
+            border-radius: 14px;
+            padding: 18px 20px;
+            background: #fff;
         }
-
-        .status-pending {
-            background: #fff3cd;
-            color: #856404;
+        .grid {
+            width: 100%;
+            margin-bottom: 28px;
         }
-
-        .status-draft {
-            background: #e2e3e5;
-            color: #383d41;
+        .grid td {
+            width: 50%;
+            vertical-align: top;
+            padding-right: 12px;
         }
-
+        .grid td:last-child {
+            padding-right: 0;
+            padding-left: 12px;
+        }
+        .muted { color: #697386; }
+        .strong { font-weight: 700; }
+        .meta-table td {
+            padding: 2px 0;
+            color: #425466;
+        }
+        .items-table {
+            border: 1px solid #e3e8ee;
+            border-radius: 14px;
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+        .items-table thead th {
+            background: #f6f9fc;
+            color: #697386;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            padding: 14px 16px;
+            border-bottom: 1px solid #e3e8ee;
+            text-align: left;
+        }
+        .items-table thead th:last-child,
+        .items-table tbody td:last-child,
+        .summary-table td:last-child {
+            text-align: right;
+        }
+        .items-table tbody td {
+            padding: 16px;
+            border-bottom: 1px solid #e3e8ee;
+            vertical-align: top;
+        }
+        .items-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+        .qty,
+        .price {
+            text-align: center;
+            width: 110px;
+        }
+        .summary-wrap {
+            width: 100%;
+        }
+        .summary-offset {
+            width: 46%;
+        }
+        .summary-card {
+            width: 54%;
+            margin-left: auto;
+            border: 1px solid #e3e8ee;
+            border-radius: 14px;
+            padding: 16px 18px;
+        }
+        .summary-table td {
+            padding: 8px 0;
+            color: #425466;
+        }
+        .summary-table .total td {
+            font-size: 18px;
+            font-weight: 700;
+            color: #0a2540;
+            border-top: 1px solid #e3e8ee;
+            padding-top: 14px;
+        }
+        .payment-note,
+        .footer {
+            margin-top: 22px;
+            color: #697386;
+        }
+        .footer {
+            border-top: 1px solid #e3e8ee;
+            padding-top: 18px;
+            font-size: 12px;
+        }
         @media print {
             body {
-                background: white;
                 padding: 0;
+                background: #fff;
             }
-
-            .invoice-container {
-                box-shadow: none;
-                padding: 20px;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .invoice-container {
-                padding: 20px;
-            }
-
-            .header {
-                flex-direction: column;
-            }
-
-            .invoice-info {
-                text-align: left;
-                margin-top: 20px;
-            }
-
-            table {
-                font-size: 12px;
-            }
-
-            th, td {
-                padding: 8px 4px;
+            .sheet {
+                border: none;
+                border-radius: 0;
+                padding: 0;
             }
         }
     </style>
 </head>
 <body>
-    <div class="invoice-container">
-        <div class="header">
-            <div class="company-info">
-                <h1>{{ company_name|default('Your Company') }}</h1>
-                {% if company_address is defined %}
-                    <p>{{ company_address|nl2br }}</p>
-                {% endif %}
-                {% if company_phone is defined %}
-                    <p>Phone: {{ company_phone }}</p>
-                {% endif %}
-                {% if company_email is defined %}
-                    <p>Email: {{ company_email }}</p>
-                {% endif %}
-            </div>
-            <div class="invoice-info">
-                <div class="invoice-label">Invoice</div>
-                <div class="invoice-number">#{{ invoice.number|default(invoice.id) }}</div>
-                <div class="invoice-meta">
-                    {% if invoice.status is defined %}
-                        <span class="status-badge status-{{ invoice.status }}">
-                            {{ invoice.status|capitalize }}
-                        </span>
-                    {% endif %}
-                    <p>Date: {{ invoice.date|date('F j, Y') }}</p>
-                    {% if invoice.dueDate is defined %}
-                        <p>Due: {{ invoice.dueDate|date('F j, Y') }}</p>
+<div class="sheet">
+    <div class="topbar">
+        <span class="brand">{{ company.name|default('Stripe-like Invoice') }}</span>
+    </div>
+
+    <table class="header-table">
+        <tr>
+            <td>
+                <div class="eyebrow">From</div>
+                <div class="strong">{{ company.name|default('Stripe-like Invoice') }}</div>
+                {% if company.address %}<div class="muted">{{ company.address|nl2br }}</div>{% endif %}
+                {% if company.email %}<div class="muted">{{ company.email }}</div>{% endif %}
+                {% if company.phone %}<div class="muted">{{ company.phone }}</div>{% endif %}
+            </td>
+            <td class="invoice-title">
+                <div class="eyebrow">Invoice</div>
+                <h1 class="invoice-number">#{{ invoice.number|default(invoice.id) }}</h1>
+                <span class="status-pill status-{{ invoice.status|default('paid') }}">{{ invoice.status|default('paid')|upper }}</span>
+            </td>
+        </tr>
+    </table>
+
+    <table class="grid">
+        <tr>
+            <td>
+                <div class="card">
+                    <div class="eyebrow">Bill to</div>
+                    {% if customer %}
+                        {% if customer.name %}<div class="strong">{{ customer.name }}</div>{% endif %}
+                        {% if customer.email %}<div class="muted">{{ customer.email }}</div>{% endif %}
+                        {% if customer.address %}<div class="muted">{{ customer.address|nl2br }}</div>{% endif %}
+                    {% else %}
+                        <div class="muted">Customer information unavailable</div>
                     {% endif %}
                 </div>
-            </div>
-        </div>
-
-        {% if customer is defined %}
-        <div class="customer-info">
-            <h3>Bill To:</h3>
-            {% if customer.name is defined %}
-                <p><strong>{{ customer.name }}</strong></p>
-            {% endif %}
-            {% if customer.email is defined %}
-                <p>{{ customer.email }}</p>
-            {% endif %}
-            {% if customer.address is defined %}
-                <p>{{ customer.address|nl2br }}</p>
-            {% endif %}
-        </div>
-        {% endif %}
-
-        <table>
-            <thead>
-                <tr>
-                    <th>Description</th>
-                    <th class="text-center">Quantity</th>
-                    <th class="text-right">Unit Price</th>
-                    <th class="text-right">Amount</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in invoice.items %}
-                <tr>
-                    <td>
-                        <strong>{{ item.description }}</strong>
-                        {% if item.metadata is defined and item.metadata.period_start is defined %}
-                            <br>
-                            <small>{{ item.metadata.period_start|date('M j, Y') }} - {{ item.metadata.period_end|date('M j, Y') }}</small>
+            </td>
+            <td>
+                <div class="card">
+                    <div class="eyebrow">Invoice details</div>
+                    <table class="meta-table">
+                        <tr>
+                            <td>Date issued</td>
+                            <td>{{ invoice.date|date('M j, Y') }}</td>
+                        </tr>
+                        {% if invoice.dueDate %}
+                            <tr>
+                                <td>Due date</td>
+                                <td>{{ invoice.dueDate|date('M j, Y') }}</td>
+                            </tr>
                         {% endif %}
-                    </td>
-                    <td class="text-center">{{ item.quantity|default(1) }}</td>
-                    <td class="text-right">
-                        {% if item.unit_amount is defined %}
-                            {{ item.unit_amount|stripe_amount(invoice.currency) }}
-                        {% else %}
-                            {{ item.amount }}
-                        {% endif %}
-                    </td>
-                    <td class="text-right">{{ item.amount }}</td>
+                        <tr>
+                            <td>Currency</td>
+                            <td>{{ invoice.currency|upper }}</td>
+                        </tr>
+                        <tr>
+                            <td>Reference</td>
+                            <td>{{ invoice.id }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <table class="items-table">
+        <thead>
+        <tr>
+            <th>Description</th>
+            <th class="qty">Qty</th>
+            <th class="price">Unit price</th>
+            <th>Amount</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for item in invoice.items %}
+            <tr>
+                <td>
+                    <div class="strong">{{ item.description }}</div>
+                </td>
+                <td class="qty">{{ item.quantity|default(1) }}</td>
+                <td class="price">{{ item.unit_amount|stripe_amount(invoice.currency) }}</td>
+                <td>{{ item.amount|stripe_amount(invoice.currency) }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="summary-wrap">
+        <div class="summary-card">
+            <table class="summary-table">
+                <tr>
+                    <td>Subtotal</td>
+                    <td>{{ invoice.subtotal|stripe_amount(invoice.currency) }}</td>
                 </tr>
+                {% if invoice.tax > 0 %}
+                    <tr>
+                        <td>Tax</td>
+                        <td>{{ invoice.tax|stripe_amount(invoice.currency) }}</td>
+                    </tr>
+                {% endif %}
+                {% for discount in invoice.discounts %}
+                    <tr>
+                        <td>Discount{% if discount.coupon.name %} · {{ discount.coupon.name }}{% endif %}</td>
+                        <td>
+                            -{% if discount.coupon.amountOff %}
+                                {{ discount.coupon.amountOff|stripe_amount(invoice.currency) }}
+                            {% elseif discount.coupon.percentOff %}
+                                {{ discount.coupon.percentOff }}%
+                            {% else %}
+                                0
+                            {% endif %}
+                        </td>
+                    </tr>
                 {% endfor %}
-            </tbody>
-            <tfoot>
-                <tr>
-                    <td colspan="3" class="text-right">Subtotal:</td>
-                    <td class="text-right">{{ invoice.subtotal|stripe_amount(invoice.currency) }}</td>
+                <tr class="total">
+                    <td>Total</td>
+                    <td>{{ invoice.total|stripe_amount(invoice.currency) }}</td>
                 </tr>
-                {% if invoice.tax is defined and invoice.tax > 0 %}
-                <tr>
-                    <td colspan="3" class="text-right">
-                        Tax:
-                        {% if invoice.tax_rate is defined %}
-                            ({{ invoice.tax_rate }}%)
-                        {% endif %}
-                    </td>
-                    <td class="text-right">{{ invoice.tax|stripe_amount(invoice.currency) }}</td>
-                </tr>
-                {% endif %}
-                {% if invoice.discounts is defined and invoice.discounts|length > 0 %}
-                    {% for discount in invoice.discounts %}
-                <tr class="discount-row">
-                    <td colspan="3" class="text-right">
-                        Discount:
-                        {% if discount.coupon.name is defined %}
-                            {{ discount.coupon.name }}
-                        {% endif %}
-                    </td>
-                    <td class="text-right">
-                        -{% if discount.amount is defined %}
-                            {{ discount.amount|stripe_amount(invoice.currency) }}
-                        {% elseif discount.coupon.amountOff is defined %}
-                            {{ discount.coupon.amountOff|stripe_amount(invoice.currency) }}
-                        {% elseif discount.coupon.percentOff is defined %}
-                            {{ discount.coupon.percentOff }}%
-                        {% endif %}
-                    </td>
-                </tr>
-                    {% endfor %}
-                {% endif %}
-                {% if invoice.total_paid is defined and invoice.total_paid < invoice.total %}
-                <tr>
-                    <td colspan="3" class="text-right">Amount Due:</td>
-                    <td class="text-right">
-                        <strong>{{ (invoice.total - invoice.total_paid)|stripe_amount(invoice.currency) }}</strong>
-                    </td>
-                </tr>
-                {% endif %}
-                <tr class="total-row">
-                    <td colspan="3" class="text-right">Total:</td>
-                    <td class="text-right">{{ invoice.total|stripe_amount(invoice.currency) }}</td>
-                </tr>
-            </tfoot>
-        </table>
-
-        {% if invoice.payment_intent is defined %}
-        <div style="text-align: center; margin: 20px 0;">
-            <p style="color: #666;">
-                <strong>Payment Method:</strong>
-                {% if invoice.payment_method is defined %}
-                    {{ invoice.payment_method|default('Card ending in ****4242') }}
-                {% endif %}
-            </p>
-        </div>
-        {% endif %}
-
-        <div class="footer">
-            <p><strong>Thank you for your business!</strong></p>
-            {% if footer_text is defined %}
-                <p>{{ footer_text }}</p>
-            {% endif %}
-            {% if support_email is defined %}
-                <p>Questions? Contact us at {{ support_email }}</p>
-            {% endif %}
-            <p style="margin-top: 15px; color: #ccc;">
-                Generated on {{ "now"|date('F j, Y g:i A') }}
-            </p>
+            </table>
         </div>
     </div>
+
+    {% if invoice.payment_intent %}
+        <div class="payment-note">
+            Payment intent: <span class="strong">{{ invoice.payment_intent }}</span>
+        </div>
+    {% endif %}
+
+    <div class="footer">
+        <div class="strong">Thank you for your business.</div>
+        {% if footer.text %}<div>{{ footer.text }}</div>{% endif %}
+        {% if footer.support_email %}<div>Support: {{ footer.support_email }}</div>{% endif %}
+        <div>Generated on {{ 'now'|date('M j, Y H:i') }}</div>
+    </div>
+</div>
 </body>
 </html>

@@ -21,6 +21,16 @@ final class Invoice
         return $this->invoice->id;
     }
 
+    public function number(): ?string
+    {
+        return $this->invoice->number ?? null;
+    }
+
+    public function status(): string
+    {
+        return $this->invoice->status ?? 'paid';
+    }
+
     public function date(): \DateTimeImmutable
     {
         return (new \DateTimeImmutable())->setTimestamp($this->invoice->created);
@@ -39,6 +49,13 @@ final class Invoice
     public function rawTotal(): int
     {
         return $this->invoice->total;
+    }
+
+    public function paymentIntentId(): ?string
+    {
+        return is_string($this->invoice->payment_intent ?? null)
+            ? $this->invoice->payment_intent
+            : ($this->invoice->payment_intent->id ?? null);
     }
 
     public function subtotal(): string
@@ -118,6 +135,22 @@ final class Invoice
     public function download(array $data = []): Response
     {
         return $this->renderer->render($this, $data);
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     */
+    public function renderBinary(array $data = []): string
+    {
+        return $this->renderer->renderBinary($this, $data);
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     */
+    public function stream(array $data = []): Response
+    {
+        return $this->renderer->stream($this, $data);
     }
 
     public function pay(): Payment

@@ -13,6 +13,7 @@
     ],
     "require": {
         "php": "^8.2",
+        "dompdf/dompdf": "^3.1",
         "doctrine/doctrine-bundle": "^2.13|^3.0",
         "stripe/stripe-php": "^16.0",
         "symfony/framework-bundle": "^7.0|^8.0",
@@ -26,10 +27,10 @@
         "friendsofphp/php-cs-fixer": "^3.66",
         "phpstan/phpstan": "^1.12",
         "phpunit/phpunit": "^11.0",
-        "symfony/phpunit-bridge": "^7.0|^8.0"
+        "symfony/phpunit-bridge": "^7.0|^8.0",
+        "symfony/var-exporter": "^7.0|^8.0"
     },
     "suggest": {
-        "dompdf/dompdf": "^3.0 (for PDF invoice rendering)",
         "symfony/messenger": "For processing webhooks asynchronously"
     },
     "autoload": {

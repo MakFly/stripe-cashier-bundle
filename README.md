@@ -49,7 +49,12 @@ If Flex is not available, run:
 php bin/console cashier:install
 ```
 
-The installer generates config files and Stripe env vars. Your billable entity can be added afterwards as long as it implements `CashierBundle\Contract\BillableEntityInterface`.
+The installer generates config files, Stripe env vars, and local invoice storage directories:
+
+- `var/data`
+- `var/data/invoices`
+
+Your billable entity can be added afterwards as long as it implements `CashierBundle\Contract\BillableEntityInterface`.
 
 ## Configuration
 
@@ -77,6 +82,9 @@ cashier:
     default_subscription_type: 'default'
     invoices:
         renderer: 'CashierBundle\Service\InvoiceRenderer\DompdfInvoiceRenderer'
+        storage:
+            driver: 'local'
+            path: '%kernel.project_dir%/var/data/invoices'
 ```
 
 ### 3. Doctrine Mapping
@@ -126,6 +134,18 @@ class User implements BillableEntityInterface
 php bin/console doctrine:migrations:diff
 php bin/console doctrine:migrations:migrate
 ```
+
+### 4. Invoice Storage And Customization
+
+- Paid Stripe invoices are archived automatically after `invoice.paid`
+- Checkout payment sessions created by the bundle enable Stripe `invoice_creation` by default
+- PDFs are stored locally in `var/data/invoices`
+- The persisted invoice metadata is stored in `cashier_generated_invoices`
+
+You can customize the invoice UX in two ways:
+
+- override the Twig template at `templates/bundles/CashierBundle/invoice/default.html.twig`
+- replace the renderer service via `cashier.invoices.renderer`
 
 ## Quick Start
 

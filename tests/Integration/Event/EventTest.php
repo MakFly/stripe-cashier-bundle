@@ -56,6 +56,7 @@ final class EventTest extends TestCase
         $this->assertSame('pi_test', $event->paymentIntentId);
         $this->assertSame(1000, $event->amount);
         $this->assertSame('usd', $event->currency);
+        $this->assertNull($event->invoiceId);
     }
 
     public function testPaymentFailedEventContainsPayment(): void

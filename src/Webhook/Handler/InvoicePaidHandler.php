@@ -33,6 +33,7 @@ final readonly class InvoicePaidHandler extends AbstractWebhookHandler
             $invoice->payment_intent,
             $invoice->amount_paid,
             $invoice->currency,
+            $invoice->id,
         ));
     }
 }

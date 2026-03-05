@@ -1,0 +1,82 @@
+<?php
+
+declare(strict_types=1);
+
+namespace CashierBundle\Service;
+
+use CashierBundle\Contract\InvoiceRendererInterface;
+use CashierBundle\Contract\InvoiceStorageInterface;
+use CashierBundle\Entity\GeneratedInvoice;
+use CashierBundle\Event\PaymentSucceededEvent;
+use CashierBundle\Model\Invoice;
+use CashierBundle\Repository\GeneratedInvoiceRepository;
+use CashierBundle\Repository\StripeCustomerRepository;
+use Doctrine\ORM\EntityManagerInterface;
+use Stripe\Exception\ApiErrorException;
+use Stripe\StripeClient;
+
+final readonly class InvoiceArchiveService
+{
+    public function __construct(
+        private StripeClient $stripe,
+        private InvoiceRendererInterface $renderer,
+        private InvoiceStorageInterface $storage,
+        private StripeCustomerRepository $stripeCustomerRepository,
+        private GeneratedInvoiceRepository $generatedInvoiceRepository,
+        private EntityManagerInterface $entityManager,
+    ) {
+    }
+
+    public function archiveFromPaymentSuccess(PaymentSucceededEvent $event): ?GeneratedInvoice
+    {
+        if ($event->getInvoiceId() === null) {
+            return null;
+        }
+
+        $existing = $this->generatedInvoiceRepository->findOneForStripeInvoice($event->getInvoiceId());
+        if ($existing instanceof GeneratedInvoice) {
+            return $existing;
+        }
+
+        $stripeInvoice = $this->retrieveStripeInvoice($event->getInvoiceId());
+        $invoice = new Invoice($stripeInvoice, $this->renderer);
+        $pdfContents = $this->renderer->renderBinary($invoice);
+        $storedInvoice = $this->storage->store($invoice, $pdfContents);
+        $customer = $this->stripeCustomerRepository->findByStripeId($event->getCustomerId());
+
+        $generatedInvoice = (new GeneratedInvoice())
+            ->setCustomer($customer)
+            ->setStripeInvoiceId($invoice->id())
+            ->setStripePaymentIntentId($event->getPaymentIntentId())
+            ->setStripeCheckoutSessionId($event->getCheckoutSessionId())
+            ->setCurrency($event->getCurrency())
+            ->setAmountTotal($event->getAmount())
+            ->setStatus($invoice->status())
+            ->setFilename($storedInvoice->filename())
+            ->setRelativePath($storedInvoice->relativePath())
+            ->setMimeType($storedInvoice->mimeType())
+            ->setSize($storedInvoice->size())
+            ->setChecksum($storedInvoice->checksum())
+            ->setPayload([
+                'stripe_invoice_id' => $invoice->id(),
+                'stripe_checkout_session_id' => $event->getCheckoutSessionId(),
+                'hosted_invoice_url' => $stripeInvoice->hosted_invoice_url ?? null,
+            ])
+        ;
+
+        $this->entityManager->persist($generatedInvoice);
+        $this->entityManager->flush();
+
+        return $generatedInvoice;
+    }
+
+    /**
+     * @throws ApiErrorException
+     */
+    private function retrieveStripeInvoice(string $invoiceId): \Stripe\Invoice
+    {
+        return $this->stripe->invoices->retrieve($invoiceId, [
+            'expand' => ['customer', 'payment_intent'],
+        ]);
+    }
+}

@@ -21,3 +21,6 @@ cashier:
     default_subscription_type: default
     invoices:
         renderer: CashierBundle\Service\InvoiceRenderer\DompdfInvoiceRenderer
+        storage:
+            driver: local
+            path: '%kernel.project_dir%/var/data/invoices'

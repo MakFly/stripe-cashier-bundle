@@ -13,6 +13,8 @@ final class PaymentSucceededEvent extends Event
         public readonly ?string $paymentIntentId,
         public readonly int $amount,
         public readonly string $currency,
+        public readonly ?string $invoiceId = null,
+        public readonly ?string $checkoutSessionId = null,
     ) {
     }
 
@@ -34,6 +36,16 @@ final class PaymentSucceededEvent extends Event
     public function getCurrency(): string
     {
         return $this->currency;
+    }
+
+    public function getInvoiceId(): ?string
+    {
+        return $this->invoiceId;
+    }
+
+    public function getCheckoutSessionId(): ?string
+    {
+        return $this->checkoutSessionId;
     }
 
     public function getAmountInDecimal(): float

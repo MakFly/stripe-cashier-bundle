@@ -36,7 +36,10 @@ final class InstallFileManagerTest extends TestCase
             ],
             $result['created'],
         );
+        self::assertSame(['var/data', 'var/data/invoices'], $result['directoriesCreated']);
         self::assertSame(['STRIPE_KEY', 'STRIPE_SECRET', 'STRIPE_WEBHOOK_SECRET'], $result['envUpdated']);
+        self::assertDirectoryExists($this->projectDir . '/var/data');
+        self::assertDirectoryExists($this->projectDir . '/var/data/invoices');
         self::assertFileExists($this->projectDir . '/config/packages/cashier.yaml');
         self::assertFileExists($this->projectDir . '/config/packages/cashier_doctrine.yaml');
         self::assertFileExists($this->projectDir . '/config/routes/cashier.yaml');
@@ -58,6 +61,7 @@ final class InstallFileManagerTest extends TestCase
         $result = $manager->install($this->projectDir);
 
         self::assertSame([], $result['created']);
+        self::assertSame([], $result['directoriesCreated']);
         self::assertSame([], $result['envUpdated']);
         self::assertSame(
             [
@@ -67,6 +71,7 @@ final class InstallFileManagerTest extends TestCase
             ],
             $result['skipped'],
         );
+        self::assertSame(['var/data', 'var/data/invoices'], $result['directoriesSkipped']);
 
         $envContent = (string) file_get_contents($this->projectDir . '/.env');
         self::assertSame(1, substr_count($envContent, 'STRIPE_KEY='));
