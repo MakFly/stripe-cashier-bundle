@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Symfony\Component\DependencyInjection\Loader\Configurator;
 
+use CashierBundle\Repository\StripeCustomerRepository;
+use CashierBundle\Repository\SubscriptionRepository;
 use CashierBundle\Webhook\Handler\CheckoutSessionCompletedHandler;
 use CashierBundle\Webhook\Handler\CustomerDeletedHandler;
 use CashierBundle\Webhook\Handler\CustomerUpdatedHandler;
@@ -21,8 +23,8 @@ return static function (ContainerConfigurator $container): void {
     // Subscription Handlers
     $services->set(SubscriptionCreatedHandler::class)
         ->args([
-            service('cashier.repository.stripe_customer'),
-            service('cashier.repository.subscription'),
+            service(StripeCustomerRepository::class),
+            service(SubscriptionRepository::class),
             service('event_dispatcher'),
             param('cashier.default_subscription_type'),
         ])
@@ -30,14 +32,14 @@ return static function (ContainerConfigurator $container): void {
 
     $services->set(SubscriptionUpdatedHandler::class)
         ->args([
-            service('cashier.repository.subscription'),
+            service(SubscriptionRepository::class),
             service('event_dispatcher'),
         ])
         ->tag('cashier.webhook_handler');
 
     $services->set(SubscriptionDeletedHandler::class)
         ->args([
-            service('cashier.repository.subscription'),
+            service(SubscriptionRepository::class),
             service('event_dispatcher'),
         ])
         ->tag('cashier.webhook_handler');
@@ -45,21 +47,21 @@ return static function (ContainerConfigurator $container): void {
     // Customer Handlers
     $services->set(CustomerUpdatedHandler::class)
         ->args([
-            service('cashier.repository.stripe_customer'),
+            service(StripeCustomerRepository::class),
             service('event_dispatcher'),
         ])
         ->tag('cashier.webhook_handler');
 
     $services->set(CustomerDeletedHandler::class)
         ->args([
-            service('cashier.repository.stripe_customer'),
+            service(StripeCustomerRepository::class),
         ])
         ->tag('cashier.webhook_handler');
 
     // Payment Method Handlers
     $services->set(PaymentMethodUpdatedHandler::class)
         ->args([
-            service('cashier.repository.stripe_customer'),
+            service(StripeCustomerRepository::class),
         ])
         ->tag('cashier.webhook_handler');
 
@@ -82,8 +84,8 @@ return static function (ContainerConfigurator $container): void {
     // Checkout Handlers
     $services->set(CheckoutSessionCompletedHandler::class)
         ->args([
-            service('cashier.repository.stripe_customer'),
-            service('cashier.repository.subscription'),
+            service(StripeCustomerRepository::class),
+            service(SubscriptionRepository::class),
         ])
         ->tag('cashier.webhook_handler');
 };

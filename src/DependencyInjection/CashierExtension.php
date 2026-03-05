@@ -18,7 +18,6 @@ final class CashierExtension extends Extension
         $phpLoader = new PhpFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
 
         $loader->load('services.yaml');
-        $loader->load('routes.yaml');
         $phpLoader->load('webhook_services.php');
 
         $configuration = new Configuration();
@@ -35,8 +34,10 @@ final class CashierExtension extends Extension
         $container->setParameter('cashier.webhook.secret', $config['webhook']['secret']);
         $container->setParameter('cashier.webhook.tolerance', $config['webhook']['tolerance']);
         $container->setParameter('cashier.webhook.events', $config['webhook']['events']);
+        $container->setParameter('cashier.webhook', $config['webhook']);
         $container->setParameter('cashier.currency', $config['currency']);
         $container->setParameter('cashier.currency_locale', $config['currency_locale']);
+        $container->setParameter('cashier.default_subscription_type', $config['default_subscription_type']);
         $container->setParameter('cashier.invoices.renderer', $config['invoices']['renderer']);
         $container->setParameter('cashier.invoices.options.paper', $config['invoices']['options']['paper']);
         $container->setParameter('cashier.invoices.options.remote_enabled', $config['invoices']['options']['remote_enabled']);
