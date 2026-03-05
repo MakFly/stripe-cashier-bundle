@@ -1,276 +1,157 @@
 # Webhooks
 
-Le bundle Cashier fournit un système complet de gestion des webhooks Stripe pour synchroniser automatiquement vos données avec les événements Stripe.
-
 ## Configuration
 
-### Endpoint Stripe
+Stripe envoie des événements à votre endpoint webhook. Configurez le secret de signature dans `config/packages/cashier.yaml` :
 
-Dans votre dashboard Stripe, configurez l'URL du webhook:
+```yaml
+cashier:
+    webhook:
+        secret: '%env(STRIPE_WEBHOOK_SECRET)%'
+        tolerance: 300  # tolérance en secondes (défaut : 300)
+        events:
+            - customer.subscription.created
+            - customer.subscription.updated
+            - customer.subscription.deleted
+            - invoice.paid
+            - invoice.payment_failed
+            - invoice.payment_action_required
+            - checkout.session.completed
+            - customer.updated
+            - customer.deleted
+            - payment_method.updated
+```
+
+## Route
+
+Le bundle expose automatiquement le endpoint :
 
 ```
-https://votre-domaine.com/webhook/stripe
+POST /cashier/webhook
 ```
 
-### Secret du Webhook
+Assurez-vous d'avoir importé la route dans `config/routes.yaml` :
 
-Ajoutez la configuration suivante dans votre fichier `.env`:
-
-```env
-CASHIER_WEBHOOK_SECRET=whsec_votre_secret_ici
+```yaml
+cashier_webhooks:
+    resource: '@CashierBundle/Resources/config/routes/webhook.yaml'
 ```
 
-Ce secret est utilisé pour vérifier la signature des webhooks entrants et garantir qu'ils proviennent bien de Stripe.
+Enregistrez cette URL dans votre [Dashboard Stripe → Webhooks](https://dashboard.stripe.com/webhooks).
 
-## Endpoint
+## Handlers intégrés
 
-Les webhooks Stripe sont reçus via la route `/webhook/stripe` définie dans `WebhookController`.
-
-Le controller:
-- Extrait le payload et la signature de la requête
-- Transmet au `WebhookProcessor` pour traitement
-- Retourne `200 OK` si le traitement réussit
-- Retourne `400 Bad Request` en cas d'erreur
-
-## Handlers disponibles
-
-Le bundle inclut 10 handlers pré-configurés pour gérer les événements Stripe les plus courants:
-
-### 1. CheckoutSessionCompletedHandler
-**Événement:** `checkout.session.completed`
-
-Déclenché lorsqu'un checkout Stripe est terminé. Gère les paiements uniques et les créations d'abonnements via Checkout Session.
-
-### 2. SubscriptionCreatedHandler
-**Événement:** `customer.subscription.created`
-
-Crée automatiquement une entité `Subscription` dans votre base de données lors de la création d'un abonnement Stripe. Synchronise le statut, le prix, la quantité et les dates d'essai.
-
-### 3. SubscriptionUpdatedHandler
-**Événement:** `customer.subscription.updated`
-
-Met à jour l'abonnement existant dans votre base de données lors des modifications (changement de prix, de quantité, de statut, etc.).
-
-### 4. SubscriptionDeletedHandler
-**Événement:** `customer.subscription.deleted`
-
-Marque l'abonnement comme supprimé dans votre base de données et dispatche un événement `SubscriptionDeletedEvent`.
-
-### 5. CustomerUpdatedHandler
-**Événement:** `customer.updated`
-
-Synchronise les modifications des informations client Stripe avec votre base de données.
-
-### 6. CustomerDeletedHandler
-**Événement:** `customer.deleted`
-
-Gère la suppression d'un client dans Stripe et nettoie les données associées dans votre application.
-
-### 7. PaymentMethodUpdatedHandler
-**Événement:** `payment_method.attached` et `payment_method.updated`
-
-Met à jour les informations de moyen de paiement du client.
-
-### 8. InvoicePaidHandler
-**Événement:** `invoice.paid`
-
-Dispatche un événement `PaymentSucceededEvent` lorsqu'une facture est réglée avec succès. Contient les informations client, le payment intent, le montant et la devise.
-
-### 9. InvoicePaymentFailedHandler
-**Événement:** `invoice.payment_failed`
-
-Dispatche un événement `PaymentFailedEvent` lorsqu'un paiement échoue. Utile pour envoyer des notifications de relance ou gérer les réessais de paiement.
-
-### 10. InvoicePaymentActionRequiredHandler
-**Événement:** `invoice.payment_action_required`
-
-Déclenché lorsqu'une action supplémentaire est requise (authentification 3D Secure, etc.). À compléter selon votre logique métier.
+| Événement Stripe | Handler |
+|-----------------|---------|
+| `customer.subscription.created` | `SubscriptionCreatedHandler` |
+| `customer.subscription.updated` | `SubscriptionUpdatedHandler` |
+| `customer.subscription.deleted` | `SubscriptionDeletedHandler` |
+| `customer.updated` | `CustomerUpdatedHandler` |
+| `customer.deleted` | `CustomerDeletedHandler` |
+| `invoice.paid` | `InvoicePaidHandler` |
+| `invoice.payment_failed` | `InvoicePaymentFailedHandler` |
+| `invoice.payment_action_required` | `InvoicePaymentActionRequiredHandler` |
+| `checkout.session.completed` | `CheckoutSessionCompletedHandler` |
+| `payment_method.updated` | `PaymentMethodUpdatedHandler` |
 
 ## Créer un handler personnalisé
 
-Pour gérer des événements spécifiques à votre application, créez un handler en implémentant `WebhookHandlerInterface`:
+Implémentez `WebhookHandlerInterface` et taguez le service `cashier.webhook_handler` :
 
 ```php
-<?php
-
-namespace App\Webhook\Handler;
-
 use CashierBundle\Contract\WebhookHandlerInterface;
-use CashierBundle\Webhook\Handler\AbstractWebhookHandler;
 use Stripe\Event;
+use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
-final readonly class CustomWebhookHandler extends AbstractWebhookHandler implements WebhookHandlerInterface
+#[AutoconfigureTag('cashier.webhook_handler')]
+final readonly class MyCustomHandler implements WebhookHandlerInterface
 {
     public function handles(): array
     {
-        // Retournez la liste des événements Stripe gérés par ce handler
-        return [
-            'charge.refunded',
-            'charge.dispute.created',
-        ];
+        return ['payment_intent.succeeded'];
     }
 
     public function handle(Event $event): void
     {
-        // Votre logique de traitement ici
-        $charge = $event->data->object;
-
-        // Utilisez les helpers de AbstractWebhookHandler
-        $customer = $this->getStripeCustomer($event);
-        $subscription = $this->getStripeSubscription($event);
-        $invoice = $this->getStripeInvoice($event);
-
-        // Exemple: logger et notifier
-        // $this->logger->info('Refund processed', ['charge' => $charge->id]);
-        // $this->notifier->notifyAdmin($charge);
+        $paymentIntent = $event->data->object;
+        // Votre logique...
     }
 }
 ```
 
-Enregistrez votre handler avec le tag Symfony:
+Un handler peut gérer **plusieurs types d'événements** en retournant plusieurs entrées dans `handles()`.
 
-```yaml
-# config/services.yaml
-services:
-    App\Webhook\Handler\CustomWebhookHandler:
-        tags:
-            - { name: 'cashier.webhook_handler' }
-```
-
-## Vérification de signature
-
-La vérification automatique de la signature des webhooks est assurée par le `WebhookProcessor`. Elle utilise:
-
-- Le secret configuré via `CASHIER_WEBHOOK_SECRET`
-- La tolérance par défaut de 300 secondes (configurable)
-- La librairie Stripe officielle pour valider le header `Stripe-Signature`
-
-Cette protection empêche les attaques de type replay et garantit l'authenticité des webhooks.
-
-Un middleware `VerifyWebhookSignatureMiddleware` est également disponible si vous souhaitez une couche de vérification supplémentaire au niveau du controller.
+Vous pouvez aussi étendre `AbstractWebhookHandler` pour accéder aux helpers :
 
 ```php
-// Dans votre controller ou configuration de route
-$middleware = new VerifyWebhookSignatureMiddleware(
-    webhookSecret: 'whsec_votre_secret',
-    tolerance: 300 // optionnel, défaut 300 secondes
-);
+use CashierBundle\Webhook\Handler\AbstractWebhookHandler;
+use Stripe\Event;
+
+#[AutoconfigureTag('cashier.webhook_handler')]
+final readonly class MyHandler extends AbstractWebhookHandler
+{
+    public function handles(): array
+    {
+        return ['customer.subscription.updated'];
+    }
+
+    public function handle(Event $event): void
+    {
+        $subscription = $this->getStripeSubscription($event);
+        $customer = $this->getStripeCustomer($event);
+        $invoice = $this->getStripeInvoice($event);
+    }
+}
 ```
 
 ## Événements Symfony
 
-Le bundle dispatche deux événements Symfony lors du traitement des webhooks:
+Le `WebhookProcessor` dispatch deux événements Symfony pour chaque webhook reçu :
 
-### WebhookReceivedEvent
+| Événement | Classe | Moment |
+|-----------|--------|--------|
+| Réception | `WebhookReceivedEvent` | Avant les handlers |
+| Traitement | `WebhookHandledEvent` | Après les handlers |
 
-Dispatché **immédiatement après** la vérification de signature et avant l'exécution des handlers.
+Les handlers intégrés dispatchent également des événements métier :
+
+| Événement | Classe |
+|-----------|--------|
+| Abonnement créé | `SubscriptionCreatedEvent` |
+| Abonnement mis à jour | `SubscriptionUpdatedEvent` |
+| Abonnement supprimé | `SubscriptionDeletedEvent` |
+| Paiement réussi | `PaymentSucceededEvent` |
+| Paiement échoué | `PaymentFailedEvent` |
+
+Exemple d'écoute :
 
 ```php
-use CashierBundle\Event\WebhookReceivedEvent;
+use CashierBundle\Event\SubscriptionCreatedEvent;
+use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 
-class WebhookListener
+#[AsEventListener(event: SubscriptionCreatedEvent::class)]
+final class OnSubscriptionCreated
 {
-    #[AsEventListener]
-    public function onWebhookReceived(WebhookReceivedEvent $event): void
+    public function __invoke(SubscriptionCreatedEvent $event): void
     {
-        $stripeEvent = $event->getStripeEvent();
-        // Log, métriques, etc.
+        $subscription = $event->getSubscription();
+        // Envoyer un email, activer des features...
     }
 }
 ```
 
-### WebhookHandledEvent
+## Traitement asynchrone
 
-Dispatché **après** l'exécution de tous les handlers, que le traitement ait réussi ou échoué.
+Pour traiter les webhooks de manière asynchrone avec Symfony Messenger, les messages suivants sont disponibles :
 
-```php
-use CashierBundle\Event\WebhookHandledEvent;
+- `CancelSubscriptionMessage`
+- `ProcessInvoiceMessage`
+- `RetryPaymentMessage`
+- `SyncCustomerDetailsMessage`
+- `UpdateSubscriptionQuantityMessage`
 
-class WebhookListener
-{
-    #[AsEventListener]
-    public function onWebhookHandled(WebhookHandledEvent $event): void
-    {
-        $stripeEvent = $event->getStripeEvent();
-        // Nettoyage, notifications, audits, etc.
-    }
-}
+Installez Messenger et configurez vos transports :
+
+```bash
+composer require symfony/messenger
 ```
-
-Ces événements permettent d'ajouter de la logique transverse (logging, métriques, audits) sans modifier les handlers existants.
-
-## Traitement asynchrone avec Messenger
-
-Pour éviter les timeouts lors du traitement de webhooks complexes, configurez Messenger pour traiter les webhooks de manière asynchrone:
-
-1. Créez un message Messenger:
-
-```php
-final readonly class ProcessWebhookMessage
-{
-    public function __construct(
-        public string $payload,
-        public string $signature
-    ) {
-    }
-}
-```
-
-2. Créez un handler Messenger:
-
-```php
-final class ProcessWebhookHandler
-{
-    public function __construct(
-        private WebhookProcessor $processor
-    ) {
-    }
-
-    public function __invoke(ProcessWebhookMessage $message): void
-    {
-        $this->processor->process(
-            $message->payload,
-            $message->signature
-        );
-    }
-}
-```
-
-3. Modifiez votre controller:
-
-```php
-public function handle(Request $request): Response
-{
-    $this->bus->dispatch(new ProcessWebhookMessage(
-        $request->getContent(),
-        $request->headers->get('Stripe-Signature')
-    ));
-
-    return new Response('Webhook queued', Response::HTTP_ACCEPTED);
-}
-```
-
-4. Configurez le transport dans `messenger.yaml`:
-
-```yaml
-framework:
-    messenger:
-        transports:
-            webhooks:
-                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
-                options:
-                    queue: webhooks
-
-        routing:
-            'App\Message\ProcessWebhookMessage': webhooks
-```
-
-Le worker Messenger traitera les webhooks en arrière-plan, rendant votre endpoint plus résilient aux pics de traffic.
-
-## Bonnes pratiques
-
-- **Toujours vérifier les signatures**: Ne traitez jamais un webhook sans vérification
-- **Répondez rapidement:** Retournez `200 OK` rapidement, déportez le traitement long en asynchrone si nécessaire
-- **Gérez les idempotences:** Stripe peut renvoyer le même événement plusieurs fois, prévoyez une logique idempotente
-- **Loggez tout:** Conservez une trace des webhooks reçus pour debugging
-- **Testez localement:** Utilisez le Stripe CLI pour tester vos webhooks en développement: `stripe listen --forward-to localhost:8000/webhook/stripe`

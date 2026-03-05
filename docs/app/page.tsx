@@ -1,199 +1,510 @@
-'use client'
+import { Instrument_Serif, DM_Sans } from "next/font/google";
+import Link from "next/link";
 
-import Link from 'next/link'
-import {
-  CreditCard,
-  Clock,
-  Zap,
-  FileText,
-  Tag,
-  Webhook,
-  ArrowRight,
-  Github,
-  Terminal,
-  Sparkles
-} from 'lucide-react'
+const display = Instrument_Serif({
+  subsets: ["latin"],
+  weight: "400",
+  style: ["normal", "italic"],
+  variable: "--font-display",
+});
+
+const body = DM_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  variable: "--font-body",
+});
 
 const features = [
   {
-    icon: CreditCard,
-    title: 'Abonnements récurrents',
-    description: 'Gérez facilement les abonnements mensuels et annuels avec Stripe. Support complet des cycles de facturation.',
-    gradient: 'from-violet-500 to-purple-500'
+    num: "01",
+    title: "Abonnements récurrents",
+    desc: "Créez et gérez des abonnements Stripe avec une API élégante. Trials, upgrades, downgrades et annulations.",
   },
   {
-    icon: Clock,
-    title: 'Périodes d\'essai',
-    description: 'Offrez des périodes d\'essai flexibles à vos nouveaux utilisateurs pour augmenter les conversions.',
-    gradient: 'from-blue-500 to-cyan-500'
+    num: "02",
+    title: "Facturation automatique",
+    desc: "Génération de factures, gestion des méthodes de paiement et portail client Stripe intégré.",
   },
   {
-    icon: Zap,
-    title: 'Paiements ponctuels',
-    description: 'Gérez les paiements uniques et les factures avec une API élégante et intuitive.',
-    gradient: 'from-amber-500 to-orange-500'
+    num: "03",
+    title: "Webhooks sécurisés",
+    desc: "Vérification de signature Stripe et dispatch d'events Symfony automatiques.",
   },
-  {
-    icon: FileText,
-    title: 'Factures PDF',
-    description: 'Génération automatique des factures professionnelles au format PDF pour vos clients.',
-    gradient: 'from-emerald-500 to-teal-500'
-  },
-  {
-    icon: Tag,
-    title: 'Coupons & promotions',
-    description: 'Créez et gérez des codes promo, réductions et offres spéciales pour vos utilisateurs.',
-    gradient: 'from-pink-500 to-rose-500'
-  },
-  {
-    icon: Webhook,
-    title: 'Webhooks intégrés',
-    description: 'Gestion transparente et sécurisée des événements Stripe en temps réel.',
-    gradient: 'from-indigo-500 to-violet-500'
-  }
-]
+];
+
+const code = `<span class="c">// Souscrire un utilisateur</span>
+<span class="v">$user</span><span class="p">->newSubscription(</span>
+<span class="s">    'default'</span><span class="p">,</span> <span class="s">'price_monthly'</span>
+<span class="p">)->create(</span><span class="v">$paymentMethod</span><span class="p">);</span>
+
+<span class="c">// Vérifier le statut</span>
+<span class="v">$user</span><span class="p">->subscribed(</span><span class="s">'default'</span><span class="p">);</span> <span class="c">// true</span>
+
+<span class="c">// Annuler en fin de période</span>
+<span class="v">$user</span><span class="p">->subscription(</span><span class="s">'default'</span><span class="p">)</span>
+     <span class="p">->cancel();</span>`;
 
 export default function HomePage() {
   return (
-    <div className="cb-page-wrapper">
-      {/* Hero Section */}
-      <section className="cb-hero">
-        <div className="cb-hero-content">
-          <div className="cb-hero-badge cb-animate-in">
-            <span className="cb-hero-badge-dot" />
-            Symfony 8.X Ready
-          </div>
+    <main
+      className={`${display.variable} ${body.variable}`}
+      style={{
+        background: "#09090b",
+        minHeight: "100vh",
+        color: "#f4f0eb",
+        fontFamily: "var(--font-body), sans-serif",
+        overflowX: "hidden",
+      }}
+    >
+      <style>{`
+        :root { color-scheme: dark; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        .c { color: #4b5563; }
+        .v { color: #a78bfa; }
+        .s { color: #10b981; }
+        .p { color: #f4f0eb; }
+        @media (max-width: 768px) {
+          .hero-grid { grid-template-columns: 1fr !important; gap: 3rem !important; }
+          .feature-grid { grid-template-columns: 1fr !important; }
+          .hero-headline { font-size: clamp(2.5rem, 10vw, 4rem) !important; }
+        }
+      `}</style>
 
-          <h1 className="cb-hero-title cb-animate-in cb-animate-delay-1">
-            <span className="cb-hero-title-accent">CashierBundle</span>
-            <br />
-            Stripe Cashier pour Symfony
-          </h1>
-
-          <p className="cb-hero-description cb-animate-in cb-animate-delay-2">
-            Une intégration élégante et puissante de Stripe Cashier pour Symfony.
-            Gérez vos abonnements, paiements et webhooks avec une API expressive.
-          </p>
-
-          <div className="cb-hero-actions cb-animate-in cb-animate-delay-3">
-            <Link href="/docs/installation" className="cb-btn cb-btn-primary">
-              <Sparkles className="cb-btn-icon" />
-              Commencer maintenant
+      {/* — NAV — */}
+      <nav
+        style={{
+          position: "sticky",
+          top: 0,
+          zIndex: 50,
+          borderBottom: "1px solid rgba(244,240,235,0.07)",
+          backdropFilter: "blur(16px)",
+          background: "rgba(9,9,11,0.85)",
+          height: "58px",
+        }}
+      >
+        <div
+          style={{
+            maxWidth: "1140px",
+            margin: "0 auto",
+            padding: "0 clamp(1.5rem, 5vw, 3rem)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            height: "100%",
+          }}
+        >
+          <span
+            style={{
+              fontFamily: "var(--font-display)",
+              fontSize: "1.05rem",
+              letterSpacing: "-0.01em",
+            }}
+          >
+            Cashier Symfony
+          </span>
+          <div
+            style={{ display: "flex", gap: "1.75rem", alignItems: "center" }}
+          >
+            <Link
+              href="/docs"
+              style={{
+                color: "rgba(244,240,235,0.5)",
+                fontSize: "0.875rem",
+                textDecoration: "none",
+              }}
+            >
+              Docs
             </Link>
             <a
-              href="https://github.com/MakFly/cashier-symfony"
-              className="cb-btn cb-btn-secondary"
+              href="https://github.com/kev/cashier-symfony"
               target="_blank"
-              rel="noopener noreferrer"
+              rel="noreferrer"
+              style={{
+                color: "rgba(244,240,235,0.5)",
+                fontSize: "0.875rem",
+                textDecoration: "none",
+              }}
             >
-              <Github className="cb-btn-icon" />
-              Voir sur GitHub
+              GitHub
             </a>
           </div>
         </div>
+      </nav>
+
+      {/* — HERO — */}
+      <section
+        style={{
+          padding:
+            "clamp(5rem, 14vw, 11rem) clamp(1.5rem, 5vw, 3rem) clamp(4rem, 8vw, 6rem)",
+          maxWidth: "1140px",
+          margin: "0 auto",
+        }}
+      >
+        {/* badge */}
+        <div
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "0.5rem",
+            background: "rgba(16,185,129,0.08)",
+            border: "1px solid rgba(16,185,129,0.2)",
+            borderRadius: "100px",
+            padding: "0.3rem 0.875rem",
+            marginBottom: "2.75rem",
+            fontSize: "0.75rem",
+            color: "#10b981",
+            letterSpacing: "0.06em",
+            textTransform: "uppercase",
+            fontWeight: 600,
+          }}
+        >
+          <span
+            style={{
+              width: "5px",
+              height: "5px",
+              borderRadius: "50%",
+              background: "#10b981",
+              display: "inline-block",
+            }}
+          />
+          Symfony 6.4 · 7.x · Stripe
+        </div>
+
+        {/* headline */}
+        <h1
+          className="hero-headline"
+          style={{
+            fontFamily: "var(--font-display)",
+            fontSize: "clamp(3.5rem, 7.5vw, 6.5rem)",
+            lineHeight: 1.04,
+            letterSpacing: "-0.035em",
+            marginBottom: "1.75rem",
+            fontWeight: 400,
+          }}
+        >
+          Billing Stripe
+          <br />
+          <em style={{ fontStyle: "italic", color: "#10b981" }}>
+            sans friction.
+          </em>
+        </h1>
+
+        {/* sub */}
+        <p
+          style={{
+            fontSize: "clamp(1rem, 1.8vw, 1.2rem)",
+            color: "rgba(244,240,235,0.5)",
+            maxWidth: "520px",
+            lineHeight: 1.7,
+            marginBottom: "2.75rem",
+          }}
+        >
+          Un bundle Symfony inspiré de Laravel Cashier. Abonnements, factures et
+          webhooks — intégrés nativement avec Doctrine ORM.
+        </p>
+
+        {/* CTAs */}
+        <div style={{ display: "flex", gap: "0.875rem", flexWrap: "wrap" }}>
+          <Link
+            href="/docs"
+            style={{
+              background: "#10b981",
+              color: "#09090b",
+              padding: "0.8rem 1.75rem",
+              borderRadius: "8px",
+              fontWeight: 600,
+              fontSize: "0.9rem",
+              textDecoration: "none",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "0.4rem",
+              transition: "opacity 0.15s",
+            }}
+          >
+            Démarrer →
+          </Link>
+          <a
+            href="https://github.com/kev/cashier-symfony"
+            target="_blank"
+            rel="noreferrer"
+            style={{
+              border: "1px solid rgba(244,240,235,0.12)",
+              color: "rgba(244,240,235,0.65)",
+              padding: "0.8rem 1.75rem",
+              borderRadius: "8px",
+              fontWeight: 500,
+              fontSize: "0.9rem",
+              textDecoration: "none",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "0.4rem",
+            }}
+          >
+            GitHub
+          </a>
+        </div>
       </section>
 
-      {/* Quick Install */}
-      <section className="cb-code-section cb-animate-in cb-animate-delay-4">
-        <div className="cb-code-header">
-          <span className="cb-code-header-dot" />
-          <span className="cb-code-header-dot" />
-          <span className="cb-code-header-dot" />
-          <span style={{ marginLeft: 'auto' }}>terminal</span>
-        </div>
-        <div className="cb-install">
-          <Terminal className="cb-btn-icon" style={{ color: '#94a3b8' }} />
-          <code className="cb-install-code">composer require cashier/cashier-bundle</code>
-          <button className="cb-install-copy" onClick={() => {
-            navigator.clipboard.writeText('composer require cashier/cashier-bundle')
-          }}>
-            Copier
-          </button>
+      {/* — INSTALL STRIP — */}
+      <section
+        style={{
+          padding: "0 clamp(1.5rem, 5vw, 3rem) 5rem",
+          maxWidth: "1140px",
+          margin: "0 auto",
+        }}
+      >
+        <div
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "1rem",
+            background: "rgba(244,240,235,0.03)",
+            border: "1px solid rgba(244,240,235,0.08)",
+            borderRadius: "10px",
+            padding: "1rem 1.5rem",
+            fontFamily: "var(--font-geist-mono, 'Courier New', monospace)",
+            fontSize: "0.875rem",
+          }}
+        >
+          <span style={{ color: "#10b981", userSelect: "none" }}>$</span>
+          <span>composer require kev/cashier-bundle</span>
         </div>
       </section>
 
-      {/* Features Grid */}
-      <section>
-        <h2 className="cb-section-title">Fonctionnalités</h2>
-        <div className="cb-features">
-          {features.map((feature, index) => (
+      {/* — FEATURES — */}
+      <section
+        style={{
+          padding: "clamp(3rem, 6vw, 5rem) clamp(1.5rem, 5vw, 3rem)",
+          maxWidth: "1140px",
+          margin: "0 auto",
+          borderTop: "1px solid rgba(244,240,235,0.06)",
+        }}
+      >
+        <p
+          style={{
+            fontSize: "0.7rem",
+            letterSpacing: "0.14em",
+            textTransform: "uppercase",
+            color: "rgba(244,240,235,0.25)",
+            marginBottom: "3rem",
+            fontWeight: 600,
+          }}
+        >
+          Ce qui est inclus
+        </p>
+
+        <div
+          className="feature-grid"
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(3, 1fr)",
+            border: "1px solid rgba(244,240,235,0.07)",
+            borderRadius: "14px",
+            overflow: "hidden",
+          }}
+        >
+          {features.map((f, i) => (
             <div
-              key={feature.title}
-              className={`cb-feature-card cb-animate-in cb-animate-delay-${index + 1}`}
+              key={f.num}
+              style={{
+                padding: "2.5rem",
+                borderRight:
+                  i < features.length - 1
+                    ? "1px solid rgba(244,240,235,0.07)"
+                    : "none",
+                background: "#09090b",
+              }}
             >
-              <div className={`cb-feature-icon bg-gradient-to-br ${feature.gradient}`}>
-                <feature.icon />
+              <div
+                style={{
+                  fontFamily: "var(--font-geist-mono, monospace)",
+                  fontSize: "0.68rem",
+                  color: "#10b981",
+                  letterSpacing: "0.1em",
+                  marginBottom: "1.5rem",
+                  opacity: 0.75,
+                }}
+              >
+                {f.num}
               </div>
-              <h3 className="cb-feature-title">{feature.title}</h3>
-              <p className="cb-feature-description">{feature.description}</p>
+              <h3
+                style={{
+                  fontFamily: "var(--font-display)",
+                  fontSize: "1.3rem",
+                  fontWeight: 400,
+                  marginBottom: "0.875rem",
+                  letterSpacing: "-0.01em",
+                  lineHeight: 1.2,
+                }}
+              >
+                {f.title}
+              </h3>
+              <p
+                style={{
+                  color: "rgba(244,240,235,0.45)",
+                  fontSize: "0.875rem",
+                  lineHeight: 1.7,
+                }}
+              >
+                {f.desc}
+              </p>
             </div>
           ))}
         </div>
       </section>
 
-      {/* Code Example */}
-      <section className="cb-code-section">
-        <div className="cb-code-header">
-          <span className="cb-code-header-dot" />
-          <span className="cb-code-header-dot" />
-          <span className="cb-code-header-dot" />
-          <span style={{ marginLeft: 'auto' }}>example.php</span>
-        </div>
-        <pre style={{
-          fontFamily: 'JetBrains Mono, monospace',
-          fontSize: '0.9rem',
-          lineHeight: 1.7,
-          color: '#e2e8f0',
-          margin: 0,
-          padding: '1rem 0'
-        }}>
-          <code>{`// Créer un abonnement avec période d'essai
-$subscription = $user->newSubscription('default', 'price_premium')
-    ->trialDays(14)
-    ->create($paymentMethodId);
-
-// Vérifier si l'utilisateur est abonné
-if ($user->subscribed('default')) {
-    // Accès au contenu premium
-}
-
-// Gérer les webhooks automatiquement
-#[AsEventListener(event: StripeWebhookEvent::INVOICE_PAID)]
-public function onInvoicePaid(StripeWebhookEvent $event): void
-{
-    $invoice = $event->getObject();
-    // Logique personnalisée
-}`}</code>
-        </pre>
-      </section>
-
-      {/* CTA Section */}
-      <section className="cb-cta cb-animate-in">
-        <div className="cb-cta-content">
-          <div className="cb-cta-text">
-            <h3>Prêt à commencer ?</h3>
-            <p>Plongez dans la documentation et intégrez CashierBundle en quelques minutes.</p>
+      {/* — CODE + CTA — */}
+      <section
+        style={{
+          padding:
+            "clamp(3rem, 6vw, 5rem) clamp(1.5rem, 5vw, 3rem) clamp(5rem, 10vw, 9rem)",
+          maxWidth: "1140px",
+          margin: "0 auto",
+          borderTop: "1px solid rgba(244,240,235,0.06)",
+        }}
+      >
+        <div
+          className="hero-grid"
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1.6fr",
+            gap: "5rem",
+            alignItems: "center",
+          }}
+        >
+          {/* left */}
+          <div>
+            <p
+              style={{
+                fontSize: "0.7rem",
+                letterSpacing: "0.14em",
+                textTransform: "uppercase",
+                color: "rgba(244,240,235,0.25)",
+                marginBottom: "1.25rem",
+                fontWeight: 600,
+              }}
+            >
+              API
+            </p>
+            <h2
+              style={{
+                fontFamily: "var(--font-display)",
+                fontSize: "clamp(2rem, 3.5vw, 3rem)",
+                fontWeight: 400,
+                lineHeight: 1.1,
+                letterSpacing: "-0.025em",
+                marginBottom: "1.25rem",
+              }}
+            >
+              Une interface
+              <br />
+              <em style={{ fontStyle: "italic", color: "#10b981" }}>
+                expressive.
+              </em>
+            </h2>
+            <p
+              style={{
+                color: "rgba(244,240,235,0.45)",
+                fontSize: "0.9rem",
+                lineHeight: 1.75,
+                marginBottom: "2rem",
+              }}
+            >
+              Conçue pour être lisible et intuitive. Tout ce dont vous avez
+              besoin, rien de superflu.
+            </p>
+            <Link
+              href="/docs/installation"
+              style={{
+                color: "#10b981",
+                fontSize: "0.875rem",
+                textDecoration: "none",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.35rem",
+                fontWeight: 500,
+              }}
+            >
+              Voir la doc d&apos;installation →
+            </Link>
           </div>
-          <Link href="/docs/installation" className="cb-btn cb-btn-primary">
-            Voir la documentation
-            <ArrowRight className="cb-btn-icon" />
-          </Link>
+
+          {/* code block */}
+          <div
+            style={{
+              background: "#111116",
+              border: "1px solid rgba(244,240,235,0.08)",
+              borderRadius: "14px",
+              overflow: "hidden",
+            }}
+          >
+            <div
+              style={{
+                borderBottom: "1px solid rgba(244,240,235,0.06)",
+                padding: "0.875rem 1.375rem",
+                display: "flex",
+                gap: "7px",
+                alignItems: "center",
+              }}
+            >
+              {["#ef4444", "#f59e0b", "#10b981"].map((c) => (
+                <span
+                  key={c}
+                  style={{
+                    width: "10px",
+                    height: "10px",
+                    borderRadius: "50%",
+                    background: c,
+                    opacity: 0.7,
+                  }}
+                />
+              ))}
+              <span
+                style={{
+                  marginLeft: "auto",
+                  fontFamily: "var(--font-geist-mono, monospace)",
+                  fontSize: "0.7rem",
+                  color: "rgba(244,240,235,0.25)",
+                }}
+              >
+                UserController.php
+              </span>
+            </div>
+            <pre
+              style={{
+                padding: "1.75rem",
+                fontFamily: "var(--font-geist-mono, 'Courier New', monospace)",
+                fontSize: "0.82rem",
+                lineHeight: 1.85,
+                overflowX: "auto",
+                margin: 0,
+              }}
+            >
+              <code dangerouslySetInnerHTML={{ __html: code }} />
+            </pre>
+          </div>
         </div>
       </section>
 
-      <style jsx global>{`
-        .cb-page-wrapper {
-          max-width: 1100px;
-          margin: 0 auto;
-          padding: 0 var(--cb-space-xl);
-        }
-
-        @media (max-width: 768px) {
-          .cb-page-wrapper {
-            padding: 0 var(--cb-space-md);
-          }
-        }
-      `}</style>
-    </div>
-  )
+      {/* — FOOTER — */}
+      <footer
+        style={{
+          borderTop: "1px solid rgba(244,240,235,0.06)",
+          padding: "2rem clamp(1.5rem, 5vw, 3rem)",
+          maxWidth: "1140px",
+          margin: "0 auto",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          color: "rgba(244,240,235,0.25)",
+          fontSize: "0.8rem",
+        }}
+      >
+        <span style={{ fontFamily: "var(--font-display)" }}>
+          Cashier Symfony
+        </span>
+        <span>MIT 2025</span>
+      </footer>
+    </main>
+  );
 }

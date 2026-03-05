@@ -1,435 +1,177 @@
-# Gestion des Abonnements
-
-Cashier Bundle fournit une interface expressive pour gérer les abonnements Stripe. Les abonnements permettent de facturer vos clients de manière récurrente.
+# Abonnements
 
 ## Créer un abonnement
 
-Pour créer un abonnement, utilisez la méthode `newSubscription()` sur votre modèle billable, puis appelez `create()`:
+Utilisez `newSubscription()` sur votre entité billable. La méthode retourne un `SubscriptionBuilder` :
 
 ```php
-use App\Entity\User;
-use CashierBundle\Service\SubscriptionBuilder;
+$user->newSubscription('default', 'price_xxx')
+    ->create('pm_card_visa');
+```
 
-$user = $userRepository->find(1);
+Le premier argument est le **type** d'abonnement (chaîne libre, ex. `'default'`, `'premium'`).
+Le second argument est l'ID de prix Stripe (optionnel, vous pouvez utiliser `price()` à la place).
 
-/** @var SubscriptionBuilder $builder */
-$builder = $user->newSubscription('default', 'price_monthly');
+## SubscriptionBuilder — méthodes disponibles
 
+### Ajouter des plans
+
+```php
+// Plan standard avec quantité
+$builder->price('price_xxx', quantity: 1);
+
+// Plan mesuré (usage-based, sans quantité fixe)
+$builder->meteredPrice('price_yyy');
+
+// Modifier la quantité du dernier plan ajouté
+$builder->quantity(5);
+```
+
+### Période d'essai
+
+```php
+// Essai de N jours
+$builder->trialDays(14);
+
+// Essai jusqu'à une date précise
+$builder->trialUntil(new \DateTimeImmutable('2025-04-01'));
+
+// Pas d'essai (ignore le trial Stripe par défaut)
+$builder->skipTrial();
+```
+
+### Coupons et codes promo
+
+```php
+$builder->withCoupon('COUPON_ID');
+
+$builder->withPromotionCode('PROMO_CODE');
+```
+
+### Options avancées
+
+```php
+// Métadonnées
+$builder->withMetadata(['plan' => 'pro', 'user_id' => 42]);
+
+// Ancrage du cycle de facturation
+$builder->anchorBillingCycleOn(new \DateTimeImmutable('2025-04-01'));
+
+// Seuils de facturation
+$builder->withBillingThresholds(['amount_gte' => 10000]);
+
+// Comportement de paiement Stripe
+$builder->withPaymentBehavior('allow_incomplete');
+
+// Désactiver le prorata
+$builder->noProrate();
+
+// Réactiver le prorata (défaut)
+$builder->prorate();
+
+// Options brutes Stripe
+$builder->withOptions(['collection_method' => 'send_invoice']);
+```
+
+### Finaliser la création
+
+```php
 $subscription = $builder->create($paymentMethod);
+// $paymentMethod : ID Stripe (string) ou objet PaymentMethod, ou null
 ```
 
-### Abonnements avec plusieurs prix
-
-Vous pouvez créer un abonnement avec plusieurs prix en passant un tableau:
+## Vérifier un abonnement
 
 ```php
-$subscription = $user->newSubscription('default', [
-    'price_basic',
-    'price_pro'
-])->create($paymentMethod);
-```
+// L'utilisateur a un abonnement actif ?
+$user->subscribed();                  // type 'default'
+$user->subscribed('premium');         // type 'premium'
+$user->subscribed('default', 'price_xxx'); // type + plan précis
 
-### Ajouter des prix individuellement
-
-```php
-$subscription = $user
-    ->newSubscription('default', 'price_basic')
-    ->price('price_pro', 2) // prix avec quantité
-    ->price('price_enterprise')
-    ->create($paymentMethod);
-```
-
-### Prix à la consommation
-
-```php
-$subscription = $user
-    ->newSubscription('default', 'price_basic')
-    ->meteredPrice('price_usage_based')
-    ->create($paymentMethod);
-```
-
-## Périodes d'essai
-
-### Essai en nombre de jours
-
-```php
-$subscription = $user
-    ->newSubscription('default', 'price_monthly')
-    ->trialDays(14)
-    ->create($paymentMethod);
-```
-
-### Essai jusqu'à une date spécifique
-
-```php
-$trialEnd = new \DateTimeImmutable('+30 days');
-
-$subscription = $user
-    ->newSubscription('default', 'price_monthly')
-    ->trialUntil($trialEnd)
-    ->create($paymentMethod);
-```
-
-### Sauter l'essai
-
-```php
-$subscription = $user
-    ->newSubscription('default', 'price_monthly')
-    ->skipTrial()
-    ->create($paymentMethod);
-```
-
-### Utiliser l'essai du client
-
-Si un client a déjà un essai générique, la méthode `onGenericTrial()` peut être utilisée:
-
-```php
-if ($user->onGenericTrial()) {
-    // Le client est en période d'essai générique
-}
-```
-
-## Changer de plan
-
-### Changer de prix (swap)
-
-Pour changer le prix d'un abonnement existant:
-
-```php
+// Récupérer l'abonnement
 $subscription = $user->subscription('default');
 
-$subscription->swap('price_yearly');
+// Tous les abonnements
+$subscriptions = $user->subscriptions();
+
+// En période d'essai ?
+$user->onTrial();
+$user->onTrial('default', 'price_xxx');
+
+// En essai générique (sans abonnement créé)
+$user->onGenericTrial();
 ```
 
-### Swap avec facturation immédiate
+## Statuts de l'abonnement
+
+L'entité `Subscription` expose des méthodes de statut :
 
 ```php
-$subscription->swap('price_yearly', [
-    'proration_behavior' => 'always_invoice'
-]);
+$sub = $user->subscription('default');
+
+$sub->active();              // actif ou en essai
+$sub->onTrial();             // en période d'essai
+$sub->onGracePeriod();       // annulé mais encore valide
+$sub->canceled();            // annulation planifiée
+$sub->ended();               // abonnement terminé
+$sub->valid();               // active() || onTrial() || onGracePeriod()
+$sub->incomplete();          // paiement en attente
+$sub->pastDue();             // paiement en retard
+$sub->paused();              // abonnement en pause
+$sub->recurring();           // actif, hors essai et hors grâce
 ```
 
-### Swap sans prorata
+Les statuts Stripe disponibles sont exposés comme constantes :
 
 ```php
-$subscription->swap('price_yearly', [
-    'proration_behavior' => 'none'
-]);
+Subscription::STATUS_ACTIVE
+Subscription::STATUS_CANCELED
+Subscription::STATUS_INCOMPLETE
+Subscription::STATUS_INCOMPLETE_EXPIRED
+Subscription::STATUS_PAST_DUE
+Subscription::STATUS_PAUSED
+Subscription::STATUS_TRIALING
+Subscription::STATUS_UNPAID
 ```
 
 ## Annuler un abonnement
 
-### Annuler en fin de période
-
-Pour annuler un abonnement à la fin de la période de facturation:
-
 ```php
-$subscription = $user->subscription('default');
+use CashierBundle\Service\SubscriptionService;
 
-$subscription->cancel();
+// Annulation en fin de période
+$subscriptionService->cancel($subscription);
+
+// Annulation immédiate
+$subscriptionService->cancel($subscription, immediately: true);
 ```
 
-L'abonnement restera actif jusqu'à la fin de la période en cours. Vous pouvez vérifier si un abonnement est en période de grâce:
-
-```php
-if ($subscription->onGracePeriod()) {
-    // L'abonnement est annulé mais toujours actif
-}
-```
-
-### Annuler immédiatement
-
-```php
-$subscription->cancel(true);
-// ou
-$subscription->cancelNow();
-```
+Après une annulation non immédiate, `onGracePeriod()` retourne `true` jusqu'à la fin de la période en cours.
 
 ## Reprendre un abonnement
 
-Pour reprendre un abonnement qui a été annulé mais est toujours en période de grâce:
+Un abonnement annulé peut être repris tant qu'il est en `onGracePeriod()` :
 
 ```php
-if ($subscription->onGracePeriod()) {
-    $subscription->resume();
-}
+$subscriptionService->resume($subscription);
 ```
 
-## Vérifier le statut
-
-### Vérifier si abonné
+## Changer de plan (swap)
 
 ```php
-if ($user->subscribed('default')) {
-    // L'utilisateur a un abonnement actif
-}
+// Passer à un autre prix Stripe
+$subscriptionService->swap($subscription, 'price_new_plan');
+
+// Avec options Stripe
+$subscriptionService->swap($subscription, 'price_new_plan', [
+    'proration_behavior' => 'none',
+]);
 ```
 
-### Vérifier un prix spécifique
+## Modifier la quantité
 
 ```php
-if ($user->subscribed('default', 'price_monthly')) {
-    // L'utilisateur est abonné au prix mensuel
-}
+$subscriptionService->updateQuantity($subscription, 5);
 ```
 
-### Vérifier si en essai
-
-```php
-if ($user->onTrial('default')) {
-    // L'utilisateur est en période d'essai
-}
-
-if ($user->onTrial('default', 'price_monthly')) {
-    // Essai pour un prix spécifique
-}
-```
-
-### Vérifier la période de grâce
-
-```php
-if ($subscription->onGracePeriod()) {
-    // Annulé mais encore actif
-}
-
-if ($subscription->notOnGracePeriod()) {
-    // Pas en période de grâce
-}
-```
-
-### Vérifier si actif
-
-```php
-if ($subscription->active()) {
-    // L'abonnement est actif (y compris en essai)
-}
-```
-
-### Vérifier si valide
-
-```php
-if ($subscription->valid()) {
-    // Actif OU en essai OU en période de grâce
-}
-```
-
-### Vérifier si récurrent
-
-```php
-if ($subscription->recurring()) {
-    // Abonnement récurrent actif (pas d'essai, pas de grâce)
-}
-```
-
-### Vérifier si annulé
-
-```php
-if ($subscription->canceled()) {
-    // L'abonnement a été annulé
-}
-
-if ($subscription->ended()) {
-    // L'abonnement est terminé (période de grâce écoulée)
-}
-```
-
-### Statuts de paiement
-
-```php
-if ($subscription->pastDue()) {
-    // Paiement en retard
-}
-
-if ($subscription->incomplete()) {
-    // Abonnement incomplet (paiement en attente)
-}
-
-if ($subscription->incompleteAndExpired()) {
-    // Abonnement expiré avant completion
-}
-```
-
-## Quantités
-
-Pour les abonnements avec quantité (par exemple, nombre de sièges dans une application SaaS):
-
-### Mettre à jour la quantité
-
-```php
-$subscription->updateQuantity(5);
-```
-
-### Incrémenter la quantité
-
-```php
-$subscription = $subscriptionService->updateQuantity(
-    $subscription,
-    $subscription->getQuantity() + 1
-);
-```
-
-### Décrémenter la quantité
-
-```php
-$subscription = $subscriptionService->updateQuantity(
-    $subscription,
-    max(1, $subscription->getQuantity() - 1)
-);
-```
-
-### Définir la quantité à la création
-
-```php
-$subscription = $user
-    ->newSubscription('default', 'price_per_seat')
-    ->quantity(5)
-    ->create($paymentMethod);
-```
-
-## Coupons
-
-### Appliquer un coupon à la création
-
-```php
-$subscription = $user
-    ->newSubscription('default', 'price_monthly')
-    ->withCoupon('SUMMER2024')
-    ->create($paymentMethod);
-```
-
-### Code de promotion
-
-```php
-$subscription = $user
-    ->newSubscription('default', 'price_monthly')
-    ->withPromotionCode('PROMO_CODE_123')
-    ->create($paymentMethod);
-```
-
-### Coupons et prorata
-
-Par défaut, les changements sont proratisés. Vous pouvez contrôler ce comportement:
-
-```php
-$subscription = $user
-    ->newSubscription('default', 'price_monthly')
-    ->noProrate()  // Désactiver le prorata
-    ->create($paymentMethod);
-```
-
-## Métadonnées
-
-Ajouter des métadonnées à l'abonnement:
-
-```php
-$subscription = $user
-    ->newSubscription('default', 'price_monthly')
-    ->withMetadata([
-        'department' => 'engineering',
-        'cost_center' => '12345'
-    ])
-    ->create($paymentMethod);
-```
-
-## Options avancées
-
-### Comportement de paiement
-
-```php
-$subscription = $user
-    ->newSubscription('default', 'price_monthly')
-    ->withPaymentBehavior('default_incomplete') // ou 'error_if_incomplete'
-    ->create($paymentMethod);
-```
-
-### Ancre de cycle de facturation
-
-```php
-$subscription = $user
-    ->newSubscription('default', 'price_monthly')
-    ->anchorBillingCycleOn(new \DateTime('first day of next month'))
-    ->create($paymentMethod);
-```
-
-### Seuils de facturation
-
-```php
-$subscription = $user
-    ->newSubscription('default', 'price_monthly')
-    ->withBillingThresholds([
-        'amount_gte' => 5000, // Facturer quand le montant atteint 5000
-        'reset_billing_cycle_anchor' => true
-    ])
-    ->create($paymentMethod);
-```
-
-### Options personnalisées
-
-```php
-$subscription = $user
-    ->newSubscription('default', 'price_monthly')
-    ->withOptions([
-        'collection_method' => 'charge_automatically',
-        'description' => 'Abonnement Premium',
-        'default_tax_rates' => ['txr_1234567890']
-    ])
-    ->create($paymentMethod);
-```
-
-## Récupérer les abonnements
-
-### Tous les abonnements d'un client
-
-```php
-$subscriptions = $user->subscriptions();
-
-foreach ($subscriptions as $subscription) {
-    echo $subscription->getType() . ': ' . $subscription->getStripeStatus();
-}
-```
-
-### Un abonnement spécifique par type
-
-```php
-$subscription = $user->subscription('default');
-
-if ($subscription !== null) {
-    // Utiliser l'abonnement
-}
-```
-
-## Gestion des erreurs
-
-Les opérations sur les abonnements peuvent lever des exceptions:
-
-```php
-use CashierBundle\Exception\SubscriptionUpdateFailureException;
-use CashierBundle\Exception\InvalidCouponException;
-use CashierBundle\Exception\CustomerAlreadyCreatedException;
-
-try {
-    $subscription = $user
-        ->newSubscription('default', 'price_monthly')
-        ->withCoupon('INVALID')
-        ->create($paymentMethod);
-} catch (InvalidCouponException $e) {
-    // Coupon invalide
-} catch (SubscriptionUpdateFailureException $e) {
-    // Erreur lors de la mise à jour
-} catch (CustomerAlreadyCreatedException $e) {
-    // Client Stripe non créé
-}
-```
-
-## Constantes de statut
-
-L'entité `Subscription` définit les constantes de statut suivantes:
-
-- `Subscription::STATUS_ACTIVE` - Actif
-- `Subscription::STATUS_CANCELED` - Annulé
-- `Subscription::STATUS_INCOMPLETE` - Incomplet
-- `Subscription::STATUS_INCOMPLETE_EXPIRED` - Incomplet expiré
-- `Subscription::STATUS_PAST_DUE` - En retard
-- `Subscription::STATUS_PAUSED` - En pause
-- `Subscription::STATUS_TRIALING` - En essai
-- `Subscription::STATUS_UNPAID` - Impayé
+[Prochain : Webhooks →](/docs/webhooks)
