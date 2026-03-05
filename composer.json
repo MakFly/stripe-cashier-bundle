@@ -1,6 +1,6 @@
 {
     "name": "makfly/stripe-cashier-bundle",
-    "description": "Stripe Cashier integration for Symfony 8",
+    "description": "Stripe Cashier integration for Symfony 7 and 8",
     "type": "symfony-bundle",
     "keywords": ["stripe", "cashier", "symfony", "payments"],
     "homepage": "https://github.com/MakFly/stripe-cashier-bundle",
