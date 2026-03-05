@@ -11,6 +11,8 @@ use CashierBundle\Entity\SubscriptionItem;
 use CashierBundle\Exception\SubscriptionUpdateFailureException;
 use CashierBundle\Repository\StripeCustomerRepository;
 use CashierBundle\Repository\SubscriptionRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityManagerInterface;
 use Stripe\StripeClient;
 use Stripe\Subscription as StripeSubscription;
@@ -77,6 +79,92 @@ class SubscriptionService
                 $e,
             );
         }
+    }
+
+    /**
+     * @return Collection<int, Subscription>
+     */
+    public function all(BillableInterface $billable): Collection
+    {
+        $customer = $this->getLocalCustomer($billable);
+        if ($customer === null) {
+            return new ArrayCollection();
+        }
+
+        return new ArrayCollection($this->repository->findBy(['customer' => $customer], ['createdAt' => 'DESC']));
+    }
+
+    public function get(BillableInterface $billable, string $type = 'default'): ?Subscription
+    {
+        $customer = $this->getLocalCustomer($billable);
+        if ($customer === null) {
+            return null;
+        }
+
+        return $this->repository->findOneByCustomerAndType($customer, $type);
+    }
+
+    public function onTrial(BillableInterface $billable, string $type = 'default', ?string $price = null): bool
+    {
+        $subscription = $this->get($billable, $type);
+        if ($subscription === null) {
+            return false;
+        }
+
+        if ($price !== null && $subscription->getStripePrice() !== $price) {
+            return false;
+        }
+
+        return $subscription->onTrial();
+    }
+
+    public function subscribed(BillableInterface $billable, string $type = 'default', ?string $price = null): bool
+    {
+        $subscription = $this->get($billable, $type);
+        if ($subscription === null) {
+            return false;
+        }
+
+        if ($price !== null && $subscription->getStripePrice() !== $price) {
+            return false;
+        }
+
+        return $subscription->valid();
+    }
+
+    public function onGenericTrial(BillableInterface $billable): bool
+    {
+        $customer = $this->getLocalCustomer($billable);
+
+        return $customer?->onGenericTrial() ?? false;
+    }
+
+    /**
+     * @param string|array<int, string> $prices
+     */
+    public function newSubscription(BillableInterface $billable, string $type, string|array $prices = []): SubscriptionBuilder
+    {
+        $builder = new SubscriptionBuilder(
+            $billable,
+            $type,
+            $this->stripe,
+            $this->entityManager,
+            $this->repository,
+        );
+
+        if (is_string($prices) && $prices !== '') {
+            $builder->price($prices);
+        }
+
+        if (is_array($prices)) {
+            foreach ($prices as $price) {
+                if (is_string($price) && $price !== '') {
+                    $builder->price($price);
+                }
+            }
+        }
+
+        return $builder;
     }
 
     public function cancel(Subscription $subscription, bool $immediately = false): Subscription
@@ -276,5 +364,15 @@ class SubscriptionService
         $this->entityManager->flush();
 
         return $subscription;
+    }
+
+    private function getLocalCustomer(BillableInterface $billable): ?StripeCustomer
+    {
+        $stripeId = $billable->stripeId();
+        if ($stripeId === null) {
+            return null;
+        }
+
+        return $this->customerRepository->findByStripeId($stripeId);
     }
 }

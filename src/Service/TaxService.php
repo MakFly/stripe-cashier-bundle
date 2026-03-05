@@ -189,4 +189,28 @@ class TaxService
             return [];
         }
     }
+
+    /**
+     * @return array<TaxRate>
+     */
+    public function getTaxRatesForEntity(BillableInterface $billable): array
+    {
+        return $this->getTaxRates($billable);
+    }
+
+    public function isTaxExempt(BillableInterface $billable): bool
+    {
+        $stripeId = $billable->stripeId();
+        if ($stripeId === null) {
+            return false;
+        }
+
+        try {
+            $customer = $this->stripe->customers->retrieve($stripeId);
+
+            return ($customer->tax_exempt ?? 'none') !== 'none';
+        } catch (ApiErrorException) {
+            return false;
+        }
+    }
 }

@@ -84,6 +84,20 @@ class CustomerService
         return $this->repository->findByStripeId($stripeId);
     }
 
+    public function getStripeId(BillableInterface $billable): ?string
+    {
+        if (!$billable instanceof BillableEntityInterface) {
+            return null;
+        }
+
+        return $this->repository->findByBillable($billable)?->getStripeId();
+    }
+
+    public function hasStripeId(BillableInterface $billable): bool
+    {
+        return $this->getStripeId($billable) !== null;
+    }
+
     /**
      * @param array<string, mixed> $options
      */
@@ -94,6 +108,44 @@ class CustomerService
         }
 
         return $this->create($billable, $options);
+    }
+
+    /**
+     * @param array<string, mixed> $options
+     */
+    public function createCustomer(BillableInterface $billable, array $options = []): string
+    {
+        return $this->create($billable, $options);
+    }
+
+    /**
+     * @param array<string, mixed> $options
+     */
+    public function updateCustomer(BillableInterface $billable, array $options = []): void
+    {
+        $this->update($billable, $options);
+    }
+
+    /**
+     * @param array<string, mixed> $options
+     */
+    public function createOrGetCustomer(BillableInterface $billable, array $options = []): string
+    {
+        return $this->createOrGetStripeId($billable, $options);
+    }
+
+    public function asStripeCustomer(BillableInterface $billable): ?StripeCustomer
+    {
+        $stripeId = $billable->stripeId();
+        if ($stripeId === null) {
+            return null;
+        }
+
+        try {
+            return $this->stripe->customers->retrieve($stripeId);
+        } catch (\Stripe\Exception\ExceptionInterface) {
+            return null;
+        }
     }
 
     public function sync(StripeCustomer $stripeCustomer, ?BillableInterface $billable = null): void

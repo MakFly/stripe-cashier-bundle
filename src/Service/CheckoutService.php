@@ -158,4 +158,17 @@ class CheckoutService
             );
         }
     }
+
+    /**
+     * @param array<string, mixed> $options
+     */
+    public function createCharge(BillableInterface $billable, int $amount, string $name, int $quantity = 1, array $options = []): Checkout
+    {
+        return $this->charge($billable, $amount, $name, $quantity, $options);
+    }
+
+    public function url(BillableInterface $billable, ?string $returnUrl = null): string
+    {
+        return $this->billingPortal($billable, $returnUrl);
+    }
 }
