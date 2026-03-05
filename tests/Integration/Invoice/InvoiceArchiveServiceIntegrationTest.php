@@ -33,7 +33,9 @@ final class InvoiceArchiveServiceIntegrationTest extends TestCase
         $config = ORMSetup::createAttributeMetadataConfiguration([
             __DIR__ . '/../../../src/Entity',
         ], true);
-        $config->enableNativeLazyObjects(true);
+        if (method_exists($config, 'enableNativeLazyObjects')) {
+            $config->enableNativeLazyObjects(true);
+        }
 
         $connection = [
             'driver' => 'pdo_sqlite',
