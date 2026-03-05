@@ -1,6 +1,7 @@
 export default {
-  installation: 'Installation',
-  subscriptions: 'Abonnements',
-  webhooks: 'Webhooks',
-  api: 'API Reference',
-}
+  introduction: "Introduction",
+  installation: "Installation",
+  "--": { type: "separator", title: "Facturation" },
+  subscriptions: "Abonnements",
+  webhooks: "Webhooks",
+};

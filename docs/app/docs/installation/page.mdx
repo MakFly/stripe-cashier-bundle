@@ -1,34 +1,14 @@
-import { Callout, Steps, Tabs } from 'nextra/components'
-
 # Installation
 
-CashierBundle est une intégration Stripe complète pour Symfony, inspirée de Laravel Cashier. Elle facilite la gestion des abonnements, des paiements et des factures.
-
-## Prérequis
-
-Avant d'installer CashierBundle, assurez-vous que votre projet respecte les prérequis suivants :
-
-- **PHP 8.2 ou supérieur**
-- **Symfony 7.x ou 8.x**
-- **Doctrine ORM 3.x**
-- **Un compte Stripe** (test ou production)
-- **Composer 2.x**
-
-## Installation via Composer
-
-<Steps>
-
-### Étape 1
-
-Installez le bundle via Composer :
+## Via Composer
 
 ```bash
 composer require cashier/cashier-bundle
 ```
 
-### Étape 2
+## Enregistrer le bundle
 
-Flex va automatiquement activer le bundle. Si vous n'utilisez pas Flex, ajoutez manuellement le bundle dans `config/bundles.php` :
+Ajoutez le bundle dans `config/bundles.php` :
 
 ```php
 return [
@@ -37,92 +17,61 @@ return [
 ];
 ```
 
-</Steps>
+## Variables d'environnement
+
+Ajoutez ces variables à votre `.env` :
+
+```env
+STRIPE_KEY=pk_test_xxx
+STRIPE_SECRET=sk_test_xxx
+STRIPE_WEBHOOK_SECRET=whsec_xxx
+```
 
 ## Configuration
 
-### 1. Configuration des clés Stripe
-
-Ajoutez vos clés API Stripe dans votre fichier `.env` :
-
-```env
-# .env
-STRIPE_KEY=pk_test_votre_clé_publique
-STRIPE_SECRET=sk_test_votre_clé_secrète
-STRIPE_WEBHOOK_SECRET=whsec_votre_secret_webhook
-
-# Configuration optionnelle
-CASHIER_CURRENCY=usd
-CASHIER_CURRENCY_LOCALE=en
-CASHIER_AUTOMATIC_TAX=false
-```
-
-<Callout type="warning">
-Pour la production, utilisez les clés live (commençant par `pk_live_` et `sk_live_`) et configurez le webhook secret correspondant.
-</Callout>
-
-### 2. Configuration du bundle
-
-Créez le fichier de configuration `config/packages/cashier.yaml` :
+Créez `config/packages/cashier.yaml` :
 
 ```yaml
-# config/packages/cashier.yaml
 cashier:
-    # Clés API Stripe
     key: '%env(STRIPE_KEY)%'
     secret: '%env(STRIPE_SECRET)%'
 
-    # Configuration des webhooks
     webhook:
         secret: '%env(STRIPE_WEBHOOK_SECRET)%'
-        tolerance: 300  # Tolérance de timestamp en secondes
+        tolerance: 300  # secondes (défaut)
+        events:
+            - customer.subscription.created
+            - customer.subscription.updated
+            - customer.subscription.deleted
+            - invoice.paid
+            - invoice.payment_failed
 
-    # Configuration de la devise
-    currency: '%env(default:usd:CASHIER_CURRENCY)%'
-    currency_locale: '%env(default:en:CASHIER_CURRENCY_LOCALE)%'
+    currency: usd               # défaut : usd
+    currency_locale: en         # défaut : en
 
-    # Configuration des factures
     invoices:
-        renderer: 'CashierBundle\Service\Invoice\DompdfInvoiceRenderer'
+        renderer: CashierBundle\Service\InvoiceRenderer\DompdfInvoiceRenderer
         options:
             paper: letter
             remote_enabled: false
-
-    # Taxes automatiques
-    automatic_tax:
-        enabled: '%env(default:false:CASHIER_AUTOMATIC_TAX)%'
 ```
 
-### 3. Configuration des entités
+## Route webhook
 
-#### Créer l'entité StripeCustomer
+Importez la route dans `config/routes.yaml` :
 
-Créez une entité Doctrine pour stocker les informations client Stripe :
-
-```php
-// src/Entity/StripeCustomer.php
-namespace App\Entity;
-
-use CashierBundle\Entity\StripeCustomer as BaseStripeCustomer;
-use Doctrine\ORM\Mapping as ORM;
-
-#[ORM\Entity]
-#[ORM\Table(name: 'cashier_stripe_customers')]
-class StripeCustomer extends BaseStripeCustomer
-{
-    // La classe de base contient tous les champs nécessaires
-    // Vous pouvez ajouter des champs personnalisés ici si nécessaire
-}
+```yaml
+cashier_webhooks:
+    resource: '@CashierBundle/Resources/config/routes/webhook.yaml'
 ```
 
-#### Configurer votre entité User
+Cela expose le endpoint `POST /cashier/webhook`.
 
-Rendez votre entité User "billable" en implémentant l'interface `BillableEntityInterface` :
+## Configurer votre entité
+
+Votre entité utilisateur doit implémenter `BillableEntityInterface` et utiliser `BillableTrait` :
 
 ```php
-// src/Entity/User.php
-namespace App\Entity;
-
 use CashierBundle\Contract\BillableEntityInterface;
 use CashierBundle\Concerns\BillableTrait;
 use Doctrine\ORM\Mapping as ORM;
@@ -134,210 +83,33 @@ class User implements BillableEntityInterface
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(type: 'string', length: 255)]
+    #[ORM\Column(length: 255)]
     private string $email;
 
-    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    #[ORM\Column(length: 255, nullable: true)]
     private ?string $name = null;
 
-    #[ORM\OneToOne(targetEntity: StripeCustomer::class, cascade: ['persist', 'remove'])]
-    private ?\App\Entity\StripeCustomer $stripeCustomer = null;
-
-    // Getters requis par BillableEntityInterface
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
-
-    public function getEmail(): string
-    {
-        return $this->email;
-    }
-
-    public function getName(): ?string
-    {
-        return $this->name;
-    }
-
-    public function setEmail(string $email): self
-    {
-        $this->email = $email;
-        return $this;
-    }
-
-    public function setName(?string $name): self
-    {
-        $this->name = $name;
-        return $this;
-    }
+    public function getId(): ?int { return $this->id; }
+    public function getEmail(): string { return $this->email; }
+    public function getName(): ?string { return $this->name; }
 }
 ```
 
-### 4. Migrations de base de données
+## Base de données
 
-Générez et exécutez les migrations pour créer les tables nécessaires :
+Créez les tables nécessaires :
 
 ```bash
-# Créer la migration
 php bin/console doctrine:migrations:diff
-
-# Exécuter la migration
 php bin/console doctrine:migrations:migrate
 ```
 
-<Callout type="info">
-CashierBundle nécessite les tables suivantes :
-- `cashier_stripe_customers` - Clients Stripe
-- `cashier_subscriptions` - Abonnements
-- `cashier_subscription_items` - Items d'abonnement
-- `cashier_payment_methods` - Méthodes de paiement
-- `cashier_invoices` - Factures
-- `cashier_invoice_items` - Items de facture
-</Callout>
+Deux tables seront créées :
+- `cashier_stripe_customers` — Clients Stripe liés à vos entités
+- `cashier_subscriptions` — Abonnements actifs
+- `cashier_subscription_items` — Items d'abonnement (plans multiples)
 
-### 5. Configuration des webhooks
-
-#### Créer le webhook dans Stripe
-
-Vous avez deux options pour configurer votre webhook Stripe :
-
-<Tabs items={['Automatique (CLI)', 'Manuel (Dashboard)']}>
-
-```bash
-# Utiliser la commande CLI pour créer automatiquement le webhook
-php bin/console cashier:webhook --url=https://votre-domaine.com/stripe/webhook
-```
-
-```text
-1. Allez sur le dashboard Stripe : https://dashboard.stripe.com/webhooks
-2. Cliquez sur "Ajouter un endpoint"
-3. Entrez l'URL : https://votre-domaine.com/stripe/webhook
-4. Sélectionnez les événements à envoyer (voir ci-dessous)
-5. Cliquez sur "Ajouter un endpoint"
-6. Copiez le "Signing secret" et ajoutez-le dans votre .env
-```
-
-</Tabs>
-
-#### Événements webhook requis
-
-Sélectionnez les événements suivants dans votre configuration webhook :
-
-<Callout type="info">
-**Événements recommandés :**
-
-- `customer.subscription.created`
-- `customer.subscription.updated`
-- `customer.subscription.deleted`
-- `customer.updated`
-- `invoice.paid`
-- `invoice.payment_failed`
-- `checkout.session.completed`
-- `payment_intent.succeeded`
-- `payment_intent.payment_failed`
-</Callout>
-
-### 6. Configuration de routing (optionnel)
-
-Le bundle enregistre automatiquement les routes sous le préfixe `/stripe`. Vous pouvez personnaliser ce préfixe dans la configuration :
-
-```yaml
-cashier:
-    path: 'stripe'  # Modifier si nécessaire
-```
-
-## Quick Start
-
-Une fois l'installation terminée, vous pouvez commencer à utiliser CashierBundle :
-
-### Créer un abonnement
-
-```php
-use App\Entity\User;
-
-class SubscriptionController extends AbstractController
-{
-    public function subscribe(Request $request, ManagerRegistry $doctrine)
-    {
-        $user = $this->getUser(); // Votre entité User implements BillableEntityInterface
-
-        $subscription = $user->newSubscription('default', 'price_1234567890')
-            ->trialDays(14) // 14 jours d'essai
-            ->create($request->request->get('paymentMethodId'));
-
-        return $this->json(['status' => 'success', 'subscription' => $subscription]);
-    }
-}
-```
-
-### Vérifier le statut d'abonnement
-
-```php
-if ($user->subscribed('default')) {
-    // L'utilisateur a un abonnement actif
-}
-
-if ($user->onTrial('default')) {
-    // L'utilisateur est en période d'essai
-}
-
-if ($user->subscription('default')?->cancelled()) {
-    // L'abonnement a été annulé
-}
-```
-
-### Traiter un paiement unique
-
-```php
-$payment = $user->charge(1000, $paymentMethodId); // 10.00 USD
-```
-
-## Dépendances optionnelles
-
-### Génération de PDF (factures)
-
-Pour générer des factures PDF, installez l'une de ces dépendances :
-
-```bash
-# Option 1 : Dompdf (recommandé)
-composer require dompdf/dompdf
-
-# Option 2 : Snappy (wkhtmltopdf)
-composer require knplabs/knp-snappy-bundle
-```
-
-### Webhooks asynchrones
-
-Pour traiter les webhooks de manière asynchrone avec Messenger :
-
-```bash
-composer require symfony/messenger
-```
-
-Configurez ensuite le transport Messenger selon vos besoins.
-
-## Vérification de l'installation
-
-Pour vérifier que tout est correctement installé :
-
-```bash
-# Vérifier que le bundle est chargé
-php bin/console config:dump-reference cashier
-
-# Créer un webhook de test
-php bin/console cashier:webhook --url=https://example.com/stripe/webhook
-```
-
-<Callout type="success">
-Si ces commandes s'exécutent sans erreur, votre installation est réussie !
-</Callout>
-
-## Prochaines étapes
-
-- [Configuration des webhooks](/docs/webhooks)
-- [Gestion des abonnements](/docs/subscriptions)
-- [Traitement des paiements](/docs/payments)
-- [Gestion des factures](/docs/invoices)
+[Prochain : Abonnements →](/docs/subscriptions)
