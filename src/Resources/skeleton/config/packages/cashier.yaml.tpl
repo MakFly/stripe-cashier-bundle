@@ -21,6 +21,8 @@ cashier:
     default_subscription_type: default
     invoices:
         renderer: CashierBundle\Service\InvoiceRenderer\DompdfInvoiceRenderer
+        default_locale: en
+        supported_locales: ['en', 'fr']
         storage:
             driver: local
             path: '%kernel.project_dir%/var/data/invoices'

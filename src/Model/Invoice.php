@@ -39,7 +39,11 @@ final class Invoice
 
     public function dueDate(): ?\DateTimeImmutable
     {
-        return $this->invoice->due_date ? (new \DateTimeImmutable())->setTimestamp($this->invoice->due_date) : null;
+        if (!isset($this->invoice->due_date) || !is_int($this->invoice->due_date)) {
+            return null;
+        }
+
+        return (new \DateTimeImmutable())->setTimestamp($this->invoice->due_date);
     }
 
     public function total(): string

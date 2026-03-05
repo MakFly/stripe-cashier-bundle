@@ -11,6 +11,8 @@ services:
         autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
         bind:
             $storagePath: '%cashier.invoices.storage.path%'
+            $defaultLocale: '%cashier.invoices.default_locale%'
+            $supportedLocales: '%cashier.invoices.supported_locales%'
 
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name
@@ -66,6 +68,12 @@ services:
 
     CashierBundle\Contract\InvoiceStorageInterface:
         alias: CashierBundle\Service\InvoiceStorage\LocalInvoiceStorage
+
+    CashierBundle\Contract\InvoiceLocaleResolverInterface:
+        alias: CashierBundle\Service\Invoice\DefaultInvoiceLocaleResolver
+
+    CashierBundle\Contract\InvoiceTranslationProviderInterface:
+        alias: CashierBundle\Service\Invoice\DefaultInvoiceTranslationProvider
 
     # Twig Extension
     CashierBundle\Twig\CashierExtension:

@@ -40,6 +40,10 @@ class Cashier
         $currency = strtoupper($currency ?? self::$currency);
         $locale = $locale ?? self::$currencyLocale;
 
+        if (!class_exists(NumberFormatter::class)) {
+            return \CashierBundle\Model\Cashier::formatAmount($amount, strtolower($currency), $locale);
+        }
+
         $money = new Money($amount, new Currency($currency));
         $numberFormatter = new NumberFormatter($locale, NumberFormatter::CURRENCY);
         $moneyFormatter = new IntlMoneyFormatter($numberFormatter, new ISOCurrencies());

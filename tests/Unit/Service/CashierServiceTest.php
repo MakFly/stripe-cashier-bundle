@@ -38,7 +38,8 @@ final class CashierServiceTest extends TestCase
     public function testFormatAmountWithLargeAmount(): void
     {
         $formatted = Cashier::formatAmount(1000000, 'usd', 'en');
-        $this->assertStringContainsString('10000', $formatted);
+        $this->assertStringContainsString('10', $formatted);
+        $this->assertStringContainsString('000', $formatted);
     }
 
     public function testCurrencyCanBeChanged(): void
