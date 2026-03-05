@@ -54,6 +54,62 @@ cashier:
         options:
             paper: letter
             remote_enabled: false
+
+## Renderers (facultatif)
+
+Pour générer des factures PDF, installez l'un des renderers :
+
+### Dompdf (recommandé)
+
+```bash
+composer require dompdf/dompdf
+```
+
+### Snappy
+
+```bash
+composer require knplabs/knp-snappy
+```
+
+Configurez le renderer dans `config/packages/cashier.yaml` :
+
+```yaml
+cashier:
+    # ...
+    invoices:
+        renderer: CashierBundle\Service\InvoiceRenderer\DompdfInvoiceRenderer
+        # ou pour Snappy :
+        # renderer: CashierBundle\Service\InvoiceRenderer\SnappyInvoiceRenderer
+```
+
+## Processing asynchrone (recommandé)
+
+Pour traiter les webhooks de manière asynchrone avec Symfony Messenger :
+
+```bash
+composer require symfony/messenger
+```
+
+Configurez Messenger dans `.env` :
+
+```env
+MESSENGER_TRANSPORT_DSN=doctrine://default?auto_setup=0
+```
+
+Et dans `config/packages/messenger.yaml` :
+
+```yaml
+framework:
+    messenger:
+        transports:
+            async:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                retry_strategy:
+                    enabled: true
+                    max_retries: 3
+                    delay: 1000  # 1s
+                    multiplier: 2
+                    max_delay: 0
 ```
 
 ## Route webhook

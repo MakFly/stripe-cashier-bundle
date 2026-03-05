@@ -1,0 +1,173 @@
+# Checkout
+
+Le `CheckoutService` utilise Stripe Checkout pour des paiements hébergés par Stripe.
+
+## Sessions de paiement
+
+### Paiement simple avec prix existant
+
+```php
+use CashierBundle\Service\CheckoutService;
+
+class CheckoutController
+{
+    public function __construct(
+        private readonly CheckoutService $checkoutService,
+    ) {}
+
+    public function checkout(User $user): Response
+    {
+        $checkout = $this->checkoutService->create($user, [
+            ['price' => 'price_xxx', 'quantity' => 1],
+        ], [
+            'success_url' => 'https://example.com/success',
+            'cancel_url' => 'https://example.com/cancel',
+        ]);
+
+        return $this->redirect($checkout->url());
+    }
+}
+```
+
+### Paiement ad-hoc (sans prix préexistant)
+
+```php
+$checkout = $this->checkoutService->charge(
+    billable: $user,
+    amount: 1999, // 19.99€
+    name: 'Produit Premium',
+    quantity: 1,
+    options: [
+        'success_url' => 'https://example.com/success',
+        'cancel_url' => 'https://example.com/cancel',
+    ],
+);
+```
+
+## Abonnements via Checkout
+
+Créer un abonnement via Stripe Checkout :
+
+```php
+$checkout = $this->checkoutService->createSubscription($user, [
+    ['price' => 'price_monthly', 'quantity' => 1],
+], [
+    'success_url' => 'https://example.com/success',
+    'cancel_url' => 'https://example.com/cancel',
+]);
+
+return $this->redirect($checkout->url());
+```
+
+## Billing Portal
+
+Rediriger vers le portail client Stripe :
+
+```php
+public function portal(User $user): Response
+{
+    $url = $this->checkoutService->billingPortal(
+        billable: $user,
+        returnUrl: 'https://example.com/account',
+    );
+
+    return $this->redirect($url);
+}
+```
+
+Le portail permet au client de :
+- Voir et gérer ses abonnements
+- Mettre à jour ses méthodes de paiement
+- Télécharger ses factures
+- Mettre à jour ses informations
+
+## Récupérer une session
+
+```php
+$checkout = $this->checkoutService->findSession('cs_xxx');
+
+if ($checkout !== null) {
+    if ($checkout->isComplete()) {
+        // Paiement terminé
+    }
+}
+```
+
+## Model Checkout
+
+```php
+$checkout->id();              // 'cs_xxx'
+$checkout->url();             // URL de redirection
+$checkout->status();          // 'open', 'complete', 'expired'
+$checkout->isComplete();      // true si terminé
+$checkout->isExpired();       // true si expiré
+$checkout->isOpen();          // true si en attente
+
+// Références
+$checkout->customerId();          // 'cus_xxx'
+$checkout->paymentIntentId();     // 'pi_xxx' (mode payment)
+$checkout->subscriptionId();      // 'sub_xxx' (mode subscription)
+$checkout->setupIntentId();       // 'seti_xxx' (mode setup)
+```
+
+## Options disponibles
+
+```php
+$checkout = $this->checkoutService->create($user, $items, [
+    'success_url' => 'https://example.com/success',
+    'cancel_url' => 'https://example.com/cancel',
+    'mode' => 'payment', // ou 'subscription', 'setup'
+
+    // Pré-remplir les données
+    'customer_email' => 'user@example.com',
+    'customer_name' => 'Jean Dupont',
+
+    // Personnalisation
+    'brand' => 'MonApp',
+    'locale' => 'fr',
+
+    // Autorisations
+    'allow_promotion_codes' => true,
+    'billing_address_collection' => 'required',
+
+    // Métadonnées
+    'metadata' => [
+        'order_id' => '1234',
+    ],
+]);
+```
+
+## Webhook de complétion
+
+Écoutez l'événement `checkout.session.completed` pour traiter les paiements :
+
+```php
+use CashierBundle\Contract\WebhookHandlerInterface;
+use Stripe\Event;
+use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
+
+#[AutoconfigureTag('cashier.webhook_handler')]
+final class CheckoutCompletedHandler implements WebhookHandlerInterface
+{
+    public function handles(): array
+    {
+        return ['checkout.session.completed'];
+    }
+
+    public function handle(Event $event): void
+    {
+        $session = $event->data->object;
+
+        // Traiter le paiement...
+        $orderId = $session->metadata->order_id ?? null;
+    }
+}
+```
+
+## Accéder à l'objet Stripe
+
+```php
+$stripeSession = $checkout->asStripeCheckoutSession();
+```
+
+[Prochain : Factures →](/docs/invoices)

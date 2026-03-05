@@ -140,7 +140,43 @@ final class OnSubscriptionCreated
 }
 ```
 
-## Traitement asynchrone
+## Commandes CLI
+
+Utilisez les commandes CLI pour gérer les webhooks :
+
+```bash
+# Générer l'URL du webhook et le secret
+php bin/console cashier:webhook --url=https://example.com/stripe/webhook --show-secret
+
+# Désactiver temporairement le webhook
+php bin/console cashier:webhook --disabled
+
+# Spécifier la version API Stripe
+php bin/console cashier:webhook --api-version=2024-06-20
+
+# Options disponibles :
+# --url : URL du webhook (obligatoire)
+# --disabled : Désactiver le webhook
+# --api-version : Version API Stripe
+# --show-secret : Afficher le secret de signature
+```
+
+## Tests avec Stripe CLI
+
+Pour tester vos webhooks localement avec la Stripe CLI :
+
+```bash
+# Écouter les événements et les forwarder
+stripe listen --forward-to localhost:8000/cashier/webhook
+
+# Simuler un événement
+stripe trigger customer.subscription.created
+
+# Voir les logs
+stripe listen --events customer.subscription.created --forward-to localhost:8000/cashier/webhook
+```
+
+## Événements Symfony
 
 Pour traiter les webhooks de manière asynchrone avec Symfony Messenger, les messages suivants sont disponibles :
 
@@ -154,4 +190,28 @@ Installez Messenger et configurez vos transports :
 
 ```bash
 composer require symfony/messenger
+```
+
+### Configuration Messenger (recommandée)
+
+Configurez Messenger dans `.env` :
+
+```env
+MESSENGER_TRANSPORT_DSN=doctrine://default?auto_setup=0
+```
+
+Et dans `config/packages/messenger.yaml` :
+
+```yaml
+framework:
+    messenger:
+        transports:
+            async:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                retry_strategy:
+                    enabled: true
+                    max_retries: 3
+                    delay: 1000  # 1s
+                    multiplier: 2
+                    max_delay: 0
 ```

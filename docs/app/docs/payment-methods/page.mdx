@@ -1,0 +1,339 @@
+---
+title: Méthodes de paiement
+description: Gérer les méthodes de paiement des clients avec Stripe Cashier
+---
+
+# Méthodes de paiement
+
+Le service de méthodes de paiement de Stripe Cashier vous permet d'ajouter, modifier et supprimer facilement les méthodes de paiement de vos clients.
+
+## PaymentMethodService
+
+Le `PaymentMethodService` est le service principal pour gérer toutes les méthodes de paiement d'un client.
+
+### Méthodes disponibles
+
+#### `add(BillableInterface $billable, string $paymentMethod): PaymentMethod`
+
+Ajoute une nouvelle méthode de paiement à un client.
+
+```php
+use CashierBundle\Service\PaymentMethodService;
+use CashierBundle\Contract\BillableInterface;
+
+// Ajouter une méthode de paiement via son ID PM
+$paymentMethod = $paymentMethodService->add($user, 'pm_card_visa');
+```
+
+#### `updateDefault(BillableInterface $billable, string $paymentMethod): PaymentMethod`
+
+Définit une méthode de paiement comme méthode par défaut.
+
+```php
+// Définir une méthode de paiement par défaut
+$defaultMethod = $paymentMethodService->updateDefault($user, 'pm_card_visa');
+```
+
+#### `list(BillableInterface $billable, ?string $type = null): Collection`
+
+Liste toutes les méthodes de paiement d'un client.
+
+```php
+// Lister toutes les méthodes de paiement
+$allMethods = $paymentMethodService->list($user);
+
+// Lister uniquement les cartes de crédit
+$creditCards = $paymentMethodService->list($user, 'card');
+
+// Lister uniquement les comptes bancaires
+$bankAccounts = $paymentMethodService->list($user, 'sepa_debit');
+```
+
+#### `default(BillableInterface $billable): ?PaymentMethod`
+
+Récupère la méthode de paiement par défaut d'un client.
+
+```php
+$defaultMethod = $paymentMethodService->default($user);
+```
+
+#### `hasDefault(BillableInterface $billable): bool`
+
+Vérifie si un client a une méthode de paiement par défaut.
+
+```php
+if ($paymentMethodService->hasDefault($user)) {
+    // Le client a une méthode de paiement par défaut
+}
+```
+
+#### `remove(BillableInterface $billable, string $paymentMethod): void`
+
+Supprime une méthode de paiement d'un client.
+
+```php
+// Supprimer une méthode de paiement
+$paymentMethodService->remove($user, 'pm_card_visa');
+```
+
+## Modèle PaymentMethod
+
+Le modèle `PaymentMethod` représente une méthode de paiement Stripe avec des méthodes utiles.
+
+### Méthodes disponibles
+
+#### `id(): string`
+
+Retourne l'ID de la méthode de paiement.
+
+```php
+$methodId = $paymentMethod->id(); // ex: pm_card_visa
+```
+
+#### `type(): string`
+
+Retourne le type de méthode de paiement.
+
+```php
+$type = $paymentMethod->type(); // ex: 'card', 'sepa_debit'
+```
+
+#### `isDefault(): bool`
+
+Retourne true si cette méthode est la méthode par défaut.
+
+```php
+$isDefault = $paymentMethod->isDefault();
+```
+
+#### `brand(): ?string`
+
+Retourne la marque de la carte pour les paiements par carte.
+
+```php
+$brand = $paymentMethod->brand(); // ex: 'visa', 'mastercard'
+```
+
+#### `lastFour(): ?string`
+
+Retourne les 4 derniers chiffres de la carte.
+
+```php
+$lastFour = $paymentMethod->lastFour(); // ex: '4242'
+```
+
+#### `expiryMonth(): ?int`
+
+Retourne le mois d'expiration de la carte.
+
+```php
+$expiryMonth = $paymentMethod->expiryMonth(); // ex: 12
+```
+
+#### `expiryYear(): ?int`
+
+Retourne l'année d'expiration de la carte.
+
+```php
+$expiryYear = $paymentMethod->expiryYear(); // ex: 2025
+```
+
+#### `bank(): ?string`
+
+Retourne le nom de la banque pour les comptes bancaires SEPA.
+
+```php
+$bank = $paymentMethod->bank(); // ex: 'BNP Paribas'
+```
+
+## Gestion des méthodes de paiement
+
+### Ajouter et définir une méthode par défaut
+
+```php
+use CashierBundle\Service\PaymentMethodService;
+use CashierBundle\Contract\BillableInterface;
+
+class PaymentMethodController
+{
+    public function __construct(
+        private readonly PaymentMethodService $paymentMethodService,
+    ) {
+    }
+
+    public function addPaymentMethodAction(BillableInterface $user, string $paymentMethodId): Response
+    {
+        try {
+            // Ajouter la méthode de paiement
+            $method = $this->paymentMethodService->add($user, $paymentMethodId);
+
+            // Définir comme méthode par défaut
+            $defaultMethod = $this->paymentMethodService->updateDefault($user, $paymentMethodId);
+
+            return new Response('Méthode de paiement ajoutée et définie par défaut');
+        } catch (\Exception $e) {
+            throw new \RuntimeException('Erreur: ' . $e->getMessage());
+        }
+    }
+}
+```
+
+### Lister toutes les méthodes de paiement
+
+```php
+public function listPaymentMethodsAction(BillableInterface $user): Response
+{
+    $allMethods = $this->paymentMethodService->list($user);
+    $defaultMethod = $this->paymentMethodService->default($user);
+
+    $methods = [];
+    foreach ($allMethods as $method) {
+        $methods[] = [
+            'id' => $method->id(),
+            'type' => $method->type(),
+            'brand' => $method->brand(),
+            'lastFour' => $method->lastFour(),
+            'expiry' => $method->expiryMonth() . '/' . $method->expiryYear(),
+            'isDefault' => $method->isDefault(),
+        ];
+    }
+
+    return new Response(json_encode($methods));
+}
+```
+
+### Supprimer une méthode de paiement
+
+```php
+public function removePaymentMethodAction(BillableInterface $user, string $paymentMethodId): Response
+{
+    try {
+        $this->paymentMethodService->remove($user, $paymentMethodId);
+
+        // Vérifier si une nouvelle méthode par défaut doit être définie
+        $remainingMethods = $this->paymentMethodService->list($user);
+        if (count($remainingMethods) > 0 && !$this->paymentMethodService->hasDefault($user)) {
+            // Définir la première méthode restante comme par défaut
+            $firstMethod = $remainingMethods->first();
+            $this->paymentMethodService->updateDefault($user, $firstMethod->id());
+        }
+
+        return new Response('Méthode de paiement supprimée');
+    } catch (\Exception $e) {
+        throw new \RuntimeException('Erreur: ' . $e->getMessage());
+    }
+}
+```
+
+## Types de méthodes de paiement
+
+| Type | Description | Exemple de marque |
+|------|-------------|------------------|
+| `card` | Carte de crédit/débit | visa, mastercard, amex, discover |
+| `sepa_debit` | Compte bancaire SEPA | - |
+| `sofort` | Paiement SOFORT | - |
+| `giropay` | Giropay | - |
+| `ideal` | iDEAL | - |
+| `bancontact` | Bancontact | - |
+| `eps` | EPS | - |
+| `multibanco` | Multibanco | - |
+| `wechat_pay` | WeChat Pay | - |
+| `alipay` | Alipay | - |
+| `paypal` | PayPal | - |
+
+## Formatage des cartes de crédit
+
+```php
+public function formatCardInfo(PaymentMethod $method): array
+{
+    return [
+        'type' => $method->type(),
+        'brand' => $method->brand() ?: 'unknown',
+        'lastFour' => $method->lastFour() ?: '',
+        'expiry' => sprintf('%02d/%d', $method->expiryMonth() ?: 0, $method->expiryYear() ?: 0),
+        'isDefault' => $method->isDefault(),
+    ];
+}
+```
+
+## Exemple complet avec formulaire
+
+```php
+use CashierBundle\Service\PaymentMethodService;
+use CashierBundle\Contract\BillableInterface;
+
+class PaymentMethodController extends AbstractController
+{
+    public function __construct(
+        private readonly PaymentMethodService $paymentMethodService,
+    ) {
+    }
+
+    #[Route('/profile/payment-methods', name='profile_payment_methods')]
+    public function index(BillableInterface $user): Response
+    {
+        $methods = $this->paymentMethodService->list($user);
+        $defaultMethod = $this->paymentMethodService->default($user);
+
+        return $this->render('profile/payment_methods.html.twig', [
+            'methods' => $methods,
+            'defaultMethod' => $defaultMethod,
+        ]);
+    }
+
+    #[Route('/profile/payment-methods/add', name='profile_payment_methods_add')]
+    public function addPaymentMethod(
+        BillableInterface $user,
+        Request $request
+    ): Response {
+        $paymentMethodId = $request->request->get('payment_method_id');
+
+        if (!$paymentMethodId) {
+            throw new BadRequestHttpException('ID de méthode de paiement manquant');
+        }
+
+        $method = $this->paymentMethodService->add($user, $paymentMethodId);
+
+        return $this->redirectToRoute('profile_payment_methods');
+    }
+
+    #[Route('/profile/payment-methods/{id}/default', name='profile_payment_methods_default')]
+    public function setDefault(
+        BillableInterface $user,
+        string $id
+    ): Response {
+        $this->paymentMethodService->updateDefault($user, $id);
+
+        return $this->redirectToRoute('profile_payment_methods');
+    }
+
+    #[Route('/profile/payment-methods/{id}/remove', name='profile_payment_methods_remove')]
+    public function removePaymentMethod(
+        BillableInterface $user,
+        string $id
+    ): Response {
+        $this->paymentMethodService->remove($user, $id);
+
+        return $this->redirectToRoute('profile_payment_methods');
+    }
+}
+```
+
+## Tableau récapitulatif
+
+| Méthode | Description | Paramètres | Retour |
+|---------|-------------|------------|--------|
+| `add()` | Ajouter une méthode de paiement | `BillableInterface $billable`, `string $paymentMethod` | `PaymentMethod` |
+| `updateDefault()` | Définir méthode par défaut | `BillableInterface $billable`, `string $paymentMethod` | `PaymentMethod` |
+| `list()` | Lister les méthodes | `BillableInterface $billable`, `?string $type` | `Collection<PaymentMethod>` |
+| `default()` | Obtenir méthode par défaut | `BillableInterface $billable` | `?PaymentMethod` |
+| `hasDefault()` | Vérifier méthode par défaut | `BillableInterface $billable` | `bool` |
+| `remove()` | Supprimer méthode | `BillableInterface $billable`, `string $paymentMethod` | `void` |
+| `id()` | ID de la méthode | - | `string` |
+| `type()` | Type de méthode | - | `string` |
+| `isDefault()` | Est par défaut | - | `bool` |
+| `brand()` | Marque de la carte | - | `?string` |
+| `lastFour()` | 4 derniers chiffres | - | `?string` |
+| `expiryMonth()` | Mois d'expiration | - | `?int` |
+| `expiryYear()` | Année d'expiration | - | `?int` |
+| `bank()` | Nom de la banque | - | `?string` |

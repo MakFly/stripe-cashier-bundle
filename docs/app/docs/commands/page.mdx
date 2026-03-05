@@ -1,0 +1,141 @@
+---
+title: Commandes CLI
+---
+
+# Commandes CLI
+
+Le bundle Stripe Cashier fournit plusieurs commandes Symfony pour faciliter la gestion de vos intégrations Stripe.
+
+## cashier:webhook
+
+Crée un endpoint webhook Stripe avec les événements par défaut.
+
+### Options
+
+| Option | Alias | Description |
+|--------|-------|-------------|
+| `--url`, `-u` | - | URL du webhook |
+| `--disabled`, `-d` | - | Désactiver le webhook après création |
+| `--api-version` | - | Version API Stripe |
+| `--show-secret` | - | Afficher le secret en clair |
+
+### Événements par défaut
+
+La commande configure automatiquement les événements suivants :
+
+- `customer.subscription.created` - Abonnement créé
+- `customer.subscription.updated` - Abonnement mis à jour
+- `customer.subscription.deleted` - Abonnement supprimé
+- `customer.updated` - Client mis à jour
+- `customer.deleted` - Client supprimé
+- `payment_method.automatically_updated` - Méthode de paiement automatiquement mise à jour
+- `invoice.payment_action_required` - Action de paiement requise sur la facture
+- `invoice.paid` - Facture payée
+- `invoice.payment_failed` - Échec du paiement de la facture
+- `checkout.session.completed` - Session checkout complétée
+
+### Exemples
+
+#### Créer un webhook simple
+
+```bash
+php bin/console cashier:webhook --url=https://mon-app.com/stripe/webhook
+```
+
+#### Créer un webhook désactivé
+
+```bash
+php bin/console cashier:webhook --url=https://mon-app.com/stripe/webhook --disabled
+```
+
+#### Créer avec une version API spécifique
+
+```bash
+php bin/console cashier:webhook --url=https://mon-app.com/stripe/webhook --api-version=2024-04-10
+```
+
+#### Afficher le secret en clair
+
+```bash
+php bin/console cashier:webhook --url=https://mon-app.com/stripe/webhook --show-secret
+```
+
+## cashier:report-usage
+
+Rapporte l'usage pour un abonnement metered (basé à l'usage).
+
+### Arguments
+
+| Argument | Description |
+|----------|-------------|
+| `subscription-item-id` | ID local de l'item d'abonnement |
+| `quantity` | Quantité à reporter |
+
+### Options
+
+| Option | Alias | Description | Valeur par défaut |
+|--------|-------|-------------|-------------------|
+| `--timestamp`, `-t` | - | Timestamp Unix | `time()` |
+| `--action`, `-a` | - | Action à effectuer | `increment` |
+
+### Actions
+
+- `increment` - Incrémente la quantité actuelle (valeur par défaut)
+- `set` - Définit la quantité à la valeur spécifiée
+
+### Exemples
+
+#### Reporter 100 unités (mode incrément)
+
+```bash
+php bin/console cashier:report-usage 1 100
+```
+
+#### Reporter avec un timestamp spécifique
+
+```bash
+php bin/console cashier:report-usage 1 100 --timestamp=1672531200
+```
+
+#### Définir la quantité (mode set)
+
+```bash
+php bin/console cashier:report-usage 1 100 --action=set
+```
+
+## cashier:cleanup-sessions
+
+Nettoie les sessions checkout expirées de votre base de données.
+
+### Options
+
+| Option | Alias | Description | Valeur par défaut |
+|--------|-------|-------------|-------------------|
+| `--hours`, `-H` | - | Sessions plus anciennes que N heures | `24` |
+| `--dry-run` | - | Simulation sans suppression | - |
+
+### Exemples
+
+#### Nettoyer les sessions de plus de 24 heures (par défaut)
+
+```bash
+php bin/console cashier:cleanup-sessions
+```
+
+#### Nettoyer les sessions de plus de 48 heures
+
+```bash
+php bin/console cashier:cleanup-sessions --hours=48
+```
+
+#### Simulation sans suppression
+
+```bash
+php bin/console cashier:cleanup-sessions --hours=72 --dry-run
+```
+
+### Notes
+
+- La commande supprime uniquement les sessions checkout sans statut (status IS NULL)
+- La commande nécessite l'entité `CashierBundle\Entity\CheckoutSession` pour fonctionner
+- Utilisez l'option `--dry-run` pour voir ce qui serait supprimé avant d'exécuter la commande réelle
