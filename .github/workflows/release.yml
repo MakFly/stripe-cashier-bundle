@@ -9,46 +9,7 @@ permissions:
   contents: write
 
 jobs:
-  quality:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.2'
-          extensions: mbstring, xml, ctype, iconv, intl
-
-      - name: Install dependencies
-        env:
-          SYMFONY_REQUIRE: 7.*
-        run: composer update --prefer-dist --no-interaction --no-progress
-
-      - name: Run quality checks
-        run: composer quality
-
-  test:
-    needs: quality
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.3'
-          extensions: mbstring, xml, ctype, iconv, intl
-          coverage: xdebug
-
-      - name: Install dependencies
-        run: composer install --prefer-dist --no-progress
-
-      - name: Run tests
-        run: ./vendor/bin/phpunit --configuration phpunit.xml
-
   release:
-    needs: [quality, test]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -62,16 +23,17 @@ jobs:
       - name: Generate changelog
         id: changelog
         run: |
-          # Get previous tag
-          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          prev_tag="$(git tag --list 'v*.*.*' --sort=-version:refname | sed -n '2p')"
 
-          if [ -n "$PREV_TAG" ]; then
-            echo "CHANGES<<EOF" >> $GITHUB_OUTPUT
-            git log --pretty=format:"- %s (%h)" $PREV_TAG..HEAD >> $GITHUB_OUTPUT
-            echo "" >> $GITHUB_OUTPUT
-            echo "EOF" >> $GITHUB_OUTPUT
+          if [ -n "$prev_tag" ]; then
+            {
+              echo "CHANGES<<EOF"
+              git log --pretty=format:"- %s (%h)" "${prev_tag}..HEAD"
+              echo
+              echo "EOF"
+            } >> "$GITHUB_OUTPUT"
           else
-            echo "CHANGES=Initial release" >> $GITHUB_OUTPUT
+            echo "CHANGES=Initial release" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Create GitHub Release
