@@ -7,6 +7,7 @@ namespace CashierBundle\Service;
 use CashierBundle\Contract\BillableInterface;
 use CashierBundle\Model\Checkout;
 use Stripe\Exception\ApiErrorException;
+use Stripe\StripeClient;
 
 /**
  * @phpstan-type CheckoutItem array{price: string, quantity: int|null}

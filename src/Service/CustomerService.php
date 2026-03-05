@@ -12,6 +12,7 @@ use CashierBundle\Exception\InvalidCustomerException;
 use CashierBundle\Repository\StripeCustomerRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Stripe\Customer as StripeCustomer;
+use Stripe\StripeClient;
 
 /**
  * @implements \CashierBundle\Concerns\ManagesCustomer<BillableInterface>

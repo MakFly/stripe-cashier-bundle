@@ -9,6 +9,7 @@ use CashierBundle\Exception\InvalidPaymentMethodException;
 use CashierBundle\Model\Payment;
 use Stripe\Exception\ApiErrorException;
 use Stripe\PaymentIntent as StripePaymentIntent;
+use Stripe\StripeClient;
 
 class PaymentIntentService
 {

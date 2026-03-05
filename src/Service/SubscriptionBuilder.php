@@ -13,6 +13,7 @@ use CashierBundle\Exception\InvalidCouponException;
 use CashierBundle\Model\PaymentMethod;
 use CashierBundle\Repository\SubscriptionRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Stripe\StripeClient;
 use Stripe\Subscription as StripeSubscription;
 
 /**

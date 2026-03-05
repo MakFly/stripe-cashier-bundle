@@ -7,6 +7,7 @@ namespace CashierBundle\Service;
 use CashierBundle\Contract\BillableInterface;
 use CashierBundle\Model\TaxRate;
 use Stripe\Exception\ApiErrorException;
+use Stripe\StripeClient;
 use Stripe\TaxRate as StripeTaxRate;
 
 class TaxService
