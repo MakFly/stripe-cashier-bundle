@@ -13,6 +13,7 @@
     ],
     "require": {
         "php": "^8.2",
+        "doctrine/doctrine-bundle": "^2.13|^3.0",
         "stripe/stripe-php": "^16.0",
         "symfony/framework-bundle": "^7.0|^8.0",
         "symfony/doctrine-bridge": "^7.0|^8.0",

@@ -49,6 +49,8 @@ If Flex is not available, run:
 php bin/console cashier:install
 ```
 
+The installer generates config files and Stripe env vars. Your billable entity can be added afterwards as long as it implements `CashierBundle\Contract\BillableEntityInterface`.
+
 ## Configuration
 
 ### 1. Environment Variables
@@ -91,8 +93,6 @@ doctrine:
                 dir: '%kernel.project_dir%/vendor/makfly/stripe-cashier-bundle/src/Entity'
                 prefix: 'CashierBundle\Entity'
                 alias: CashierBundle
-        resolve_target_entities:
-            CashierBundle\Contract\BillableEntityInterface: 'App\Entity\User'
 ```
 
 ### 4. Routes
@@ -110,14 +110,11 @@ Make your User entity implement `BillableEntityInterface`:
 
 ```php
 use CashierBundle\Contract\BillableEntityInterface;
-use CashierBundle\Contract\BillableTrait;
+use CashierBundle\Concerns\BillableTrait;
 
 class User implements BillableEntityInterface
 {
     use BillableTrait;
-
-    #[ORM\OneToOne]
-    private ?StripeCustomer $stripeCustomer = null;
 }
 ```
 

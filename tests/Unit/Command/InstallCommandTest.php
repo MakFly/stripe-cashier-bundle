@@ -30,16 +30,14 @@ final class InstallCommandTest extends TestCase
         $command = new InstallCommand(new InstallFileManager(), $this->projectDir);
         $tester = new CommandTester($command);
 
-        $exitCode = $tester->execute([
-            '--billable-class' => 'App\\Entity\\Customer',
-        ]);
+        $exitCode = $tester->execute([]);
 
         self::assertSame(Command::SUCCESS, $exitCode);
         self::assertStringContainsString('created config/packages/cashier.yaml', $tester->getDisplay());
         self::assertStringContainsString('created config/packages/cashier_doctrine.yaml', $tester->getDisplay());
         self::assertStringContainsString('created config/routes/cashier.yaml', $tester->getDisplay());
-        self::assertStringContainsString(
-            "CashierBundle\\Contract\\BillableEntityInterface: 'App\\Entity\\Customer'",
+        self::assertStringNotContainsString(
+            'resolve_target_entities',
             (string) file_get_contents($this->projectDir . '/config/packages/cashier_doctrine.yaml'),
         );
     }

@@ -31,13 +31,6 @@ final class InstallCommand extends Command
     {
         $this
             ->addOption(
-                'billable-class',
-                null,
-                InputOption::VALUE_OPTIONAL,
-                'Fully-qualified billable entity class used for ResolveTargetEntity',
-                'App\\Entity\\User',
-            )
-            ->addOption(
                 'env-file',
                 null,
                 InputOption::VALUE_OPTIONAL,
@@ -50,17 +43,9 @@ final class InstallCommand extends Command
     {
         $io = new SymfonyStyle($input, $output);
 
-        $billableClass = (string) $input->getOption('billable-class');
-        if ($billableClass === '') {
-            $io->error('The --billable-class option cannot be empty.');
-
-            return Command::INVALID;
-        }
-
         $envFile = $input->getOption('env-file');
         $result = $this->installFileManager->install(
             $this->projectDir,
-            $billableClass,
             is_string($envFile) ? $envFile : null,
         );
 
@@ -78,7 +63,7 @@ final class InstallCommand extends Command
         }
 
         $io->success('Cashier configuration installed successfully.');
-        $io->note('Review the generated Stripe keys and adjust the billable class mapping if needed.');
+        $io->note('Review the generated Stripe keys and keep your billable entity implementing CashierBundle\\Contract\\BillableEntityInterface.');
 
         return Command::SUCCESS;
     }
