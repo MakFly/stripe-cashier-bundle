@@ -84,4 +84,4 @@ jobs:
 
       - name: Skip summary
         if: steps.version.outputs.skip == 'true'
-        run: echo "No new tag created: ${{ steps.version.outputs.reason }}"
+        run: 'echo "No new tag created: ${{ steps.version.outputs.reason }}"'
