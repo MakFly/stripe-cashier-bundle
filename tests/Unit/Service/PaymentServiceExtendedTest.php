@@ -8,16 +8,16 @@ use CashierBundle\Exception\IncompletePaymentException;
 use CashierBundle\Exception\InvalidPaymentMethodException;
 use CashierBundle\Service\PaymentService;
 use CashierBundle\Tests\Support\FakeBillable;
+use CashierBundle\Tests\Support\TestStripeClient;
 use PHPUnit\Framework\TestCase;
 use Stripe\Exception\InvalidRequestException;
 use Stripe\Refund;
-use Stripe\StripeClient;
 
 final class PaymentServiceExtendedTest extends TestCase
 {
     public function testChargeThrowsWhenBillableHasNoStripeId(): void
     {
-        $service = new PaymentService(new StripeClient('sk_test'));
+        $service = new PaymentService(new TestStripeClient());
 
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('Billable must have a Stripe customer ID.');
@@ -27,9 +27,7 @@ final class PaymentServiceExtendedTest extends TestCase
 
     public function testChargeThrowsIncompletePaymentWhenRequiresAction(): void
     {
-        $stripe = new StripeClient('sk_test');
-        /** @phpstan-ignore-next-line test double assignment */
-        $stripe->paymentIntents = new class () {
+        $stripe = (new TestStripeClient())->withService('paymentIntents', new class () {
             /**
              * @param array<string, mixed> $options
              */
@@ -43,7 +41,7 @@ final class PaymentServiceExtendedTest extends TestCase
                     'status' => 'requires_action',
                 ];
             }
-        };
+        });
 
         $service = new PaymentService($stripe);
 
@@ -54,9 +52,7 @@ final class PaymentServiceExtendedTest extends TestCase
 
     public function testPayThrowsWhenNoDefaultPaymentMethod(): void
     {
-        $stripe = new StripeClient('sk_test');
-        /** @phpstan-ignore-next-line test double assignment */
-        $stripe->customers = new class () {
+        $stripe = (new TestStripeClient())->withService('customers', new class () {
             public function retrieve(string $id): object
             {
                 return (object) [
@@ -65,7 +61,7 @@ final class PaymentServiceExtendedTest extends TestCase
                     ],
                 ];
             }
-        };
+        });
 
         $service = new PaymentService($stripe);
 
@@ -79,9 +75,7 @@ final class PaymentServiceExtendedTest extends TestCase
     {
         $refund = new Refund('re_123');
 
-        $stripe = new StripeClient('sk_test');
-        /** @phpstan-ignore-next-line test double assignment */
-        $stripe->refunds = new class ($refund) {
+        $stripe = (new TestStripeClient())->withService('refunds', new class ($refund) {
             public function __construct(private Refund $refund)
             {
             }
@@ -93,7 +87,7 @@ final class PaymentServiceExtendedTest extends TestCase
             {
                 return $this->refund;
             }
-        };
+        });
 
         $service = new PaymentService($stripe);
 
@@ -102,9 +96,7 @@ final class PaymentServiceExtendedTest extends TestCase
 
     public function testRefundWrapsStripeError(): void
     {
-        $stripe = new StripeClient('sk_test');
-        /** @phpstan-ignore-next-line test double assignment */
-        $stripe->refunds = new class () {
+        $stripe = (new TestStripeClient())->withService('refunds', new class () {
             /**
              * @param array<string, mixed> $payload
              */
@@ -112,7 +104,7 @@ final class PaymentServiceExtendedTest extends TestCase
             {
                 throw new InvalidRequestException('bad refund');
             }
-        };
+        });
 
         $service = new PaymentService($stripe);
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CashierBundle\Tests\Unit\Command;
 
 use CashierBundle\Command\WebhookCommand;
+use CashierBundle\Tests\Support\TestStripeClient;
 use PHPUnit\Framework\TestCase;
 use Stripe\StripeClient;
 use Symfony\Component\Console\Tester\CommandTester;
@@ -44,9 +45,7 @@ final class WebhookCommandTest extends TestCase
 
     private function createStripeClient(): StripeClient
     {
-        $stripe = new StripeClient('sk_test_dummy');
-        /** @phpstan-ignore-next-line dynamic replacement for test double */
-        $stripe->webhookEndpoints = new class () {
+        return (new TestStripeClient())->withService('webhookEndpoints', new class () {
             /**
              * @param array<string, mixed> $params
              */
@@ -59,8 +58,6 @@ final class WebhookCommandTest extends TestCase
                     'status' => 'enabled',
                 ];
             }
-        };
-
-        return $stripe;
+        });
     }
 }
