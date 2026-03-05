@@ -33,7 +33,7 @@ final class InvoiceArchiveServiceIntegrationTest extends TestCase
         $config = ORMSetup::createAttributeMetadataConfiguration([
             __DIR__ . '/../../../src/Entity',
         ], true);
-        if (method_exists($config, 'enableNativeLazyObjects')) {
+        if (PHP_VERSION_ID >= 80400 && method_exists($config, 'enableNativeLazyObjects')) {
             $config->enableNativeLazyObjects(true);
         }
 
