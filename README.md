@@ -190,10 +190,23 @@ Full documentation available at [cashier-symfony.vercel.app](https://cashier-sym
 
 ## Requirements
 
-- PHP 8.2 to 8.5 (tested in CI)
-- Symfony 7.x or 8.x
-- Doctrine ORM 3.0+
-- Stripe PHP SDK ^16.0
+| Dependency | Version |
+|------------|---------|
+| PHP | ^8.2 |
+| Symfony | ^7.0 or ^8.0 (requires PHP 8.4+) |
+| Doctrine ORM | ^3.0 |
+| Stripe PHP SDK | ^16.0 |
+
+> **Note:** Symfony 8.x requires PHP 8.4 or higher. The CI tests all combinations automatically.
+
+### CI Matrix
+
+| PHP | Symfony 7.x | Symfony 8.x |
+|-----|-------------|-------------|
+| 8.2 | ✅ | ❌ |
+| 8.3 | ✅ | ❌ |
+| 8.4 | ✅ | ✅ |
+| 8.5 | ✅ | ✅ |
 
 ## License
 
