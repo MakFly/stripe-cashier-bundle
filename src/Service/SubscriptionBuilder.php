@@ -42,7 +42,7 @@ class SubscriptionBuilder
         private readonly string $type,
         private readonly StripeClient $stripe,
         private readonly EntityManagerInterface $entityManager,
-        private readonly SubscriptionRepository $subscriptionRepository
+        private readonly SubscriptionRepository $subscriptionRepository,
     ) {
     }
 
@@ -260,7 +260,7 @@ class SubscriptionBuilder
     {
         try {
             return $this->stripe->subscriptions->create(
-                $this->buildPayload($customerId, $paymentMethod)
+                $this->buildPayload($customerId, $paymentMethod),
             );
         } catch (\Stripe\Exception\InvalidCouponException $e) {
             throw new InvalidCouponException('The provided coupon code is invalid.', 0, $e);
@@ -288,7 +288,7 @@ class SubscriptionBuilder
 
         if ($stripeSubscription->trial_end !== null) {
             $subscription->setTrialEndsAt(
-                \DateTimeImmutable::createFromFormat('U', (string) $stripeSubscription->trial_end) ?: null
+                \DateTimeImmutable::createFromFormat('U', (string) $stripeSubscription->trial_end) ?: null,
             );
         }
 

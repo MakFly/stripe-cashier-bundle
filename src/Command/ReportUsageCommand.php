@@ -16,13 +16,13 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 #[AsCommand(
     name: 'cashier:report-usage',
-    description: 'Report usage for a metered subscription item'
+    description: 'Report usage for a metered subscription item',
 )]
 class ReportUsageCommand extends Command
 {
     public function __construct(
         private readonly StripeClient $stripe,
-        private readonly SubscriptionItemRepository $repository
+        private readonly SubscriptionItemRepository $repository,
     ) {
         parent::__construct();
     }

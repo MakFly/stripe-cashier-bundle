@@ -11,7 +11,7 @@ final class CouponTest extends TestCase
 {
     private function createCoupon(array $data = []): object
     {
-        return new class($data) {
+        return new class ($data) {
             public string $id;
             public ?string $name;
             public ?float $percent_off;

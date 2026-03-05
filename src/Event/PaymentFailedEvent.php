@@ -12,7 +12,7 @@ final class PaymentFailedEvent extends Event
         public readonly string $customerId,
         public readonly ?string $paymentIntentId,
         public readonly int $amount,
-        public readonly string $currency
+        public readonly string $currency,
     ) {
     }
 

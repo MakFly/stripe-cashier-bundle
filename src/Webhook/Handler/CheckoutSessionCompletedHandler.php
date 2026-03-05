@@ -6,14 +6,14 @@ namespace CashierBundle\Webhook\Handler;
 
 use CashierBundle\Repository\StripeCustomerRepository;
 use CashierBundle\Repository\SubscriptionRepository;
-use Stripe\Event;
 use Stripe\Checkout\Session as StripeSession;
+use Stripe\Event;
 
 final readonly class CheckoutSessionCompletedHandler extends AbstractWebhookHandler
 {
     public function __construct(
         private StripeCustomerRepository $customerRepository,
-        private SubscriptionRepository $subscriptionRepository
+        private SubscriptionRepository $subscriptionRepository,
     ) {
     }
 

@@ -9,6 +9,7 @@ final class UpdateSubscriptionQuantityMessage
     public function __construct(
         public readonly string $subscriptionId,
         public readonly int $quantity,
-        public readonly bool $prorate = true
-    ) {}
+        public readonly bool $prorate = true,
+    ) {
+    }
 }

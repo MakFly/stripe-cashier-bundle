@@ -12,14 +12,15 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 class CancelSubscriptionHandler
 {
     public function __construct(
-        private readonly SubscriptionService $subscriptionService
-    ) {}
+        private readonly SubscriptionService $subscriptionService,
+    ) {
+    }
 
     public function __invoke(CancelSubscriptionMessage $message): void
     {
         $this->subscriptionService->cancel(
             $message->subscriptionId,
-            $message->atPeriodEnd
+            $message->atPeriodEnd,
         );
     }
 }

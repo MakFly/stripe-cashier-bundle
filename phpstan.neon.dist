@@ -1,0 +1,15 @@
+parameters:
+  level: 6
+  paths:
+    - src
+    - tests
+  excludePaths:
+    analyse:
+      - src/Repository/*
+      - src/Twig/CashierExtension.php
+  tmpDir: var/phpstan
+  treatPhpDocTypesAsCertain: false
+
+includes:
+  - phpstan-baseline.neon
+  - phpstan-baseline-extra.neon

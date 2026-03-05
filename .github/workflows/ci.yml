@@ -54,3 +54,22 @@ jobs:
           else
             ./vendor/bin/phpunit --configuration phpunit.xml
           fi
+
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, xml, ctype, iconv, intl
+
+      - name: Install dependencies
+        env:
+          SYMFONY_REQUIRE: 7.*
+        run: composer update --prefer-dist --no-interaction --no-progress
+
+      - name: Run quality checks
+        run: composer quality

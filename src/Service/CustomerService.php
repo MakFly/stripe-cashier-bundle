@@ -21,7 +21,7 @@ class CustomerService
     public function __construct(
         private readonly StripeClient $stripe,
         private readonly StripeCustomerRepository $repository,
-        private readonly EntityManagerInterface $entityManager
+        private readonly EntityManagerInterface $entityManager,
     ) {
     }
 

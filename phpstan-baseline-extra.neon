@@ -1,0 +1,126 @@
+parameters:
+	ignoreErrors:
+		-
+			message: "#^Method CashierBundle\\\\Command\\\\WebhookCommand\\:\\:__construct\\(\\) has parameter \\$webhookConfig with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Command/WebhookCommand.php
+
+		-
+			message: "#^Method CashierBundle\\\\Contract\\\\BillableInterface\\:\\:charge\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Contract/BillableInterface.php
+
+		-
+			message: "#^Method CashierBundle\\\\Contract\\\\BillableInterface\\:\\:checkout\\(\\) has parameter \\$items with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Contract/BillableInterface.php
+
+		-
+			message: "#^Method CashierBundle\\\\Contract\\\\BillableInterface\\:\\:createAsStripeCustomer\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Contract/BillableInterface.php
+
+		-
+			message: "#^Method CashierBundle\\\\Contract\\\\BillableInterface\\:\\:createOrGetStripeCustomer\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Contract/BillableInterface.php
+
+		-
+			message: "#^Method CashierBundle\\\\Contract\\\\BillableInterface\\:\\:invoice\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Contract/BillableInterface.php
+
+		-
+			message: "#^Method CashierBundle\\\\Contract\\\\BillableInterface\\:\\:newSubscription\\(\\) has parameter \\$prices with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Contract/BillableInterface.php
+
+		-
+			message: "#^Method CashierBundle\\\\Contract\\\\BillableInterface\\:\\:pay\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Contract/BillableInterface.php
+
+		-
+			message: "#^Method CashierBundle\\\\Contract\\\\BillableInterface\\:\\:refund\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Contract/BillableInterface.php
+
+		-
+			message: "#^Method CashierBundle\\\\Contract\\\\BillableInterface\\:\\:tab\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Contract/BillableInterface.php
+
+		-
+			message: "#^Method CashierBundle\\\\Contract\\\\BillableInterface\\:\\:taxRates\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Contract/BillableInterface.php
+
+		-
+			message: "#^Method CashierBundle\\\\Contract\\\\BillableInterface\\:\\:updateStripeCustomer\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Contract/BillableInterface.php
+
+		-
+			message: "#^Method CashierBundle\\\\Contract\\\\InvoiceRendererInterface\\:\\:render\\(\\) has parameter \\$data with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Contract/InvoiceRendererInterface.php
+
+		-
+			message: "#^Method CashierBundle\\\\DependencyInjection\\\\CashierExtension\\:\\:registerConfigurationParameters\\(\\) has parameter \\$config with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/DependencyInjection/CashierExtension.php
+
+		-
+			message: "#^Method CashierBundle\\\\Model\\\\Invoice\\:\\:download\\(\\) has parameter \\$data with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Model/Invoice.php
+
+		-
+			message: "#^Method CashierBundle\\\\Service\\\\Cashier\\:\\:paymentIntentOptions\\(\\) return type has no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Service/Cashier.php
+
+		-
+			message: "#^Method CashierBundle\\\\Service\\\\PaymentIntentService\\:\\:authorize\\(\\) has parameter \\$options with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: src/Service/PaymentIntentService.php
+
+		-
+			message: "#^Method CashierBundle\\\\Tests\\\\Unit\\\\Entity\\\\StripeCustomerTest\\:\\:createStripeCustomer\\(\\) has parameter \\$data with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: tests/Unit/Entity/StripeCustomerTest.php
+
+		-
+			message: "#^Method CashierBundle\\\\Tests\\\\Unit\\\\Entity\\\\SubscriptionTest\\:\\:createSubscription\\(\\) has parameter \\$data with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: tests/Unit/Entity/SubscriptionTest.php
+
+		-
+			message: "#^Method CashierBundle\\\\Tests\\\\Unit\\\\Model\\\\CheckoutTest\\:\\:createSession\\(\\) has parameter \\$data with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: tests/Unit/Model/CheckoutTest.php
+
+		-
+			message: "#^Method class@anonymous/tests/Unit/Model/CheckoutTest\\.php\\:14\\:\\:__construct\\(\\) has parameter \\$data with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: tests/Unit/Model/CheckoutTest.php
+
+		-
+			message: "#^Method CashierBundle\\\\Tests\\\\Unit\\\\Model\\\\CouponTest\\:\\:createCoupon\\(\\) has parameter \\$data with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: tests/Unit/Model/CouponTest.php
+
+		-
+			message: "#^Method class@anonymous/tests/Unit/Model/CouponTest\\.php\\:14\\:\\:__construct\\(\\) has parameter \\$data with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: tests/Unit/Model/CouponTest.php
+
+		-
+			message: "#^Method CashierBundle\\\\Tests\\\\Unit\\\\Model\\\\PaymentTest\\:\\:createPaymentIntent\\(\\) has parameter \\$data with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: tests/Unit/Model/PaymentTest.php
+
+		-
+			message: "#^Method class@anonymous/tests/Unit/Model/PaymentTest\\.php\\:14\\:\\:__construct\\(\\) has parameter \\$data with no value type specified in iterable type array\\.$#"
+			count: 1
+			path: tests/Unit/Model/PaymentTest.php

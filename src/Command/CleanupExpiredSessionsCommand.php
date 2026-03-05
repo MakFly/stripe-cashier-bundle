@@ -14,12 +14,12 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 #[AsCommand(
     name: 'cashier:cleanup-sessions',
-    description: 'Cleanup expired checkout sessions'
+    description: 'Cleanup expired checkout sessions',
 )]
 class CleanupExpiredSessionsCommand extends Command
 {
     public function __construct(
-        private readonly EntityManagerInterface $entityManager
+        private readonly EntityManagerInterface $entityManager,
     ) {
         parent::__construct();
     }

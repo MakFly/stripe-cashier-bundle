@@ -12,8 +12,9 @@ final class Invoice
 {
     public function __construct(
         private readonly StripeInvoice $invoice,
-        private readonly InvoiceRendererInterface $renderer
-    ) {}
+        private readonly InvoiceRendererInterface $renderer,
+    ) {
+    }
 
     public function id(): string
     {
@@ -62,7 +63,7 @@ final class Invoice
     {
         return array_map(
             static fn (StripeInvoice\LineItem $item) => new InvoiceLineItem($item),
-            $this->invoice->lines->autoPagingIterator()->toArray()
+            $this->invoice->lines->autoPagingIterator()->toArray(),
         );
     }
 
@@ -76,9 +77,9 @@ final class Invoice
                 $tax->name ?? 'Tax',
                 (float) $tax->tax_rate->percentage,
                 $tax->amount,
-                $tax->tax_rate->inclusive ?? false
+                $tax->tax_rate->inclusive ?? false,
             ),
-            $this->invoice->total_tax_amounts ?? []
+            $this->invoice->total_tax_amounts ?? [],
         );
     }
 
@@ -94,7 +95,7 @@ final class Invoice
                 Cashier::formatAmount($paymentIntent->amount, $this->currency()),
                 $paymentIntent->amount,
                 $this->currency(),
-                $paymentIntent->status
+                $paymentIntent->status,
             );
         }
 

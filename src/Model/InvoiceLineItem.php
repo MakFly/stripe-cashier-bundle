@@ -9,8 +9,9 @@ use Stripe\InvoiceLineItem as StripeInvoiceLineItem;
 final class InvoiceLineItem
 {
     public function __construct(
-        private readonly StripeInvoiceLineItem $lineItem
-    ) {}
+        private readonly StripeInvoiceLineItem $lineItem,
+    ) {
+    }
 
     public function id(): string
     {

@@ -8,6 +8,7 @@ final class ProcessInvoiceMessage
 {
     public function __construct(
         public readonly string $invoiceId,
-        public readonly bool $autoPay = false
-    ) {}
+        public readonly bool $autoPay = false,
+    ) {
+    }
 }

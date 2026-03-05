@@ -6,12 +6,11 @@ namespace CashierBundle\Service;
 
 use CashierBundle\Model\SetupIntent;
 use Stripe\Exception\ApiErrorException;
-use Stripe\SetupIntent as StripeSetupIntent;
 
 class SetupIntentService
 {
     public function __construct(
-        private readonly StripeClient $stripe
+        private readonly StripeClient $stripe,
     ) {
     }
 
@@ -32,7 +31,7 @@ class SetupIntentService
             throw new \RuntimeException(
                 sprintf('Failed to create setup intent: %s', $e->getMessage()),
                 0,
-                $e
+                $e,
             );
         }
     }
@@ -61,7 +60,7 @@ class SetupIntentService
             throw new \RuntimeException(
                 sprintf('Failed to update setup intent %s: %s', $id, $e->getMessage()),
                 0,
-                $e
+                $e,
             );
         }
     }
@@ -79,7 +78,7 @@ class SetupIntentService
             throw new \RuntimeException(
                 sprintf('Failed to confirm setup intent %s: %s', $id, $e->getMessage()),
                 0,
-                $e
+                $e,
             );
         }
     }
@@ -97,7 +96,7 @@ class SetupIntentService
             throw new \RuntimeException(
                 sprintf('Failed to cancel setup intent %s: %s', $id, $e->getMessage()),
                 0,
-                $e
+                $e,
             );
         }
     }

@@ -14,7 +14,7 @@ class TaxService
     private bool $automaticTaxEnabled = false;
 
     public function __construct(
-        private readonly StripeClient $stripe
+        private readonly StripeClient $stripe,
     ) {
     }
 
@@ -84,7 +84,7 @@ class TaxService
             throw new \RuntimeException(
                 sprintf('Failed to calculate tax: %s', $e->getMessage()),
                 0,
-                $e
+                $e,
             );
         }
     }
@@ -118,7 +118,7 @@ class TaxService
             throw new \RuntimeException(
                 sprintf('Failed to create tax rate: %s', $e->getMessage()),
                 0,
-                $e
+                $e,
             );
         }
     }
@@ -133,7 +133,7 @@ class TaxService
             $taxRate->inclusive,
             $taxRate->jurisdiction ?? null,
             $taxRate->state ?? null,
-            $taxRate->country ?? null
+            $taxRate->country ?? null,
         );
     }
 
@@ -150,7 +150,7 @@ class TaxService
             false,
             null,
             null,
-            $taxId->country ?? null
+            $taxId->country ?? null,
         );
     }
 
@@ -167,7 +167,7 @@ class TaxService
             throw new \RuntimeException(
                 sprintf('Failed to attach tax rates to price: %s', $e->getMessage()),
                 0,
-                $e
+                $e,
             );
         }
     }
@@ -182,7 +182,7 @@ class TaxService
 
             return array_map(
                 fn (StripeTaxRate $taxRate) => $this->buildTaxRate($taxRate),
-                $taxRates->data
+                $taxRates->data,
             );
         } catch (ApiErrorException $e) {
             return [];

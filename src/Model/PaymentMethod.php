@@ -9,8 +9,9 @@ use Stripe\PaymentMethod as StripePaymentMethod;
 final class PaymentMethod
 {
     public function __construct(
-        private readonly StripePaymentMethod $paymentMethod
-    ) {}
+        private readonly StripePaymentMethod $paymentMethod,
+    ) {
+    }
 
     public function id(): string
     {

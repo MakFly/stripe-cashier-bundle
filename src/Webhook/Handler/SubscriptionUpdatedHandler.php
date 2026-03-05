@@ -14,7 +14,7 @@ final readonly class SubscriptionUpdatedHandler extends AbstractWebhookHandler
 {
     public function __construct(
         private SubscriptionRepository $subscriptionRepository,
-        private EventDispatcherInterface $dispatcher
+        private EventDispatcherInterface $dispatcher,
     ) {
     }
 
@@ -46,7 +46,7 @@ final readonly class SubscriptionUpdatedHandler extends AbstractWebhookHandler
 
     private function updateSubscriptionFromStripe(
         \CashierBundle\Entity\Subscription $subscription,
-        StripeSubscription $stripeSubscription
+        StripeSubscription $stripeSubscription,
     ): void {
         $subscription->setStripeStatus($stripeSubscription->status);
 

@@ -11,8 +11,9 @@ final class InvoicePayment
         private readonly string $amount,
         private readonly int $rawAmount,
         private readonly string $currency,
-        private readonly string $status
-    ) {}
+        private readonly string $status,
+    ) {
+    }
 
     public function paymentIntentId(): string
     {

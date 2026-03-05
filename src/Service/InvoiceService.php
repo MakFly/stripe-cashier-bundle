@@ -21,7 +21,7 @@ class InvoiceService
 {
     public function __construct(
         private readonly StripeClient $stripe,
-        private readonly InvoiceRendererInterface $renderer
+        private readonly InvoiceRendererInterface $renderer,
     ) {
     }
 
@@ -44,8 +44,8 @@ class InvoiceService
             return new ArrayCollection(
                 array_map(
                     fn (\Stripe\Invoice $invoice) => new Invoice($invoice, $this->renderer),
-                    $invoices->data
-                )
+                    $invoices->data,
+                ),
             );
         } catch (ApiErrorException $e) {
             return new ArrayCollection();
@@ -72,7 +72,7 @@ class InvoiceService
             throw new InvalidInvoiceException(
                 sprintf('Failed to create invoice: %s', $e->getMessage()),
                 0,
-                $e
+                $e,
             );
         }
     }
@@ -122,7 +122,7 @@ class InvoiceService
             throw new InvalidInvoiceException(
                 sprintf('Failed to create invoice item: %s', $e->getMessage()),
                 0,
-                $e
+                $e,
             );
         }
     }
@@ -155,7 +155,7 @@ class InvoiceService
             throw new InvalidInvoiceException(
                 sprintf('Failed to pay invoice %s: %s', $invoice->id(), $e->getMessage()),
                 0,
-                $e
+                $e,
             );
         }
     }
@@ -180,7 +180,7 @@ class InvoiceService
 
             return array_map(
                 fn (\Stripe\InvoiceLineItem $line) => new InvoiceLineItem($line),
-                $invoice->lines->autoPagingIterator()->toArray()
+                $invoice->lines->autoPagingIterator()->toArray(),
             );
         } catch (ApiErrorException $e) {
             return [];
@@ -195,7 +195,7 @@ class InvoiceService
             throw new InvalidInvoiceException(
                 sprintf('Failed to delete invoice item %s: %s', $invoiceItemId, $e->getMessage()),
                 0,
-                $e
+                $e,
             );
         }
     }

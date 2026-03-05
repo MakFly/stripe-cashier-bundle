@@ -10,7 +10,7 @@ use Symfony\Contracts\EventDispatcher\Event;
 final class SubscriptionCreatedEvent extends Event
 {
     public function __construct(
-        public readonly Subscription $subscription
+        public readonly Subscription $subscription,
     ) {
     }
 

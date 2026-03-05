@@ -16,7 +16,7 @@ class DompdfInvoiceRenderer implements InvoiceRendererInterface
     public function __construct(
         private readonly Environment $twig,
         private readonly string $paper = 'letter',
-        private readonly bool $remoteEnabled = false
+        private readonly bool $remoteEnabled = false,
     ) {
     }
 
@@ -48,7 +48,7 @@ class DompdfInvoiceRenderer implements InvoiceRendererInterface
             [
                 'Content-Type' => 'application/pdf',
                 'Content-Disposition' => sprintf('attachment; filename="%s"', $filename),
-            ]
+            ],
         );
     }
 
@@ -80,7 +80,7 @@ class DompdfInvoiceRenderer implements InvoiceRendererInterface
             [
                 'Content-Type' => 'application/pdf',
                 'Content-Disposition' => sprintf('inline; filename="%s"', $filename),
-            ]
+            ],
         );
     }
 }

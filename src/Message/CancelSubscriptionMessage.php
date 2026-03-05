@@ -8,6 +8,7 @@ final class CancelSubscriptionMessage
 {
     public function __construct(
         public readonly string $subscriptionId,
-        public readonly bool $atPeriodEnd = true
-    ) {}
+        public readonly bool $atPeriodEnd = true,
+    ) {
+    }
 }

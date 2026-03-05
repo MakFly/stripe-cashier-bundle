@@ -9,8 +9,9 @@ use Stripe\CustomerBalanceTransaction as StripeCustomerBalanceTransaction;
 final class CustomerBalanceTransaction
 {
     public function __construct(
-        private readonly StripeCustomerBalanceTransaction $transaction
-    ) {}
+        private readonly StripeCustomerBalanceTransaction $transaction,
+    ) {
+    }
 
     public function id(): string
     {

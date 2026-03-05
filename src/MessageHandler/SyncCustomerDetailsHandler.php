@@ -14,8 +14,9 @@ class SyncCustomerDetailsHandler
 {
     public function __construct(
         private readonly CustomerService $customerService,
-        private readonly StripeCustomerRepository $repository
-    ) {}
+        private readonly StripeCustomerRepository $repository,
+    ) {
+    }
 
     public function __invoke(SyncCustomerDetailsMessage $message): void
     {

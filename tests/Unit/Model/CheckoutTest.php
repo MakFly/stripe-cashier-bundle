@@ -11,7 +11,7 @@ final class CheckoutTest extends TestCase
 {
     private function createSession(array $data = []): object
     {
-        return new class($data) {
+        return new class ($data) {
             public string $id;
             public ?string $url;
             public ?string $payment_intent;

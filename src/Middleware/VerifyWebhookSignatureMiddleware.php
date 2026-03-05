@@ -12,7 +12,7 @@ final readonly class VerifyWebhookSignatureMiddleware
 {
     public function __construct(
         private string $webhookSecret,
-        private int $tolerance = 300
+        private int $tolerance = 300,
     ) {
     }
 
@@ -26,7 +26,7 @@ final readonly class VerifyWebhookSignatureMiddleware
                 $payload,
                 $signature,
                 $this->webhookSecret,
-                $this->tolerance
+                $this->tolerance,
             );
         } catch (\Exception $e) {
             throw new HttpException(Response::HTTP_BAD_REQUEST, 'Invalid signature');

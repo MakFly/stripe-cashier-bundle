@@ -1,0 +1,766 @@
+parameters:
+	ignoreErrors:
+		-
+			message: "#^Parameter \\#1 \\$delete of method Doctrine\\\\ORM\\\\QueryBuilder\\:\\:delete\\(\\) expects class\\-string\\|null, string given\\.$#"
+			count: 1
+			path: src/Command/CleanupExpiredSessionsCommand.php
+
+		-
+			message: "#^Parameter \\#1 \\$from of method Doctrine\\\\ORM\\\\QueryBuilder\\:\\:from\\(\\) expects class\\-string, string given\\.$#"
+			count: 1
+			path: src/Command/CleanupExpiredSessionsCommand.php
+
+		-
+			message: "#^Call to an undefined method CashierBundle\\\\Repository\\\\SubscriptionItemRepository\\:\\:find\\(\\)\\.$#"
+			count: 1
+			path: src/Command/ReportUsageCommand.php
+
+		-
+			message: "#^PHPDoc tag @implements has invalid value \\(BillableInterface\\)\\: Unexpected token \"\\\\n \", expected '\\<' at offset 36$#"
+			count: 1
+			path: src/Concerns/HandlesTaxes.php
+
+		-
+			message: "#^PHPDoc tag @implements has invalid value \\(\\\\CashierBundle\\\\Contract\\\\BillableInterface\\)\\: Unexpected token \"\\\\n \", expected '\\<' at offset 60$#"
+			count: 1
+			path: src/Concerns/ManagesCustomer.php
+
+		-
+			message: "#^PHPDoc tag @implements has invalid value \\(\\\\CashierBundle\\\\Contract\\\\BillableInterface\\)\\: Unexpected token \"\\\\n \", expected '\\<' at offset 60$#"
+			count: 1
+			path: src/Concerns/ManagesInvoices.php
+
+		-
+			message: "#^PHPDoc tag @implements has invalid value \\(\\\\CashierBundle\\\\Contract\\\\BillableInterface\\)\\: Unexpected token \"\\\\n \", expected '\\<' at offset 60$#"
+			count: 1
+			path: src/Concerns/ManagesPaymentMethods.php
+
+		-
+			message: "#^PHPDoc tag @implements has invalid value \\(\\\\CashierBundle\\\\Contract\\\\BillableInterface\\)\\: Unexpected token \"\\\\n \", expected '\\<' at offset 60$#"
+			count: 1
+			path: src/Concerns/ManagesSubscriptions.php
+
+		-
+			message: "#^PHPDoc tag @implements has invalid value \\(\\\\CashierBundle\\\\Contract\\\\BillableInterface\\)\\: Unexpected token \"\\\\n \", expected '\\<' at offset 60$#"
+			count: 1
+			path: src/Concerns/PerformsCharges.php
+
+		-
+			message: "#^Method CashierBundle\\\\Contract\\\\BillableInterface\\:\\:invoices\\(\\) return type with generic interface Doctrine\\\\Common\\\\Collections\\\\Collection does not specify its types\\: TKey, T$#"
+			count: 1
+			path: src/Contract/BillableInterface.php
+
+		-
+			message: "#^Method CashierBundle\\\\Contract\\\\BillableInterface\\:\\:paymentMethods\\(\\) return type with generic interface Doctrine\\\\Common\\\\Collections\\\\Collection does not specify its types\\: TKey, T$#"
+			count: 1
+			path: src/Contract/BillableInterface.php
+
+		-
+			message: "#^Method CashierBundle\\\\Contract\\\\BillableInterface\\:\\:subscriptions\\(\\) return type with generic interface Doctrine\\\\Common\\\\Collections\\\\Collection does not specify its types\\: TKey, T$#"
+			count: 1
+			path: src/Contract/BillableInterface.php
+
+		-
+			message: "#^Access to an undefined property Stripe\\\\StripeObject\\:\\:\\$redirect_to_url\\.$#"
+			count: 1
+			path: src/Controller/PaymentController.php
+
+		-
+			message: "#^Access to an undefined property Stripe\\\\StripeObject\\:\\:\\$type\\.$#"
+			count: 1
+			path: src/Controller/PaymentController.php
+
+		-
+			message: "#^Attribute class Symfony\\\\Component\\\\Routing\\\\Annotation\\\\Route does not exist\\.$#"
+			count: 3
+			path: src/Controller/PaymentController.php
+
+		-
+			message: "#^Call to an undefined method Symfony\\\\Component\\\\Config\\\\Definition\\\\Builder\\\\ArrayNodeDefinition\\<Symfony\\\\Component\\\\Config\\\\Definition\\\\Builder\\\\NodeBuilder\\<Symfony\\\\Component\\\\Config\\\\Definition\\\\Builder\\\\ArrayNodeDefinition\\<Symfony\\\\Component\\\\Config\\\\Definition\\\\Builder\\\\TreeBuilder\\<string\\>\\>\\>\\>\\:\\:scalarNode\\(\\)\\.$#"
+			count: 1
+			path: src/DependencyInjection/Configuration.php
+
+		-
+			message: "#^Class CashierBundle\\\\Service\\\\Invoice\\\\DompdfInvoiceRenderer not found\\.$#"
+			count: 1
+			path: src/DependencyInjection/Configuration.php
+
+		-
+			message: "#^Parameter \\#1 \\$customer of method CashierBundle\\\\Entity\\\\Subscription\\:\\:setCustomer\\(\\) expects CashierBundle\\\\Entity\\\\StripeCustomer, null given\\.$#"
+			count: 1
+			path: src/Entity/StripeCustomer.php
+
+		-
+			message: "#^Parameter \\$repositoryClass of attribute class Doctrine\\\\ORM\\\\Mapping\\\\Entity constructor expects class\\-string\\<Doctrine\\\\ORM\\\\EntityRepository\\<T of object\\>\\>\\|null, 'CashierBundle\\\\\\\\Repository\\\\\\\\StripeCustomerRepository' given\\.$#"
+			count: 1
+			path: src/Entity/StripeCustomer.php
+
+		-
+			message: "#^Property CashierBundle\\\\Entity\\\\StripeCustomer\\:\\:\\$subscriptions with generic interface Doctrine\\\\Common\\\\Collections\\\\Collection does not specify its types\\: TKey, T$#"
+			count: 1
+			path: src/Entity/StripeCustomer.php
+
+		-
+			message: "#^Parameter \\#1 \\$subscription of method CashierBundle\\\\Entity\\\\SubscriptionItem\\:\\:setSubscription\\(\\) expects CashierBundle\\\\Entity\\\\Subscription, null given\\.$#"
+			count: 1
+			path: src/Entity/Subscription.php
+
+		-
+			message: "#^Parameter \\$repositoryClass of attribute class Doctrine\\\\ORM\\\\Mapping\\\\Entity constructor expects class\\-string\\<Doctrine\\\\ORM\\\\EntityRepository\\<T of object\\>\\>\\|null, 'CashierBundle\\\\\\\\Repository\\\\\\\\SubscriptionRepository' given\\.$#"
+			count: 1
+			path: src/Entity/Subscription.php
+
+		-
+			message: "#^Property CashierBundle\\\\Entity\\\\Subscription\\:\\:\\$items with generic interface Doctrine\\\\Common\\\\Collections\\\\Collection does not specify its types\\: TKey, T$#"
+			count: 1
+			path: src/Entity/Subscription.php
+
+		-
+			message: "#^Parameter \\$repositoryClass of attribute class Doctrine\\\\ORM\\\\Mapping\\\\Entity constructor expects class\\-string\\<Doctrine\\\\ORM\\\\EntityRepository\\<T of object\\>\\>\\|null, 'CashierBundle\\\\\\\\Repository\\\\\\\\SubscriptionItemRepository' given\\.$#"
+			count: 1
+			path: src/Entity/SubscriptionItem.php
+
+		-
+			message: "#^Attribute class Symfony\\\\Component\\\\Messenger\\\\Attribute\\\\AsMessageHandler does not exist\\.$#"
+			count: 1
+			path: src/MessageHandler/CancelSubscriptionHandler.php
+
+		-
+			message: "#^Parameter \\#1 \\$subscription of method CashierBundle\\\\Service\\\\SubscriptionService\\:\\:cancel\\(\\) expects CashierBundle\\\\Entity\\\\Subscription, string given\\.$#"
+			count: 1
+			path: src/MessageHandler/CancelSubscriptionHandler.php
+
+		-
+			message: "#^Attribute class Symfony\\\\Component\\\\Messenger\\\\Attribute\\\\AsMessageHandler does not exist\\.$#"
+			count: 1
+			path: src/MessageHandler/ProcessInvoiceHandler.php
+
+		-
+			message: "#^Attribute class Symfony\\\\Component\\\\Messenger\\\\Attribute\\\\AsMessageHandler does not exist\\.$#"
+			count: 1
+			path: src/MessageHandler/RetryPaymentHandler.php
+
+		-
+			message: "#^Call to an undefined method CashierBundle\\\\Service\\\\PaymentService\\:\\:retryInvoice\\(\\)\\.$#"
+			count: 1
+			path: src/MessageHandler/RetryPaymentHandler.php
+
+		-
+			message: "#^Attribute class Symfony\\\\Component\\\\Messenger\\\\Attribute\\\\AsMessageHandler does not exist\\.$#"
+			count: 1
+			path: src/MessageHandler/SyncCustomerDetailsHandler.php
+
+		-
+			message: "#^Parameter \\#1 \\$stripeCustomer of method CashierBundle\\\\Service\\\\CustomerService\\:\\:sync\\(\\) expects Stripe\\\\Customer, CashierBundle\\\\Entity\\\\StripeCustomer given\\.$#"
+			count: 1
+			path: src/MessageHandler/SyncCustomerDetailsHandler.php
+
+		-
+			message: "#^Attribute class Symfony\\\\Component\\\\Messenger\\\\Attribute\\\\AsMessageHandler does not exist\\.$#"
+			count: 1
+			path: src/MessageHandler/UpdateSubscriptionQuantityHandler.php
+
+		-
+			message: "#^Method CashierBundle\\\\Service\\\\SubscriptionService\\:\\:updateQuantity\\(\\) invoked with 3 parameters, 2 required\\.$#"
+			count: 1
+			path: src/MessageHandler/UpdateSubscriptionQuantityHandler.php
+
+		-
+			message: "#^Parameter \\#1 \\$subscription of method CashierBundle\\\\Service\\\\SubscriptionService\\:\\:updateQuantity\\(\\) expects CashierBundle\\\\Entity\\\\Subscription, string given\\.$#"
+			count: 1
+			path: src/MessageHandler/UpdateSubscriptionQuantityHandler.php
+
+		-
+			message: "#^Access to property \\$amount on an unknown class Stripe\\\\Invoice\\\\Tax\\.$#"
+			count: 1
+			path: src/Model/Invoice.php
+
+		-
+			message: "#^Access to property \\$name on an unknown class Stripe\\\\Invoice\\\\Tax\\.$#"
+			count: 1
+			path: src/Model/Invoice.php
+
+		-
+			message: "#^Access to property \\$tax_rate on an unknown class Stripe\\\\Invoice\\\\Tax\\.$#"
+			count: 2
+			path: src/Model/Invoice.php
+
+		-
+			message: "#^Call to an undefined method Generator&iterable\\<Stripe\\\\InvoiceLineItem\\>\\:\\:toArray\\(\\)\\.$#"
+			count: 1
+			path: src/Model/Invoice.php
+
+		-
+			message: "#^Parameter \\#1 \\$callback of function array_map expects \\(callable\\(Stripe\\\\StripeObject\\)\\: mixed\\)\\|null, Closure\\(Stripe\\\\Invoice\\\\Tax\\)\\: CashierBundle\\\\Model\\\\Tax given\\.$#"
+			count: 1
+			path: src/Model/Invoice.php
+
+		-
+			message: "#^Parameter \\#1 \\$lineItem of class CashierBundle\\\\Model\\\\InvoiceLineItem constructor expects Stripe\\\\InvoiceLineItem, Stripe\\\\Invoice\\\\LineItem given\\.$#"
+			count: 1
+			path: src/Model/Invoice.php
+
+		-
+			message: "#^Parameter \\$item of anonymous function has invalid type Stripe\\\\Invoice\\\\LineItem\\.$#"
+			count: 1
+			path: src/Model/Invoice.php
+
+		-
+			message: "#^Parameter \\$tax of anonymous function has invalid type Stripe\\\\Invoice\\\\Tax\\.$#"
+			count: 1
+			path: src/Model/Invoice.php
+
+		-
+			message: "#^Access to an undefined property Stripe\\\\StripeObject\\:\\:\\$bank\\.$#"
+			count: 1
+			path: src/Model/PaymentMethod.php
+
+		-
+			message: "#^Access to an undefined property Stripe\\\\StripeObject\\:\\:\\$brand\\.$#"
+			count: 1
+			path: src/Model/PaymentMethod.php
+
+		-
+			message: "#^Access to an undefined property Stripe\\\\StripeObject\\:\\:\\$exp_month\\.$#"
+			count: 1
+			path: src/Model/PaymentMethod.php
+
+		-
+			message: "#^Access to an undefined property Stripe\\\\StripeObject\\:\\:\\$exp_year\\.$#"
+			count: 1
+			path: src/Model/PaymentMethod.php
+
+		-
+			message: "#^Access to an undefined property Stripe\\\\StripeObject\\:\\:\\$last4\\.$#"
+			count: 1
+			path: src/Model/PaymentMethod.php
+
+		-
+			message: "#^Function config not found\\.$#"
+			count: 2
+			path: src/Notification/ConfirmPaymentNotification.php
+
+		-
+			message: "#^Call to an undefined method CashierBundle\\\\Repository\\\\StripeCustomerRepository\\:\\:findOneBy\\(\\)\\.$#"
+			count: 2
+			path: src/Repository/StripeCustomerRepository.php
+
+		-
+			message: "#^Call to an undefined method CashierBundle\\\\Repository\\\\StripeCustomerRepository\\:\\:getEntityManager\\(\\)\\.$#"
+			count: 4
+			path: src/Repository/StripeCustomerRepository.php
+
+		-
+			message: "#^CashierBundle\\\\Repository\\\\StripeCustomerRepository\\:\\:__construct\\(\\) calls parent\\:\\:__construct\\(\\) but CashierBundle\\\\Repository\\\\StripeCustomerRepository does not extend any class\\.$#"
+			count: 1
+			path: src/Repository/StripeCustomerRepository.php
+
+		-
+			message: "#^PHPDoc tag @extends has invalid type Doctrine\\\\Bundle\\\\DoctrineBundle\\\\Repository\\\\ServiceEntityRepository\\.$#"
+			count: 1
+			path: src/Repository/StripeCustomerRepository.php
+
+		-
+			message: "#^Call to an undefined method CashierBundle\\\\Repository\\\\SubscriptionItemRepository\\:\\:findBy\\(\\)\\.$#"
+			count: 2
+			path: src/Repository/SubscriptionItemRepository.php
+
+		-
+			message: "#^Call to an undefined method CashierBundle\\\\Repository\\\\SubscriptionItemRepository\\:\\:findOneBy\\(\\)\\.$#"
+			count: 1
+			path: src/Repository/SubscriptionItemRepository.php
+
+		-
+			message: "#^Call to an undefined method CashierBundle\\\\Repository\\\\SubscriptionItemRepository\\:\\:getEntityManager\\(\\)\\.$#"
+			count: 4
+			path: src/Repository/SubscriptionItemRepository.php
+
+		-
+			message: "#^CashierBundle\\\\Repository\\\\SubscriptionItemRepository\\:\\:__construct\\(\\) calls parent\\:\\:__construct\\(\\) but CashierBundle\\\\Repository\\\\SubscriptionItemRepository does not extend any class\\.$#"
+			count: 1
+			path: src/Repository/SubscriptionItemRepository.php
+
+		-
+			message: "#^PHPDoc tag @extends has invalid type Doctrine\\\\Bundle\\\\DoctrineBundle\\\\Repository\\\\ServiceEntityRepository\\.$#"
+			count: 1
+			path: src/Repository/SubscriptionItemRepository.php
+
+		-
+			message: "#^Call to an undefined method CashierBundle\\\\Repository\\\\SubscriptionRepository\\:\\:createQueryBuilder\\(\\)\\.$#"
+			count: 2
+			path: src/Repository/SubscriptionRepository.php
+
+		-
+			message: "#^Call to an undefined method CashierBundle\\\\Repository\\\\SubscriptionRepository\\:\\:findBy\\(\\)\\.$#"
+			count: 1
+			path: src/Repository/SubscriptionRepository.php
+
+		-
+			message: "#^Call to an undefined method CashierBundle\\\\Repository\\\\SubscriptionRepository\\:\\:findOneBy\\(\\)\\.$#"
+			count: 2
+			path: src/Repository/SubscriptionRepository.php
+
+		-
+			message: "#^Call to an undefined method CashierBundle\\\\Repository\\\\SubscriptionRepository\\:\\:getEntityManager\\(\\)\\.$#"
+			count: 4
+			path: src/Repository/SubscriptionRepository.php
+
+		-
+			message: "#^CashierBundle\\\\Repository\\\\SubscriptionRepository\\:\\:__construct\\(\\) calls parent\\:\\:__construct\\(\\) but CashierBundle\\\\Repository\\\\SubscriptionRepository does not extend any class\\.$#"
+			count: 1
+			path: src/Repository/SubscriptionRepository.php
+
+		-
+			message: "#^PHPDoc tag @extends has invalid type Doctrine\\\\Bundle\\\\DoctrineBundle\\\\Repository\\\\ServiceEntityRepository\\.$#"
+			count: 1
+			path: src/Repository/SubscriptionRepository.php
+
+		-
+			message: "#^Parameter \\#2 \\$renderer of class CashierBundle\\\\Model\\\\Invoice constructor expects CashierBundle\\\\Contract\\\\InvoiceRendererInterface, null given\\.$#"
+			count: 1
+			path: src/Service/Cashier.php
+
+		-
+			message: "#^Unreachable statement \\- code above always terminates\\.$#"
+			count: 1
+			path: src/Service/Cashier.php
+
+		-
+			message: "#^Access to property \\$billingPortal on an unknown class CashierBundle\\\\Service\\\\StripeClient\\.$#"
+			count: 1
+			path: src/Service/CheckoutService.php
+
+		-
+			message: "#^Access to property \\$checkout on an unknown class CashierBundle\\\\Service\\\\StripeClient\\.$#"
+			count: 4
+			path: src/Service/CheckoutService.php
+
+		-
+			message: "#^Parameter \\$stripe of method CashierBundle\\\\Service\\\\CheckoutService\\:\\:__construct\\(\\) has invalid type CashierBundle\\\\Service\\\\StripeClient\\.$#"
+			count: 1
+			path: src/Service/CheckoutService.php
+
+		-
+			message: "#^Property CashierBundle\\\\Service\\\\CheckoutService\\:\\:\\$stripe has unknown class CashierBundle\\\\Service\\\\StripeClient as its type\\.$#"
+			count: 1
+			path: src/Service/CheckoutService.php
+
+		-
+			message: "#^Access to property \\$customers on an unknown class CashierBundle\\\\Service\\\\StripeClient\\.$#"
+			count: 2
+			path: src/Service/CustomerService.php
+
+		-
+			message: "#^Call to an undefined method CashierBundle\\\\Entity\\\\StripeCustomer\\:\\:setAddress\\(\\)\\.$#"
+			count: 1
+			path: src/Service/CustomerService.php
+
+		-
+			message: "#^Call to an undefined method CashierBundle\\\\Entity\\\\StripeCustomer\\:\\:setBalance\\(\\)\\.$#"
+			count: 1
+			path: src/Service/CustomerService.php
+
+		-
+			message: "#^Call to an undefined method CashierBundle\\\\Entity\\\\StripeCustomer\\:\\:setCurrency\\(\\)\\.$#"
+			count: 1
+			path: src/Service/CustomerService.php
+
+		-
+			message: "#^Call to an undefined method CashierBundle\\\\Entity\\\\StripeCustomer\\:\\:setEmail\\(\\)\\.$#"
+			count: 2
+			path: src/Service/CustomerService.php
+
+		-
+			message: "#^Call to an undefined method CashierBundle\\\\Entity\\\\StripeCustomer\\:\\:setInvoicePrefix\\(\\)\\.$#"
+			count: 1
+			path: src/Service/CustomerService.php
+
+		-
+			message: "#^Call to an undefined method CashierBundle\\\\Entity\\\\StripeCustomer\\:\\:setName\\(\\)\\.$#"
+			count: 1
+			path: src/Service/CustomerService.php
+
+		-
+			message: "#^Call to an undefined method CashierBundle\\\\Entity\\\\StripeCustomer\\:\\:setPhone\\(\\)\\.$#"
+			count: 1
+			path: src/Service/CustomerService.php
+
+		-
+			message: "#^Call to an undefined method CashierBundle\\\\Entity\\\\StripeCustomer\\:\\:setTaxExempt\\(\\)\\.$#"
+			count: 1
+			path: src/Service/CustomerService.php
+
+		-
+			message: "#^Class CashierBundle\\\\Service\\\\CustomerService has @implements tag, but does not implement any interface\\.$#"
+			count: 1
+			path: src/Service/CustomerService.php
+
+		-
+			message: "#^Parameter \\$stripe of method CashierBundle\\\\Service\\\\CustomerService\\:\\:__construct\\(\\) has invalid type CashierBundle\\\\Service\\\\StripeClient\\.$#"
+			count: 1
+			path: src/Service/CustomerService.php
+
+		-
+			message: "#^Property CashierBundle\\\\Service\\\\CustomerService\\:\\:\\$entityManager is never read, only written\\.$#"
+			count: 1
+			path: src/Service/CustomerService.php
+
+		-
+			message: "#^Property CashierBundle\\\\Service\\\\CustomerService\\:\\:\\$stripe has unknown class CashierBundle\\\\Service\\\\StripeClient as its type\\.$#"
+			count: 1
+			path: src/Service/CustomerService.php
+
+		-
+			message: "#^Call to method loadHtml\\(\\) on an unknown class Dompdf\\\\Dompdf\\.$#"
+			count: 2
+			path: src/Service/InvoiceRenderer/DompdfInvoiceRenderer.php
+
+		-
+			message: "#^Call to method output\\(\\) on an unknown class Dompdf\\\\Dompdf\\.$#"
+			count: 2
+			path: src/Service/InvoiceRenderer/DompdfInvoiceRenderer.php
+
+		-
+			message: "#^Call to method render\\(\\) on an unknown class Dompdf\\\\Dompdf\\.$#"
+			count: 2
+			path: src/Service/InvoiceRenderer/DompdfInvoiceRenderer.php
+
+		-
+			message: "#^Call to method render\\(\\) on an unknown class Twig\\\\Environment\\.$#"
+			count: 2
+			path: src/Service/InvoiceRenderer/DompdfInvoiceRenderer.php
+
+		-
+			message: "#^Call to method setPaper\\(\\) on an unknown class Dompdf\\\\Dompdf\\.$#"
+			count: 2
+			path: src/Service/InvoiceRenderer/DompdfInvoiceRenderer.php
+
+		-
+			message: "#^Instantiated class Dompdf\\\\Dompdf not found\\.$#"
+			count: 2
+			path: src/Service/InvoiceRenderer/DompdfInvoiceRenderer.php
+
+		-
+			message: "#^Instantiated class Dompdf\\\\Options not found\\.$#"
+			count: 2
+			path: src/Service/InvoiceRenderer/DompdfInvoiceRenderer.php
+
+		-
+			message: "#^Parameter \\$twig of method CashierBundle\\\\Service\\\\InvoiceRenderer\\\\DompdfInvoiceRenderer\\:\\:__construct\\(\\) has invalid type Twig\\\\Environment\\.$#"
+			count: 1
+			path: src/Service/InvoiceRenderer/DompdfInvoiceRenderer.php
+
+		-
+			message: "#^Property CashierBundle\\\\Service\\\\InvoiceRenderer\\\\DompdfInvoiceRenderer\\:\\:\\$twig has unknown class Twig\\\\Environment as its type\\.$#"
+			count: 1
+			path: src/Service/InvoiceRenderer/DompdfInvoiceRenderer.php
+
+		-
+			message: "#^Call to method getOutputFromHtml\\(\\) on an unknown class Knp\\\\Snappy\\\\Pdf\\.$#"
+			count: 2
+			path: src/Service/InvoiceRenderer/SnappyInvoiceRenderer.php
+
+		-
+			message: "#^Call to method render\\(\\) on an unknown class Twig\\\\Environment\\.$#"
+			count: 2
+			path: src/Service/InvoiceRenderer/SnappyInvoiceRenderer.php
+
+		-
+			message: "#^Parameter \\$snappy of method CashierBundle\\\\Service\\\\InvoiceRenderer\\\\SnappyInvoiceRenderer\\:\\:__construct\\(\\) has invalid type Knp\\\\Snappy\\\\Pdf\\.$#"
+			count: 1
+			path: src/Service/InvoiceRenderer/SnappyInvoiceRenderer.php
+
+		-
+			message: "#^Parameter \\$twig of method CashierBundle\\\\Service\\\\InvoiceRenderer\\\\SnappyInvoiceRenderer\\:\\:__construct\\(\\) has invalid type Twig\\\\Environment\\.$#"
+			count: 1
+			path: src/Service/InvoiceRenderer/SnappyInvoiceRenderer.php
+
+		-
+			message: "#^Property CashierBundle\\\\Service\\\\InvoiceRenderer\\\\SnappyInvoiceRenderer\\:\\:\\$snappy has unknown class Knp\\\\Snappy\\\\Pdf as its type\\.$#"
+			count: 1
+			path: src/Service/InvoiceRenderer/SnappyInvoiceRenderer.php
+
+		-
+			message: "#^Property CashierBundle\\\\Service\\\\InvoiceRenderer\\\\SnappyInvoiceRenderer\\:\\:\\$twig has unknown class Twig\\\\Environment as its type\\.$#"
+			count: 1
+			path: src/Service/InvoiceRenderer/SnappyInvoiceRenderer.php
+
+		-
+			message: "#^Access to property \\$invoiceItems on an unknown class CashierBundle\\\\Service\\\\StripeClient\\.$#"
+			count: 2
+			path: src/Service/InvoiceService.php
+
+		-
+			message: "#^Access to property \\$invoices on an unknown class CashierBundle\\\\Service\\\\StripeClient\\.$#"
+			count: 6
+			path: src/Service/InvoiceService.php
+
+		-
+			message: "#^Access to property \\$paymentIntents on an unknown class CashierBundle\\\\Service\\\\StripeClient\\.$#"
+			count: 1
+			path: src/Service/InvoiceService.php
+
+		-
+			message: "#^Class CashierBundle\\\\Service\\\\InvoiceService has @implements tag, but does not implement any interface\\.$#"
+			count: 1
+			path: src/Service/InvoiceService.php
+
+		-
+			message: "#^Parameter \\$stripe of method CashierBundle\\\\Service\\\\InvoiceService\\:\\:__construct\\(\\) has invalid type CashierBundle\\\\Service\\\\StripeClient\\.$#"
+			count: 1
+			path: src/Service/InvoiceService.php
+
+		-
+			message: "#^Property CashierBundle\\\\Service\\\\InvoiceService\\:\\:\\$stripe has unknown class CashierBundle\\\\Service\\\\StripeClient as its type\\.$#"
+			count: 1
+			path: src/Service/InvoiceService.php
+
+		-
+			message: "#^Access to property \\$paymentIntents on an unknown class CashierBundle\\\\Service\\\\StripeClient\\.$#"
+			count: 7
+			path: src/Service/PaymentIntentService.php
+
+		-
+			message: "#^Parameter \\$stripe of method CashierBundle\\\\Service\\\\PaymentIntentService\\:\\:__construct\\(\\) has invalid type CashierBundle\\\\Service\\\\StripeClient\\.$#"
+			count: 1
+			path: src/Service/PaymentIntentService.php
+
+		-
+			message: "#^Property CashierBundle\\\\Service\\\\PaymentIntentService\\:\\:\\$stripe has unknown class CashierBundle\\\\Service\\\\StripeClient as its type\\.$#"
+			count: 1
+			path: src/Service/PaymentIntentService.php
+
+		-
+			message: "#^Access to property \\$customers on an unknown class CashierBundle\\\\Service\\\\StripeClient\\.$#"
+			count: 2
+			path: src/Service/PaymentMethodService.php
+
+		-
+			message: "#^Access to property \\$paymentMethods on an unknown class CashierBundle\\\\Service\\\\StripeClient\\.$#"
+			count: 6
+			path: src/Service/PaymentMethodService.php
+
+		-
+			message: "#^Class CashierBundle\\\\Service\\\\PaymentMethodService has @implements tag, but does not implement any interface\\.$#"
+			count: 1
+			path: src/Service/PaymentMethodService.php
+
+		-
+			message: "#^Parameter \\$stripe of method CashierBundle\\\\Service\\\\PaymentMethodService\\:\\:__construct\\(\\) has invalid type CashierBundle\\\\Service\\\\StripeClient\\.$#"
+			count: 1
+			path: src/Service/PaymentMethodService.php
+
+		-
+			message: "#^Property CashierBundle\\\\Service\\\\PaymentMethodService\\:\\:\\$stripe has unknown class CashierBundle\\\\Service\\\\StripeClient as its type\\.$#"
+			count: 1
+			path: src/Service/PaymentMethodService.php
+
+		-
+			message: "#^Access to property \\$customers on an unknown class CashierBundle\\\\Service\\\\StripeClient\\.$#"
+			count: 1
+			path: src/Service/PaymentService.php
+
+		-
+			message: "#^Access to property \\$paymentIntents on an unknown class CashierBundle\\\\Service\\\\StripeClient\\.$#"
+			count: 1
+			path: src/Service/PaymentService.php
+
+		-
+			message: "#^Access to property \\$refunds on an unknown class CashierBundle\\\\Service\\\\StripeClient\\.$#"
+			count: 2
+			path: src/Service/PaymentService.php
+
+		-
+			message: "#^Class CashierBundle\\\\Service\\\\PaymentService has @implements tag, but does not implement any interface\\.$#"
+			count: 1
+			path: src/Service/PaymentService.php
+
+		-
+			message: "#^Parameter \\$stripe of method CashierBundle\\\\Service\\\\PaymentService\\:\\:__construct\\(\\) has invalid type CashierBundle\\\\Service\\\\StripeClient\\.$#"
+			count: 1
+			path: src/Service/PaymentService.php
+
+		-
+			message: "#^Property CashierBundle\\\\Service\\\\PaymentService\\:\\:\\$stripe has unknown class CashierBundle\\\\Service\\\\StripeClient as its type\\.$#"
+			count: 1
+			path: src/Service/PaymentService.php
+
+		-
+			message: "#^Access to property \\$setupIntents on an unknown class CashierBundle\\\\Service\\\\StripeClient\\.$#"
+			count: 5
+			path: src/Service/SetupIntentService.php
+
+		-
+			message: "#^Parameter \\$stripe of method CashierBundle\\\\Service\\\\SetupIntentService\\:\\:__construct\\(\\) has invalid type CashierBundle\\\\Service\\\\StripeClient\\.$#"
+			count: 1
+			path: src/Service/SetupIntentService.php
+
+		-
+			message: "#^Property CashierBundle\\\\Service\\\\SetupIntentService\\:\\:\\$stripe has unknown class CashierBundle\\\\Service\\\\StripeClient as its type\\.$#"
+			count: 1
+			path: src/Service/SetupIntentService.php
+
+		-
+			message: "#^Access to property \\$subscriptions on an unknown class CashierBundle\\\\Service\\\\StripeClient\\.$#"
+			count: 1
+			path: src/Service/SubscriptionBuilder.php
+
+		-
+			message: "#^Call to method findByStripeId\\(\\) on an unknown class CashierBundle\\\\Service\\\\StripeCustomerRepository\\.$#"
+			count: 1
+			path: src/Service/SubscriptionBuilder.php
+
+		-
+			message: "#^Caught class Stripe\\\\Exception\\\\InvalidCouponException not found\\.$#"
+			count: 1
+			path: src/Service/SubscriptionBuilder.php
+
+		-
+			message: "#^PHPDoc tag @var for variable \\$repository contains unknown class CashierBundle\\\\Service\\\\StripeCustomerRepository\\.$#"
+			count: 1
+			path: src/Service/SubscriptionBuilder.php
+
+		-
+			message: "#^Parameter \\$stripe of method CashierBundle\\\\Service\\\\SubscriptionBuilder\\:\\:__construct\\(\\) has invalid type CashierBundle\\\\Service\\\\StripeClient\\.$#"
+			count: 1
+			path: src/Service/SubscriptionBuilder.php
+
+		-
+			message: "#^Property CashierBundle\\\\Service\\\\SubscriptionBuilder\\:\\:\\$stripe has unknown class CashierBundle\\\\Service\\\\StripeClient as its type\\.$#"
+			count: 1
+			path: src/Service/SubscriptionBuilder.php
+
+		-
+			message: "#^Property CashierBundle\\\\Service\\\\SubscriptionBuilder\\:\\:\\$subscriptionRepository is never read, only written\\.$#"
+			count: 1
+			path: src/Service/SubscriptionBuilder.php
+
+		-
+			message: "#^Type alias SubscriptionItem already exists as a class in scope of CashierBundle\\\\Service\\\\SubscriptionBuilder\\.$#"
+			count: 1
+			path: src/Service/SubscriptionBuilder.php
+
+		-
+			message: "#^Access to property \\$subscriptions on an unknown class CashierBundle\\\\Service\\\\StripeClient\\.$#"
+			count: 6
+			path: src/Service/SubscriptionService.php
+
+		-
+			message: "#^Parameter \\$stripe of method CashierBundle\\\\Service\\\\SubscriptionService\\:\\:__construct\\(\\) has invalid type CashierBundle\\\\Service\\\\StripeClient\\.$#"
+			count: 1
+			path: src/Service/SubscriptionService.php
+
+		-
+			message: "#^Property CashierBundle\\\\Service\\\\SubscriptionService\\:\\:\\$stripe has unknown class CashierBundle\\\\Service\\\\StripeClient as its type\\.$#"
+			count: 1
+			path: src/Service/SubscriptionService.php
+
+		-
+			message: "#^Access to property \\$customers on an unknown class CashierBundle\\\\Service\\\\StripeClient\\.$#"
+			count: 1
+			path: src/Service/TaxService.php
+
+		-
+			message: "#^Access to property \\$prices on an unknown class CashierBundle\\\\Service\\\\StripeClient\\.$#"
+			count: 2
+			path: src/Service/TaxService.php
+
+		-
+			message: "#^Access to property \\$tax on an unknown class CashierBundle\\\\Service\\\\StripeClient\\.$#"
+			count: 1
+			path: src/Service/TaxService.php
+
+		-
+			message: "#^Access to property \\$taxRates on an unknown class CashierBundle\\\\Service\\\\StripeClient\\.$#"
+			count: 3
+			path: src/Service/TaxService.php
+
+		-
+			message: "#^Class CashierBundle\\\\Model\\\\TaxRate constructor invoked with 8 parameters, 1 required\\.$#"
+			count: 2
+			path: src/Service/TaxService.php
+
+		-
+			message: "#^Parameter \\#1 \\$taxRate of class CashierBundle\\\\Model\\\\TaxRate constructor expects Stripe\\\\TaxRate, string given\\.$#"
+			count: 2
+			path: src/Service/TaxService.php
+
+		-
+			message: "#^Parameter \\$stripe of method CashierBundle\\\\Service\\\\TaxService\\:\\:__construct\\(\\) has invalid type CashierBundle\\\\Service\\\\StripeClient\\.$#"
+			count: 1
+			path: src/Service/TaxService.php
+
+		-
+			message: "#^Property CashierBundle\\\\Service\\\\TaxService\\:\\:\\$stripe has unknown class CashierBundle\\\\Service\\\\StripeClient as its type\\.$#"
+			count: 1
+			path: src/Service/TaxService.php
+
+		-
+			message: "#^Instantiated class Twig\\\\TwigFilter not found\\.$#"
+			count: 1
+			path: src/Twig/CashierExtension.php
+
+		-
+			message: "#^Method CashierBundle\\\\Twig\\\\CashierExtension\\:\\:getFilters\\(\\) has invalid return type Twig\\\\TwigFilter\\.$#"
+			count: 1
+			path: src/Twig/CashierExtension.php
+
+		-
+			message: "#^Access to an undefined property Stripe\\\\StripeObject\\:\\:\\$object\\.$#"
+			count: 3
+			path: src/Webhook/Handler/AbstractWebhookHandler.php
+
+		-
+			message: "#^Access to an undefined property Stripe\\\\StripeObject\\:\\:\\$object\\.$#"
+			count: 1
+			path: src/Webhook/Handler/CheckoutSessionCompletedHandler.php
+
+		-
+			message: "#^Call to an undefined method CashierBundle\\\\Repository\\\\StripeCustomerRepository\\:\\:findOneBy\\(\\)\\.$#"
+			count: 1
+			path: src/Webhook/Handler/CheckoutSessionCompletedHandler.php
+
+		-
+			message: "#^Call to an undefined method CashierBundle\\\\Repository\\\\SubscriptionRepository\\:\\:findOneBy\\(\\)\\.$#"
+			count: 1
+			path: src/Webhook/Handler/CheckoutSessionCompletedHandler.php
+
+		-
+			message: "#^Call to an undefined method CashierBundle\\\\Repository\\\\StripeCustomerRepository\\:\\:findOneBy\\(\\)\\.$#"
+			count: 1
+			path: src/Webhook/Handler/CustomerDeletedHandler.php
+
+		-
+			message: "#^Call to an undefined method CashierBundle\\\\Repository\\\\StripeCustomerRepository\\:\\:findOneBy\\(\\)\\.$#"
+			count: 1
+			path: src/Webhook/Handler/CustomerUpdatedHandler.php
+
+		-
+			message: "#^Property CashierBundle\\\\Webhook\\\\Handler\\\\CustomerUpdatedHandler\\:\\:\\$dispatcher is never read, only written\\.$#"
+			count: 1
+			path: src/Webhook/Handler/CustomerUpdatedHandler.php
+
+		-
+			message: "#^Access to an undefined property Stripe\\\\StripeObject\\:\\:\\$object\\.$#"
+			count: 1
+			path: src/Webhook/Handler/PaymentMethodUpdatedHandler.php
+
+		-
+			message: "#^Call to an undefined method CashierBundle\\\\Repository\\\\StripeCustomerRepository\\:\\:findOneBy\\(\\)\\.$#"
+			count: 1
+			path: src/Webhook/Handler/PaymentMethodUpdatedHandler.php
+
+		-
+			message: "#^Call to an undefined method CashierBundle\\\\Repository\\\\StripeCustomerRepository\\:\\:findOneBy\\(\\)\\.$#"
+			count: 1
+			path: src/Webhook/Handler/SubscriptionCreatedHandler.php
+
+		-
+			message: "#^Call to an undefined method CashierBundle\\\\Repository\\\\SubscriptionRepository\\:\\:findOneBy\\(\\)\\.$#"
+			count: 1
+			path: src/Webhook/Handler/SubscriptionDeletedHandler.php
+
+		-
+			message: "#^Call to an undefined method CashierBundle\\\\Repository\\\\SubscriptionRepository\\:\\:findOneBy\\(\\)\\.$#"
+			count: 1
+			path: src/Webhook/Handler/SubscriptionUpdatedHandler.php

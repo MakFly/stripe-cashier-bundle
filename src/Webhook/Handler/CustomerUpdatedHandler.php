@@ -13,7 +13,7 @@ final readonly class CustomerUpdatedHandler extends AbstractWebhookHandler
 {
     public function __construct(
         private StripeCustomerRepository $customerRepository,
-        private EventDispatcherInterface $dispatcher
+        private EventDispatcherInterface $dispatcher,
     ) {
     }
 
@@ -43,7 +43,7 @@ final readonly class CustomerUpdatedHandler extends AbstractWebhookHandler
 
     private function updateCustomerFromStripe(
         \CashierBundle\Entity\StripeCustomer $customer,
-        StripeCustomer $stripeCustomer
+        StripeCustomer $stripeCustomer,
     ): void {
         if (isset($stripeCustomer->invoice_settings->default_payment_method)) {
             $paymentMethod = $stripeCustomer->invoice_settings->default_payment_method;

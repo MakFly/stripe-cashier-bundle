@@ -10,8 +10,9 @@ final class Tax
         private readonly string $name,
         private readonly float $percent,
         private readonly int $amount,
-        private readonly bool $inclusive
-    ) {}
+        private readonly bool $inclusive,
+    ) {
+    }
 
     public function name(): string
     {
