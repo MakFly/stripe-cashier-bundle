@@ -10,7 +10,7 @@ use Stripe\Exception\ApiErrorException;
 use Stripe\StripeClient;
 
 /**
- * @phpstan-type CheckoutItem array{price: string, quantity: int|null}
+ * @phpstan-type CheckoutItem array{price?: string, quantity?: int|null}
  */
 class CheckoutService
 {
@@ -33,10 +33,10 @@ class CheckoutService
         $payload = array_merge([
             'customer' => $stripeId,
             'mode' => 'payment',
-            'line_items' => array_map(fn ($item) => [
-                'price' => $item['price'],
-                'quantity' => $item['quantity'] ?? 1,
-            ], $items),
+            'line_items' => array_map(
+                static fn (array $item): array => self::normalizeLineItem($item),
+                $items,
+            ),
         ], $options);
 
         try {
@@ -170,5 +170,26 @@ class CheckoutService
     public function url(BillableInterface $billable, ?string $returnUrl = null): string
     {
         return $this->billingPortal($billable, $returnUrl);
+    }
+
+    /**
+     * @param array<string, mixed> $item
+     *
+     * @return array<string, mixed>
+     */
+    private static function normalizeLineItem(array $item): array
+    {
+        if (isset($item['price'])) {
+            return [
+                'price' => $item['price'],
+                'quantity' => $item['quantity'] ?? 1,
+            ];
+        }
+
+        if (!isset($item['quantity'])) {
+            $item['quantity'] = 1;
+        }
+
+        return $item;
     }
 }
