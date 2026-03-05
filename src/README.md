@@ -147,7 +147,7 @@ php bin/console cashier:webhook --url=https://your-domain.com/stripe/webhook
 ## 🔗 Liens
 
 - **[Documentation complète](https://cashier-symfony.vercel.app)**
-- **[GitHub](https://github.com/MakFly/cashier-symfony)**
+- **[GitHub](https://github.com/MakFly/stripe-cashier-bundle)**
 - **[Stripe Documentation](https://stripe.com/docs)**
 
 ## 📝 License
