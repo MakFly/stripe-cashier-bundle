@@ -31,12 +31,12 @@
     },
     "autoload": {
         "psr-4": {
-            "CashierBundle\\": "CashierBundle/"
+            "CashierBundle\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "CashierBundle\\Tests\\": "CashierBundle/tests/"
+            "CashierBundle\\Tests\\": "tests/"
         }
     },
     "config": {

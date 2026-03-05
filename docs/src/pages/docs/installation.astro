@@ -1,0 +1,88 @@
+---
+import '../../styles/global.css';
+---
+
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>Installation | CashierBundle</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  </head>
+
+  <body class="min-h-screen bg-slate-900 text-white">
+    <div class="flex">
+      <aside class="fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 border-r border-slate-800 bg-slate-900/95 overflow-y-auto p-4">
+        <nav class="space-y-1">
+          <a href="/docs/installation" class="block rounded-lg bg-indigo-500/10 px-3 py-2 text-sm font-medium text-indigo-400">Installation</a>
+          <a href="/docs/subscriptions" class="block rounded-lg px-3 py-2 text-sm text-slate-400 hover:text-white hover:bg-slate-800">Abonnements</a>
+          <a href="/docs/webhooks" class="block rounded-lg px-3 py-2 text-sm text-slate-400 hover:text-white hover:bg-slate-800">Webhooks</a>
+        </nav>
+      </aside>
+
+      <main class="ml-64 flex-1 p-8 pt-24">
+        <div class="mx-auto max-w-3xl">
+          <h1 class="text-4xl font-bold mb-6">Installation</h1>
+
+          <section class="mb-8">
+            <h2 class="text-2xl font-semibold mb-4">Prérequis</h2>
+            <ul class="list-disc list-inside space-y-2 text-slate-400">
+              <li>PHP 8.2 ou supérieur</li>
+              <li>Symfony 7.0+ ou 8.0+</li>
+              <li>Doctrine ORM 3.0+</li>
+              <li>Compte Stripe avec clés API</li>
+            </ul>
+          </section>
+
+          <section class="mb-8">
+            <h2 class="text-2xl font-semibold mb-4">Installation via Composer</h2>
+            <pre class="rounded-lg bg-slate-800 p-4 overflow-x-auto"><code class="text-sm">composer require cashier/cashier-bundle</code></pre>
+          </section>
+
+          <section class="mb-8">
+            <h2 class="text-2xl font-semibold mb-4">Configuration</h2>
+            <p class="text-slate-400 mb-4">Ajoutez vos clés Stripe dans le fichier <code>.env</code> :</p>
+            <pre class="rounded-lg bg-slate-800 p-4 overflow-x-auto"><code class="text-sm">STRIPE_KEY=pk_test_votre_cle_publique
+STRIPE_SECRET=sk_test_votre_cle_secrete
+STRIPE_WEBHOOK_SECRET=whsec_votre_secret_webhook</code></pre>
+          </section>
+
+          <section class="mb-8">
+            <h2 class="text-2xl font-semibold mb-4">Configuration du bundle</h2>
+            <p class="text-slate-400 mb-4">Créez le fichier <code>config/packages/cashier.yaml</code> :</p>
+            <pre class="rounded-lg bg-slate-800 p-4 overflow-x-auto"><code class="text-sm">cashier:
+    key: '%env(STRIPE_KEY)%'
+    secret: '%env(STRIPE_SECRET)%'
+    webhook:
+        secret: '%env(STRIPE_WEBHOOK_SECRET)%'
+        tolerance: 300
+    currency: 'usd'
+    currency_locale: 'en'
+    invoices:
+        renderer: 'CashierBundle\Service\InvoiceRenderer\DompdfInvoiceRenderer'</code></pre>
+          </section>
+
+          <section class="mb-8">
+            <h2 class="text-2xl font-semibold mb-4">Entité User</h2>
+            <p class="text-slate-400 mb-4">Faites implémenter <code>BillableEntityInterface</code> à votre entité User.</p>
+            <p class="text-slate-400">Utilisez le trait <code>BillableTrait</code> et ajoutez une relation avec <code>StripeCustomer</code>.</p>
+          </section>
+
+          <section class="mb-8">
+            <h2 class="text-2xl font-semibold mb-4">Base de données</h2>
+            <p class="text-slate-400 mb-4">Créez les tables nécessaires :</p>
+            <pre class="rounded-lg bg-slate-800 p-4 overflow-x-auto"><code class="text-sm">php bin/console doctrine:migrations:diff
+php bin/console doctrine:migrations:migrate</code></pre>
+          </section>
+
+          <div class="flex justify-between mt-12 pt-8 border-t border-slate-800">
+            <a href="/" class="text-indigo-400 hover:text-indigo-300">← Accueil</a>
+            <a href="/docs/subscriptions" class="text-indigo-400 hover:text-indigo-300">Abonnements →</a>
+          </div>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>

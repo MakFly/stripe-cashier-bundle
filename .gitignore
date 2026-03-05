@@ -1,10 +1,11 @@
 # Dependencies
 /vendor/
 /node_modules/
+/docs/node_modules/
 
 # Build outputs
 /docs/dist/
-/CashierBundle/.phpunit.cache/
+.phpunit.cache/
 
 # IDE
 /.idea/
@@ -29,7 +30,3 @@ Thumbs.db
 
 # Claude
 /.claude/
-
-# Exclude embedded repos (keep content but not .git)
-cashier-stripe/
-docs/

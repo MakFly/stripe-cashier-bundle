@@ -1,0 +1,80 @@
+---
+import '../../styles/global.css';
+---
+
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>Webhooks | CashierBundle</title>
+  </head>
+
+  <body class="min-h-screen bg-slate-900 text-white">
+    <div class="flex">
+      <aside class="fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 border-r border-slate-800 bg-slate-900/95 overflow-y-auto p-4">
+        <nav class="space-y-1">
+          <a href="/docs/installation" class="block rounded-lg px-3 py-2 text-sm text-slate-400 hover:text-white hover:bg-slate-800">Installation</a>
+          <a href="/docs/subscriptions" class="block rounded-lg px-3 py-2 text-sm text-slate-400 hover:text-white hover:bg-slate-800">Abonnements</a>
+          <a href="/docs/webhooks" class="block rounded-lg bg-indigo-500/10 px-3 py-2 text-sm font-medium text-indigo-400">Webhooks</a>
+        </nav>
+      </aside>
+
+      <main class="ml-64 flex-1 p-8 pt-24">
+        <div class="mx-auto max-w-3xl">
+          <h1 class="text-4xl font-bold mb-6">Webhooks</h1>
+
+          <section class="mb-8">
+            <h2 class="text-2xl font-semibold mb-4">Configuration</h2>
+            <p class="text-slate-400 mb-4">Les webhooks sont gérés automatiquement. Configurez l'URL dans votre dashboard Stripe :</p>
+            <pre class="rounded-lg bg-slate-800 p-4 overflow-x-auto"><code class="text-sm">https://your-domain.com/stripe/webhook</code></pre>
+          </section>
+
+          <section class="mb-8">
+            <h2 class="text-2xl font-semibold mb-4">Créer un webhook automatiquement</h2>
+            <pre class="rounded-lg bg-slate-800 p-4 overflow-x-auto"><code class="text-sm">php bin/console cashier:webhook --url=https://your-domain.com/stripe/webhook</code></pre>
+          </section>
+
+          <section class="mb-8">
+            <h2 class="text-2xl font-semibold mb-4">Handlers intégrés</h2>
+            <div class="rounded-lg bg-slate-800 p-4">
+              <table class="w-full text-sm">
+                <thead>
+                  <tr class="text-left border-b border-slate-700">
+                    <th class="pb-2">Handler</th>
+                    <th class="pb-2">Event Stripe</th>
+                  </tr>
+                </thead>
+                <tbody class="text-slate-400">
+                  <tr class="border-b border-slate-700/50"><td class="py-2">SubscriptionCreatedHandler</td><td>customer.subscription.created</td></tr>
+                  <tr class="border-b border-slate-700/50"><td class="py-2">SubscriptionUpdatedHandler</td><td>customer.subscription.updated</td></tr>
+                  <tr class="border-b border-slate-700/50"><td class="py-2">SubscriptionDeletedHandler</td><td>customer.subscription.deleted</td></tr>
+                  <tr class="border-b border-slate-700/50"><td class="py-2">CustomerUpdatedHandler</td><td>customer.updated</td></tr>
+                  <tr class="border-b border-slate-700/50"><td class="py-2">InvoicePaidHandler</td><td>invoice.paid</td></tr>
+                  <tr><td class="py-2">CheckoutSessionCompletedHandler</td><td>checkout.session.completed</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="mb-8">
+            <h2 class="text-2xl font-semibold mb-4">Écouter les événements Symfony</h2>
+            <p class="text-slate-400 mb-4">Utilisez l'EventDispatcher de Symfony pour réagir aux événements :</p>
+            <ul class="list-disc list-inside space-y-2 text-slate-400">
+              <li><code>SubscriptionCreatedEvent</code> - Nouvel abonnement</li>
+              <li><code>SubscriptionUpdatedEvent</code> - Mise à jour d'abonnement</li>
+              <li><code>SubscriptionDeletedEvent</code> - Suppression d'abonnement</li>
+              <li><code>PaymentSucceededEvent</code> - Paiement réussi</li>
+              <li><code>PaymentFailedEvent</code> - Échec de paiement</li>
+            </ul>
+          </section>
+
+          <div class="flex justify-between mt-12 pt-8 border-t border-slate-800">
+            <a href="/docs/subscriptions" class="text-indigo-400 hover:text-indigo-300">← Abonnements</a>
+          </div>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>
