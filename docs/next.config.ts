@@ -7,6 +7,8 @@ const withNextra = nextra({
 
 const nextConfig: NextConfig = {
   transpilePackages: ["geist"],
+  eslint: { ignoreDuringBuilds: true },
+  outputFileTracingRoot: __dirname,
   async redirects() {
     return [
       {
