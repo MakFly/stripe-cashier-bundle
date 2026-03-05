@@ -28,6 +28,7 @@ Thumbs.db
 
 # PHPStan
 /phpstan.neon
+/var/
 
 # Claude
 /.claude/
