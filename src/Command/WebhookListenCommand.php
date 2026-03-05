@@ -247,8 +247,49 @@ class WebhookListenCommand extends Command
 
     protected function isStripeCliAvailable(): bool
     {
-        $result = shell_exec('command -v stripe 2>/dev/null');
+        $path = getenv('PATH');
+        if (!is_string($path) || trim($path) === '') {
+            return false;
+        }
 
-        return is_string($result) && trim($result) !== '';
+        $isWindows = DIRECTORY_SEPARATOR === '\\';
+        $extensions = [''];
+
+        if ($isWindows) {
+            $pathExt = getenv('PATHEXT');
+            if (!is_string($pathExt) || trim($pathExt) === '') {
+                $pathExt = '.EXE;.BAT;.CMD;.COM';
+            }
+
+            $extensions = array_values(array_filter(array_map(
+                static fn (string $ext): string => strtoupper(trim($ext)),
+                explode(';', $pathExt),
+            )));
+        }
+
+        foreach (explode(PATH_SEPARATOR, $path) as $directory) {
+            $directory = trim($directory, " \t\n\r\0\x0B\"'");
+            if ($directory === '') {
+                continue;
+            }
+
+            if ($isWindows) {
+                foreach ($extensions as $extension) {
+                    $candidate = $directory . DIRECTORY_SEPARATOR . 'stripe' . $extension;
+                    if (is_file($candidate)) {
+                        return true;
+                    }
+                }
+
+                continue;
+            }
+
+            $candidate = $directory . DIRECTORY_SEPARATOR . 'stripe';
+            if (is_file($candidate) && is_executable($candidate)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
