@@ -1,8 +1,20 @@
 # CashierBundle
 
 [![CI](https://github.com/MakFly/stripe-cashier-bundle/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/MakFly/stripe-cashier-bundle/actions/workflows/ci.yml)
+[![Packagist](https://img.shields.io/packagist/v/makfly/stripe-cashier-bundle.svg?style=flat-square)](https://packagist.org/packages/makfly/stripe-cashier-bundle)
+[![PHP](https://img.shields.io/badge/PHP-8.2%20|%208.3%20|%208.4%20|%208.5-777BB4?style=flat-square)](https://php.net)
+[![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
 
 Stripe subscription billing for Symfony 7.x and 8.x, inspired by [Laravel Cashier](https://github.com/laravel/cashier-stripe).
+
+## Requirements
+
+| Dependency | Version |
+|------------|---------|
+| PHP | ^8.2 |
+| Symfony | ^7.0 or ^8.0 (requires PHP 8.4+) |
+| Doctrine ORM | ^3.0 |
+| Stripe PHP SDK | ^16.0 |
 
 ## Features
 
@@ -187,26 +199,6 @@ Full documentation available at [cashier-symfony.vercel.app](https://cashier-sym
 - [Installation Guide](https://cashier-symfony.vercel.app/docs/installation)
 - [Subscriptions](https://cashier-symfony.vercel.app/docs/subscriptions)
 - [Webhooks](https://cashier-symfony.vercel.app/docs/webhooks)
-
-## Requirements
-
-| Dependency | Version |
-|------------|---------|
-| PHP | ^8.2 |
-| Symfony | ^7.0 or ^8.0 (requires PHP 8.4+) |
-| Doctrine ORM | ^3.0 |
-| Stripe PHP SDK | ^16.0 |
-
-> **Note:** Symfony 8.x requires PHP 8.4 or higher. The CI tests all combinations automatically.
-
-### CI Matrix
-
-| PHP | Symfony 7.x | Symfony 8.x |
-|-----|-------------|-------------|
-| 8.2 | ✅ | ❌ |
-| 8.3 | ✅ | ❌ |
-| 8.4 | ✅ | ✅ |
-| 8.5 | ✅ | ✅ |
 
 ## License
 
