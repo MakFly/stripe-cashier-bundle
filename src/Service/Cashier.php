@@ -9,6 +9,7 @@ use CashierBundle\Entity\Subscription;
 use CashierBundle\Model\Invoice;
 use CashierBundle\Repository\StripeCustomerRepository;
 use CashierBundle\Repository\SubscriptionRepository;
+use Doctrine\Persistence\ManagerRegistry;
 use Money\Currencies\ISOCurrencies;
 use Money\Currency;
 use Money\Formatter\IntlMoneyFormatter;
@@ -30,6 +31,7 @@ class Cashier
         private readonly StripeClient $stripe,
         private readonly SubscriptionRepository $subscriptionRepository,
         private readonly StripeCustomerRepository $customerRepository,
+        private readonly ManagerRegistry $managerRegistry,
     ) {
     }
 
@@ -79,6 +81,23 @@ class Cashier
         }
 
         $billable = $customer->getBillable();
+        if ($billable instanceof BillableInterface) {
+            return $billable;
+        }
+
+        $billableType = $customer->getBillableType();
+        $billableId = $customer->getBillableId();
+        if ($billableType === null || $billableId === null) {
+            return null;
+        }
+
+        $objectManager = $this->managerRegistry->getManagerForClass($billableType);
+        if ($objectManager === null) {
+            return null;
+        }
+
+        /** @phpstan-ignore-next-line runtime class name comes from persisted metadata */
+        $billable = $objectManager->find($billableType, $billableId);
         if ($billable instanceof BillableInterface) {
             return $billable;
         }

@@ -52,14 +52,6 @@ services:
     CashierBundle\Contract\InvoiceRendererInterface:
         alias: CashierBundle\Service\InvoiceRenderer\DompdfInvoiceRenderer
 
-    # Logger
-    CashierBundle\Logger\LoggerInterface:
-        alias: '%cashier.logger%'
-        deprecated:
-            package: 'makfly/stripe-cashier-bundle'
-            version: 'dev-main'
-            message: 'The "%alias_id%" service alias is deprecated. Use PSR-3 logger instead.'
-
     # Twig Extension
     CashierBundle\Twig\CashierExtension:
         tags: ['twig.extension']

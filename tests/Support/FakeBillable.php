@@ -17,7 +17,7 @@ use Doctrine\Common\Collections\Collection;
 use Stripe\Customer as StripeCustomer;
 use Stripe\Refund;
 
-final class FakeBillable implements BillableInterface
+class FakeBillable implements BillableInterface
 {
     public function __construct(private ?string $stripeId = null)
     {

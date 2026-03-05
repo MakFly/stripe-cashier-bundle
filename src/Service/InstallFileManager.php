@@ -24,7 +24,7 @@ final class InstallFileManager
     /**
      * @return array{created: list<string>, skipped: list<string>, envUpdated: list<string>}
      */
-    public function install(string $projectDir, string $billableClass, ?string $envFile = null): array
+    public function install(string $projectDir, ?string $envFile = null): array
     {
         $created = [];
         $skipped = [];
@@ -36,7 +36,7 @@ final class InstallFileManager
             ],
             'config/packages/cashier_doctrine.yaml' => [
                 'template' => self::SKELETON_ROOT . '/config/packages/cashier_doctrine.yaml.tpl',
-                'context' => ['{{ billable_class }}' => $billableClass],
+                'context' => [],
             ],
             'config/routes/cashier.yaml' => [
                 'template' => self::SKELETON_ROOT . '/config/routes/cashier.yaml.tpl',

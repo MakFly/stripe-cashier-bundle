@@ -26,7 +26,10 @@ class StripeCustomerRepository extends ServiceEntityRepository
 
     public function findByBillable(BillableEntityInterface $billable): ?StripeCustomer
     {
-        return $this->findOneBy(['billable' => $billable]);
+        return $this->findOneBy([
+            'billableId' => $billable->getId(),
+            'billableType' => $billable::class,
+        ]);
     }
 
     public function save(StripeCustomer $customer, bool $flush = false): void

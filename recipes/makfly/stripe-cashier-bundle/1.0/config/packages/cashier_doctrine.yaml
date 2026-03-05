@@ -7,5 +7,3 @@ doctrine:
                 dir: '%kernel.project_dir%/vendor/makfly/stripe-cashier-bundle/src/Entity'
                 prefix: 'CashierBundle\Entity'
                 alias: CashierBundle
-        resolve_target_entities:
-            CashierBundle\Contract\BillableEntityInterface: 'App\Entity\User'

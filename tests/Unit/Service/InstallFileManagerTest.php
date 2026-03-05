@@ -26,7 +26,7 @@ final class InstallFileManagerTest extends TestCase
     {
         $manager = new InstallFileManager();
 
-        $result = $manager->install($this->projectDir, 'App\\Entity\\User');
+        $result = $manager->install($this->projectDir);
 
         self::assertSame(
             [
@@ -40,8 +40,8 @@ final class InstallFileManagerTest extends TestCase
         self::assertFileExists($this->projectDir . '/config/packages/cashier.yaml');
         self::assertFileExists($this->projectDir . '/config/packages/cashier_doctrine.yaml');
         self::assertFileExists($this->projectDir . '/config/routes/cashier.yaml');
-        self::assertStringContainsString(
-            "CashierBundle\\Contract\\BillableEntityInterface: 'App\\Entity\\User'",
+        self::assertStringNotContainsString(
+            'resolve_target_entities',
             (string) file_get_contents($this->projectDir . '/config/packages/cashier_doctrine.yaml'),
         );
         self::assertStringContainsString(
@@ -54,8 +54,8 @@ final class InstallFileManagerTest extends TestCase
     {
         $manager = new InstallFileManager();
 
-        $manager->install($this->projectDir, 'App\\Entity\\User');
-        $result = $manager->install($this->projectDir, 'App\\Entity\\User');
+        $manager->install($this->projectDir);
+        $result = $manager->install($this->projectDir);
 
         self::assertSame([], $result['created']);
         self::assertSame([], $result['envUpdated']);

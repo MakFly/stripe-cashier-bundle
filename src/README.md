@@ -69,8 +69,6 @@ doctrine:
                 dir: '%kernel.project_dir%/vendor/makfly/stripe-cashier-bundle/src/Entity'
                 prefix: 'CashierBundle\Entity'
                 alias: CashierBundle
-        resolve_target_entities:
-            CashierBundle\Contract\BillableEntityInterface: 'App\Entity\User'
 ```
 
 ### 4. Entité User
@@ -84,9 +82,6 @@ use CashierBundle\Contract\BillableEntityInterface;
 class User implements BillableEntityInterface
 {
     use BillableTrait;
-
-    #[ORM\OneToOne(inversedBy: 'billable')]
-    private ?StripeCustomer $stripeCustomer = null;
 }
 ```
 
