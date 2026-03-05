@@ -1,4 +1,4 @@
-export default {
+const meta = {
   introduction: "Introduction",
   installation: "Installation",
   "-- getting-started": { type: "separator", title: "Premiers pas" },
@@ -20,3 +20,5 @@ export default {
   twig: "Twig",
   api: "API Reference",
 };
+
+export default meta;

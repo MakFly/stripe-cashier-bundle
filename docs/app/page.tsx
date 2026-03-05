@@ -116,7 +116,7 @@ export default function HomePage() {
               Docs
             </Link>
             <a
-              href="https://github.com/kev/cashier-symfony"
+              href="https://github.com/MakFly/stripe-cashier-bundle"
               target="_blank"
               rel="noreferrer"
               style={{
@@ -167,7 +167,7 @@ export default function HomePage() {
               display: "inline-block",
             }}
           />
-          Symfony 6.4 · 7.x · Stripe
+          Symfony 7.x · 8.x · Stripe
         </div>
 
         {/* headline */}
@@ -199,8 +199,7 @@ export default function HomePage() {
             marginBottom: "2.75rem",
           }}
         >
-          Un bundle Symfony inspiré de Laravel Cashier. Abonnements, factures et
-          webhooks — intégrés nativement avec Doctrine ORM.
+          Un bundle Symfony pour Stripe Billing. Checkout, abonnements, webhooks et archivage PDF des factures, avec Doctrine et Symfony.
         </p>
 
         {/* CTAs */}
@@ -224,7 +223,7 @@ export default function HomePage() {
             Démarrer →
           </Link>
           <a
-            href="https://github.com/kev/cashier-symfony"
+            href="https://github.com/MakFly/stripe-cashier-bundle"
             target="_blank"
             rel="noreferrer"
             style={{

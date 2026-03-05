@@ -1,141 +1,65 @@
----
-title: Commandes CLI
----
-
 # Commandes CLI
 
-Le bundle Stripe Cashier fournit plusieurs commandes Symfony pour faciliter la gestion de vos intégrations Stripe.
+## `cashier:install`
 
-## cashier:webhook
-
-Crée un endpoint webhook Stripe avec les événements par défaut.
-
-### Options
-
-| Option | Alias | Description |
-|--------|-------|-------------|
-| `--url`, `-u` | - | URL du webhook |
-| `--disabled`, `-d` | - | Désactiver le webhook après création |
-| `--api-version` | - | Version API Stripe |
-| `--show-secret` | - | Afficher le secret en clair |
-
-### Événements par défaut
-
-La commande configure automatiquement les événements suivants :
-
-- `customer.subscription.created` - Abonnement créé
-- `customer.subscription.updated` - Abonnement mis à jour
-- `customer.subscription.deleted` - Abonnement supprimé
-- `customer.updated` - Client mis à jour
-- `customer.deleted` - Client supprimé
-- `payment_method.automatically_updated` - Méthode de paiement automatiquement mise à jour
-- `invoice.payment_action_required` - Action de paiement requise sur la facture
-- `invoice.paid` - Facture payée
-- `invoice.payment_failed` - Échec du paiement de la facture
-- `checkout.session.completed` - Session checkout complétée
-
-### Exemples
-
-#### Créer un webhook simple
+Installe la configuration minimale du bundle dans un projet Symfony.
 
 ```bash
-php bin/console cashier:webhook --url=https://mon-app.com/stripe/webhook
+php bin/console cashier:install
 ```
 
-#### Créer un webhook désactivé
+Effets:
+
+- crée les fichiers de config manquants
+- crée les variables Stripe manquantes dans `.env`
+- crée `var/data` et `var/data/invoices`
+- n'écrase pas les fichiers existants
+
+### Option
 
 ```bash
-php bin/console cashier:webhook --url=https://mon-app.com/stripe/webhook --disabled
+php bin/console cashier:install --env-file=.env.local
 ```
 
-#### Créer avec une version API spécifique
+## `cashier:webhook`
+
+Crée ou met à jour un endpoint webhook côté Stripe.
 
 ```bash
-php bin/console cashier:webhook --url=https://mon-app.com/stripe/webhook --api-version=2024-04-10
+php bin/console cashier:webhook --url=https://example.com/cashier/webhook
 ```
 
-#### Afficher le secret en clair
+Options utiles:
+
+- `--disabled`
+- `--api-version`
+- `--show-secret`
+
+## `cashier:webhook:listen`
+
+Ouvre un listener Stripe CLI local.
 
 ```bash
-php bin/console cashier:webhook --url=https://mon-app.com/stripe/webhook --show-secret
+php bin/console cashier:webhook:listen --forward-to --base-url http://localhost:8000
 ```
 
-## cashier:report-usage
+Cette commande sert à:
 
-Rapporte l'usage pour un abonnement metered (basé à l'usage).
+- forwarder les événements Stripe vers votre app locale
+- récupérer et persister le secret `whsec_...`
+- lire visuellement les réponses HTTP grâce aux couleurs console
 
-### Arguments
+## `cashier:report-usage`
 
-| Argument | Description |
-|----------|-------------|
-| `subscription-item-id` | ID local de l'item d'abonnement |
-| `quantity` | Quantité à reporter |
-
-### Options
-
-| Option | Alias | Description | Valeur par défaut |
-|--------|-------|-------------|-------------------|
-| `--timestamp`, `-t` | - | Timestamp Unix | `time()` |
-| `--action`, `-a` | - | Action à effectuer | `increment` |
-
-### Actions
-
-- `increment` - Incrémente la quantité actuelle (valeur par défaut)
-- `set` - Définit la quantité à la valeur spécifiée
-
-### Exemples
-
-#### Reporter 100 unités (mode incrément)
+Rapporte l'usage d'un `SubscriptionItem` metered.
 
 ```bash
 php bin/console cashier:report-usage 1 100
-```
-
-#### Reporter avec un timestamp spécifique
-
-```bash
-php bin/console cashier:report-usage 1 100 --timestamp=1672531200
-```
-
-#### Définir la quantité (mode set)
-
-```bash
 php bin/console cashier:report-usage 1 100 --action=set
 ```
 
-## cashier:cleanup-sessions
+## Commande officielle d'init
 
-Nettoie les sessions checkout expirées de votre base de données.
+Tant qu'une recipe Flex publiée n'est pas la voie canonique dans votre distribution, considérez `cashier:install` comme la commande officielle de bootstrap du bundle.
 
-### Options
-
-| Option | Alias | Description | Valeur par défaut |
-|--------|-------|-------------|-------------------|
-| `--hours`, `-H` | - | Sessions plus anciennes que N heures | `24` |
-| `--dry-run` | - | Simulation sans suppression | - |
-
-### Exemples
-
-#### Nettoyer les sessions de plus de 24 heures (par défaut)
-
-```bash
-php bin/console cashier:cleanup-sessions
-```
-
-#### Nettoyer les sessions de plus de 48 heures
-
-```bash
-php bin/console cashier:cleanup-sessions --hours=48
-```
-
-#### Simulation sans suppression
-
-```bash
-php bin/console cashier:cleanup-sessions --hours=72 --dry-run
-```
-
-### Notes
-
-- La commande supprime uniquement les sessions checkout sans statut (status IS NULL)
-- La commande nécessite l'entité `CashierBundle\Entity\CheckoutSession` pour fonctionner
-- Utilisez l'option `--dry-run` pour voir ce qui serait supprimé avant d'exécuter la commande réelle
+[Twig →](/docs/twig)

@@ -58,4 +58,35 @@ final class InvoiceViewFactoryTest extends TestCase
         self::assertStringContainsString('€', $view['invoice']['formatted_total']);
         self::assertStringContainsString('49,90', $view['invoice']['items'][0]['formatted_amount']);
     }
+
+    public function testCreateKeepsRenderingWhenLocaleInputIsUnexpected(): void
+    {
+        $stripeInvoice = new StripeInvoice('in_test');
+        $stripeInvoice->customer = null;
+        $stripeInvoice->number = 'INV-0004';
+        $stripeInvoice->status = 'paid';
+        $stripeInvoice->currency = 'eur';
+        $stripeInvoice->subtotal = 4990;
+        $stripeInvoice->total = 4990;
+        $stripeInvoice->amount_paid = 4990;
+        $stripeInvoice->amount_due = 0;
+        $stripeInvoice->created = strtotime('2026-03-05 12:00:00');
+        /** @var Collection<InvoiceLineItem> $lines */
+        $lines = Collection::constructFrom([
+            'data' => [],
+            'has_more' => false,
+        ]);
+        $stripeInvoice->lines = $lines;
+
+        $view = (new InvoiceViewFactory(
+            new DefaultInvoiceLocaleResolver('en', ['en', 'fr']),
+            new DefaultInvoiceTranslationProvider(),
+        ))->create(
+            new Invoice($stripeInvoice, $this->createStub(\CashierBundle\Contract\InvoiceRendererInterface::class)),
+            ['locale' => "\xFF"],
+        );
+
+        self::assertIsString($view['invoice']['formatted_date']);
+        self::assertNotSame('', $view['invoice']['formatted_date']);
+    }
 }

@@ -1,173 +1,87 @@
 # Checkout
 
-Le `CheckoutService` utilise Stripe Checkout pour des paiements hébergés par Stripe.
+`CheckoutService` sert à créer des sessions Stripe Checkout en mode paiement ou abonnement.
 
-## Sessions de paiement
-
-### Paiement simple avec prix existant
+## Paiement produit / commande
 
 ```php
 use CashierBundle\Service\CheckoutService;
 
-class CheckoutController
-{
-    public function __construct(
-        private readonly CheckoutService $checkoutService,
-    ) {}
+$checkout = $checkoutService->create($user, [
+    [
+        'price_data' => [
+            'currency' => 'eur',
+            'product_data' => ['name' => 'Réservation premium'],
+            'unit_amount' => 4990,
+        ],
+        'quantity' => 1,
+    ],
+], [
+    'success_url' => 'https://example.com/checkout/success?session_id={CHECKOUT_SESSION_ID}',
+    'cancel_url' => 'https://example.com/checkout/cancel',
+    'metadata' => [
+        'app_order_id' => '42',
+        'app_user_id' => '4',
+    ],
+]);
 
-    public function checkout(User $user): Response
-    {
-        $checkout = $this->checkoutService->create($user, [
-            ['price' => 'price_xxx', 'quantity' => 1],
-        ], [
-            'success_url' => 'https://example.com/success',
-            'cancel_url' => 'https://example.com/cancel',
-        ]);
-
-        return $this->redirect($checkout->url());
-    }
-}
+return new RedirectResponse($checkout->url());
 ```
 
-### Paiement ad-hoc (sans prix préexistant)
+## Ce que le bundle ajoute pour vous
+
+Par défaut, le bundle active:
+
+- `invoice_creation.enabled = true`
+- la propagation des `metadata` vers `invoice_creation.invoice_data.metadata`
+- l'archivage local du PDF après `invoice.paid`
+
+Cela permet ensuite de lier plus proprement:
+
+- la session checkout
+- le payment intent
+- l'invoice Stripe
+- l'invoice archivée localement
+- votre ressource métier via `metadata`
+
+## Abonnement via Checkout
 
 ```php
-$checkout = $this->checkoutService->charge(
+$checkout = $checkoutService->createSubscription($user, [
+    ['price' => 'price_monthly', 'quantity' => 1],
+], [
+    'success_url' => 'https://example.com/account?checkout=success',
+    'cancel_url' => 'https://example.com/account?checkout=cancel',
+]);
+```
+
+## Billing portal
+
+```php
+$url = $checkoutService->billingPortal(
     billable: $user,
-    amount: 1999, // 19.99€
-    name: 'Produit Premium',
-    quantity: 1,
-    options: [
-        'success_url' => 'https://example.com/success',
-        'cancel_url' => 'https://example.com/cancel',
-    ],
+    returnUrl: 'https://example.com/account',
 );
 ```
 
-## Abonnements via Checkout
-
-Créer un abonnement via Stripe Checkout :
+## Retrouver une session
 
 ```php
-$checkout = $this->checkoutService->createSubscription($user, [
-    ['price' => 'price_monthly', 'quantity' => 1],
-], [
-    'success_url' => 'https://example.com/success',
-    'cancel_url' => 'https://example.com/cancel',
-]);
+$session = $checkoutService->findSession('cs_test_xxx');
 
-return $this->redirect($checkout->url());
-```
-
-## Billing Portal
-
-Rediriger vers le portail client Stripe :
-
-```php
-public function portal(User $user): Response
-{
-    $url = $this->checkoutService->billingPortal(
-        billable: $user,
-        returnUrl: 'https://example.com/account',
-    );
-
-    return $this->redirect($url);
+if ($session?->isComplete()) {
+    // paiement confirmé
 }
 ```
 
-Le portail permet au client de :
-- Voir et gérer ses abonnements
-- Mettre à jour ses méthodes de paiement
-- Télécharger ses factures
-- Mettre à jour ses informations
+## Conseil d'intégration
 
-## Récupérer une session
+Ne faites pas dépendre votre métier uniquement du retour frontend.
 
-```php
-$checkout = $this->checkoutService->findSession('cs_xxx');
+Utilisez les webhooks Stripe pour:
 
-if ($checkout !== null) {
-    if ($checkout->isComplete()) {
-        // Paiement terminé
-    }
-}
-```
+- confirmer le paiement côté serveur
+- archiver la facture
+- déclencher vos actions métier post-paiement
 
-## Model Checkout
-
-```php
-$checkout->id();              // 'cs_xxx'
-$checkout->url();             // URL de redirection
-$checkout->status();          // 'open', 'complete', 'expired'
-$checkout->isComplete();      // true si terminé
-$checkout->isExpired();       // true si expiré
-$checkout->isOpen();          // true si en attente
-
-// Références
-$checkout->customerId();          // 'cus_xxx'
-$checkout->paymentIntentId();     // 'pi_xxx' (mode payment)
-$checkout->subscriptionId();      // 'sub_xxx' (mode subscription)
-$checkout->setupIntentId();       // 'seti_xxx' (mode setup)
-```
-
-## Options disponibles
-
-```php
-$checkout = $this->checkoutService->create($user, $items, [
-    'success_url' => 'https://example.com/success',
-    'cancel_url' => 'https://example.com/cancel',
-    'mode' => 'payment', // ou 'subscription', 'setup'
-
-    // Pré-remplir les données
-    'customer_email' => 'user@example.com',
-    'customer_name' => 'Jean Dupont',
-
-    // Personnalisation
-    'brand' => 'MonApp',
-    'locale' => 'fr',
-
-    // Autorisations
-    'allow_promotion_codes' => true,
-    'billing_address_collection' => 'required',
-
-    // Métadonnées
-    'metadata' => [
-        'order_id' => '1234',
-    ],
-]);
-```
-
-## Webhook de complétion
-
-Écoutez l'événement `checkout.session.completed` pour traiter les paiements :
-
-```php
-use CashierBundle\Contract\WebhookHandlerInterface;
-use Stripe\Event;
-use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
-
-#[AutoconfigureTag('cashier.webhook_handler')]
-final class CheckoutCompletedHandler implements WebhookHandlerInterface
-{
-    public function handles(): array
-    {
-        return ['checkout.session.completed'];
-    }
-
-    public function handle(Event $event): void
-    {
-        $session = $event->data->object;
-
-        // Traiter le paiement...
-        $orderId = $session->metadata->order_id ?? null;
-    }
-}
-```
-
-## Accéder à l'objet Stripe
-
-```php
-$stripeSession = $checkout->asStripeCheckoutSession();
-```
-
-[Prochain : Factures →](/docs/invoices)
+[Factures →](/docs/invoices)
