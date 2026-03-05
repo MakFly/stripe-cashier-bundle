@@ -120,6 +120,34 @@ final class CheckoutServiceTest extends TestCase
         self::assertSame('cus_123', $sessions->capturedPayload['customer']);
         self::assertTrue($sessions->capturedPayload['invoice_creation']['enabled']);
     }
+
+    public function testCreateCopiesMetadataToInvoiceCreationPayload(): void
+    {
+        $sessions = new CheckoutSessionsSpy();
+        $stripe = (new TestStripeClient())->withService('checkout', (object) [
+            'sessions' => $sessions,
+        ]);
+
+        $service = new CheckoutService($stripe);
+
+        $service->create(new FakeBillable('cus_123'), [[
+            'price' => 'price_test_123',
+            'quantity' => 1,
+        ]], [
+            'metadata' => [
+                'app_order_id' => '42',
+                'app_user_id' => '7',
+            ],
+        ]);
+
+        self::assertSame(
+            [
+                'app_order_id' => '42',
+                'app_user_id' => '7',
+            ],
+            $sessions->capturedPayload['invoice_creation']['invoice_data']['metadata'] ?? null,
+        );
+    }
 }
 
 final class CheckoutSessionsSpy

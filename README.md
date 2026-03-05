@@ -160,6 +160,27 @@ The default provider ships with `en` and `fr`. For additional locales, override:
 - `CashierBundle\Contract\InvoiceLocaleResolverInterface`
 - `CashierBundle\Contract\InvoiceTranslationProviderInterface`
 
+## v1 Compatibility Policy
+
+From `v1.0.0`, the bundle follows strict SemVer for documented public APIs:
+
+- configuration under `cashier.*`
+- documented commands
+- documented public services/contracts
+- persisted bundle entities and their intended usages
+- public events meant for application integration
+
+Breaking changes will be introduced only in a new major version.
+
+## Production Checklist
+
+- valid Stripe API keys and webhook secret configured
+- webhook endpoint reachable from Stripe
+- invoice storage path writable (`var/data/invoices` by default)
+- queueing strategy decided for webhook processing if using Messenger
+- `cashier:install` executed on the target project
+- PHP runtime validated against the documented bundle requirements
+
 ## Quick Start
 
 ### Create a Subscription
