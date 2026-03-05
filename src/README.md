@@ -16,7 +16,7 @@ La documentation complète est disponible sur **[docs.cashierbundle.dev](https:/
 ## ⚡ Installation
 
 ```bash
-composer require cashier/cashier-bundle
+composer require makfly/stripe-cashier-bundle
 ```
 
 ## 🔧 Configuration
@@ -146,8 +146,8 @@ php bin/console cashier:webhook --url=https://your-domain.com/stripe/webhook
 
 ## 🔗 Liens
 
-- **[Documentation complète](https://docs.cashierbundle.dev)**
-- **[GitHub](https://github.com/cashier/cashier-bundle)**
+- **[Documentation complète](https://cashier-symfony.vercel.app)**
+- **[GitHub](https://github.com/MakFly/cashier-symfony)**
 - **[Stripe Documentation](https://stripe.com/docs)**
 
 ## 📝 License
