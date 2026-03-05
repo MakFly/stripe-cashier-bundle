@@ -62,24 +62,9 @@ final class CheckoutServiceTest extends TestCase
 
     public function testCreateSubscriptionReturnsCheckout(): void
     {
+        $sessions = new CheckoutSessionsSpy();
         $stripe = (new TestStripeClient())->withService('checkout', (object) [
-            'sessions' => new class () {
-                /**
-                 * @param array<string, mixed> $payload
-                 */
-                public function create(array $payload): object
-                {
-                    return (object) [
-                        'id' => 'cs_test_123',
-                        'url' => 'https://checkout.example.test',
-                        'payment_intent' => null,
-                        'setup_intent' => null,
-                        'customer' => $payload['customer'],
-                        'subscription' => 'sub_123',
-                        'status' => 'open',
-                    ];
-                }
-            },
+            'sessions' => $sessions,
         ]);
 
         $service = new CheckoutService($stripe);
@@ -87,10 +72,24 @@ final class CheckoutServiceTest extends TestCase
         $checkout = $service->createSubscription(
             new FakeBillable('cus_123'),
             [['price' => 'price_monthly', 'quantity' => 2]],
+            [
+                'metadata' => [
+                    'app_resource_type' => 'subscription_plan',
+                    'app_resource_id' => 'starter',
+                    'plan_code' => 'starter',
+                ],
+                'subscription_data' => [
+                    'trial_period_days' => 14,
+                ],
+            ],
         );
 
-        self::assertSame('cs_test_123', $checkout->id());
+        self::assertSame('cs_test_raw', $checkout->id());
         self::assertSame('sub_123', $checkout->subscriptionId());
+        self::assertSame('subscription_plan', $sessions->capturedPayload['metadata']['app_resource_type']);
+        self::assertSame('starter', $sessions->capturedPayload['metadata']['app_resource_id']);
+        self::assertSame('starter', $sessions->capturedPayload['subscription_data']['metadata']['plan_code']);
+        self::assertSame(14, $sessions->capturedPayload['subscription_data']['trial_period_days']);
     }
 
     public function testCreateAcceptsRawStripeLineItems(): void
@@ -170,7 +169,7 @@ final class CheckoutSessionsSpy
             'payment_intent' => 'pi_test_raw',
             'setup_intent' => null,
             'customer' => $payload['customer'],
-            'subscription' => null,
+            'subscription' => $payload['mode'] === 'subscription' ? 'sub_123' : null,
             'status' => 'open',
         ];
     }

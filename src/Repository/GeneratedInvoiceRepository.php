@@ -35,4 +35,16 @@ class GeneratedInvoiceRepository extends ServiceEntityRepository
             $this->getEntityManager()->flush();
         }
     }
+
+    public function findOneForResource(?string $resourceType, string|int|null $resourceId): ?GeneratedInvoice
+    {
+        if ($resourceType === null || $resourceType === '' || $resourceId === null || $resourceId === '') {
+            return null;
+        }
+
+        return $this->findOneBy([
+            'resourceType' => $resourceType,
+            'resourceId' => (string) $resourceId,
+        ], ['id' => 'DESC']);
+    }
 }

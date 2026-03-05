@@ -43,12 +43,16 @@ final readonly class InvoiceArchiveService
         $pdfContents = $this->renderer->renderBinary($invoice);
         $storedInvoice = $this->storage->store($invoice, $pdfContents);
         $customer = $this->stripeCustomerRepository->findByStripeId($event->getCustomerId());
+        $metadata = $this->normalizeMetadata($stripeInvoice);
 
         $generatedInvoice = (new GeneratedInvoice())
             ->setCustomer($customer)
             ->setStripeInvoiceId($invoice->id())
             ->setStripePaymentIntentId($event->getPaymentIntentId() ?? $invoice->paymentIntentId())
             ->setStripeCheckoutSessionId($event->getCheckoutSessionId())
+            ->setResourceType($this->resolveResourceType($metadata))
+            ->setResourceId($this->resolveResourceId($metadata))
+            ->setPlanCode($this->resolvePlanCode($metadata))
             ->setCurrency($event->getCurrency())
             ->setAmountTotal($event->getAmount())
             ->setStatus($invoice->status())
@@ -62,7 +66,7 @@ final readonly class InvoiceArchiveService
                 'stripe_checkout_session_id' => $event->getCheckoutSessionId(),
                 'stripe_payment_intent_id' => $event->getPaymentIntentId() ?? $invoice->paymentIntentId(),
                 'hosted_invoice_url' => $stripeInvoice->hosted_invoice_url ?? null,
-                'metadata' => $this->normalizeMetadata($stripeInvoice),
+                'metadata' => $metadata,
             ])
         ;
 
@@ -94,5 +98,39 @@ final readonly class InvoiceArchiveService
         $metadata = $invoice->metadata->toArray();
 
         return is_array($metadata) ? $metadata : [];
+    }
+
+    /**
+     * @param array<string, mixed> $metadata
+     */
+    private function resolveResourceType(array $metadata): ?string
+    {
+        $value = $metadata['app_resource_type'] ?? null;
+
+        return is_string($value) && $value !== '' ? $value : null;
+    }
+
+    /**
+     * @param array<string, mixed> $metadata
+     */
+    private function resolveResourceId(array $metadata): ?string
+    {
+        $value = $metadata['app_resource_id'] ?? $metadata['app_order_id'] ?? null;
+
+        if (is_int($value) || is_float($value)) {
+            return (string) $value;
+        }
+
+        return is_string($value) && $value !== '' ? $value : null;
+    }
+
+    /**
+     * @param array<string, mixed> $metadata
+     */
+    private function resolvePlanCode(array $metadata): ?string
+    {
+        $value = $metadata['plan_code'] ?? null;
+
+        return is_string($value) && $value !== '' ? $value : null;
     }
 }

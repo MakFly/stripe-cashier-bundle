@@ -1,0 +1,14 @@
+/docs export-ignore
+/tests export-ignore
+/plans export-ignore
+/recipes export-ignore
+/var export-ignore
+/.php-cs-fixer.dist.php export-ignore
+/phpstan.neon.dist export-ignore
+/phpstan-baseline.neon export-ignore
+/phpstan-baseline-extra.neon export-ignore
+/phpunit.xml export-ignore
+/package.json export-ignore
+/package-lock.json export-ignore
+/node_modules export-ignore
+/RECAP.md export-ignore

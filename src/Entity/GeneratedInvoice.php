@@ -37,6 +37,15 @@ class GeneratedInvoice
     #[ORM\Column(name: 'stripe_checkout_session_id', length: 255, nullable: true)]
     private ?string $stripeCheckoutSessionId = null;
 
+    #[ORM\Column(name: 'resource_type', length: 100, nullable: true)]
+    private ?string $resourceType = null;
+
+    #[ORM\Column(name: 'resource_id', length: 255, nullable: true)]
+    private ?string $resourceId = null;
+
+    #[ORM\Column(name: 'plan_code', length: 100, nullable: true)]
+    private ?string $planCode = null;
+
     #[ORM\Column(length: 10)]
     private string $currency = 'usd';
 
@@ -146,6 +155,42 @@ class GeneratedInvoice
     public function setStripeCheckoutSessionId(?string $stripeCheckoutSessionId): self
     {
         $this->stripeCheckoutSessionId = $stripeCheckoutSessionId;
+
+        return $this;
+    }
+
+    public function getResourceType(): ?string
+    {
+        return $this->resourceType;
+    }
+
+    public function setResourceType(?string $resourceType): self
+    {
+        $this->resourceType = $resourceType;
+
+        return $this;
+    }
+
+    public function getResourceId(): ?string
+    {
+        return $this->resourceId;
+    }
+
+    public function setResourceId(?string $resourceId): self
+    {
+        $this->resourceId = $resourceId;
+
+        return $this;
+    }
+
+    public function getPlanCode(): ?string
+    {
+        return $this->planCode;
+    }
+
+    public function setPlanCode(?string $planCode): self
+    {
+        $this->planCode = $planCode;
 
         return $this;
     }

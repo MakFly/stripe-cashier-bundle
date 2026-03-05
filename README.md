@@ -83,6 +83,16 @@ Stripe Checkout sessions created by the bundle propagate checkout metadata to in
 - archived PDF
 - local order or booking
 
+For deterministic consumer-side linking, use explicit metadata keys:
+
+- `app_resource_type`
+- `app_resource_id`
+- `app_user_id`
+- `plan_code`
+- `billing_cycle`
+
+The archive service persists these values into `cashier_generated_invoices` so the consumer application can resolve invoices without amount/date heuristics.
+
 ## Invoice customization
 
 You can customize invoices at four levels:
@@ -91,6 +101,8 @@ You can customize invoices at four levels:
 - replace `cashier.invoices.renderer`
 - replace `CashierBundle\Contract\InvoiceLocaleResolverInterface`
 - replace `CashierBundle\Contract\InvoiceTranslationProviderInterface`
+
+For production storage, replace `CashierBundle\Contract\InvoiceStorageInterface` with your own implementation if invoices must be stored on S3, GCS, or any shared storage.
 
 ## Webhooks
 

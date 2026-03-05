@@ -152,6 +152,22 @@ class CheckoutService
             throw new \RuntimeException('Billable must have a Stripe customer ID.');
         }
 
+        $metadata = [];
+        if (isset($options['metadata']) && is_array($options['metadata'])) {
+            /** @var array<string, mixed> $metadata */
+            $metadata = $options['metadata'];
+        }
+
+        $subscriptionData = [];
+        if (isset($options['subscription_data']) && is_array($options['subscription_data'])) {
+            /** @var array<string, mixed> $subscriptionData */
+            $subscriptionData = $options['subscription_data'];
+        }
+
+        if ($metadata !== [] && !isset($subscriptionData['metadata'])) {
+            $subscriptionData['metadata'] = $metadata;
+        }
+
         $payload = array_merge([
             'customer' => $stripeId,
             'mode' => 'subscription',
@@ -159,7 +175,20 @@ class CheckoutService
                 'price' => $item['price'],
                 'quantity' => $item['quantity'] ?? 1,
             ], $items),
+            'metadata' => $metadata,
+            'subscription_data' => $subscriptionData,
         ], $options);
+
+        if ($subscriptionData !== []) {
+            $payload['subscription_data'] = array_merge(
+                $subscriptionData,
+                is_array($options['subscription_data'] ?? null) ? $options['subscription_data'] : [],
+            );
+
+            if ($metadata !== [] && !isset($payload['subscription_data']['metadata'])) {
+                $payload['subscription_data']['metadata'] = $metadata;
+            }
+        }
 
         try {
             $session = $this->stripe->checkout->sessions->create($payload);
