@@ -148,6 +148,17 @@ class CustomerService
         }
     }
 
+    public function syncByStripeId(string $stripeId, ?BillableInterface $billable = null): void
+    {
+        try {
+            $stripeCustomer = $this->stripe->customers->retrieve($stripeId);
+        } catch (\Stripe\Exception\ExceptionInterface) {
+            return;
+        }
+
+        $this->sync($stripeCustomer, $billable);
+    }
+
     public function sync(StripeCustomer $stripeCustomer, ?BillableInterface $billable = null): void
     {
         $customer = $this->repository->findByStripeId($stripeCustomer->id);

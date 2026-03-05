@@ -21,6 +21,10 @@ final class CashierExtension extends Extension
         $loader->load('services.yaml');
         $phpLoader->load('webhook_services.php');
 
+        if (class_exists('Symfony\Component\Messenger\MessageBusInterface')) {
+            $phpLoader->load('messenger_services.php');
+        }
+
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
 

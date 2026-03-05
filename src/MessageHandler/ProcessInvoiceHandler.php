@@ -6,9 +6,7 @@ namespace CashierBundle\MessageHandler;
 
 use CashierBundle\Message\ProcessInvoiceMessage;
 use CashierBundle\Service\InvoiceService;
-use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
-#[AsMessageHandler]
 class ProcessInvoiceHandler
 {
     public function __construct(

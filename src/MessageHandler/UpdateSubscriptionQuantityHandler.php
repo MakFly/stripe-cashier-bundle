@@ -6,9 +6,7 @@ namespace CashierBundle\MessageHandler;
 
 use CashierBundle\Message\UpdateSubscriptionQuantityMessage;
 use CashierBundle\Service\SubscriptionService;
-use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
-#[AsMessageHandler]
 class UpdateSubscriptionQuantityHandler
 {
     public function __construct(
