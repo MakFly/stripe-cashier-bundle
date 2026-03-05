@@ -1,433 +1,64 @@
----
-title: Référence API
----
-
 # Référence API
 
-Cette documentation référence les services, modèles, entités et interfaces du bundle Stripe Cashier.
-
-## Services
-
-### CustomerService
-
-Gestion des clients Stripe et synchronisation avec votre base de données locale.
-
-**Responsabilités :**
-- Création et mise à jour de clients Stripe
-- Synchronisation des données clients
-- Gestion du Customer Balance
-- Import/Export de clients
-
-**Méthodes principales :**
-- `createCustomer()` - Créer un client Stripe
-- `updateCustomer()` - Mettre à jour un client
-- `syncCustomerDetails()` - Synchroniser les détails
-- `importCustomer()` - Importer depuis un ID Stripe
-- `exportCustomer()` - Exporter vers un ID Stripe
-
-### PaymentService
-
-Gestion des paiements, des refunds et des intents de paiement.
-
-**Responsabilités :**
-- Création de PaymentIntents
-- Gestion des paiements one-time
-- Gestion des refunds
-- Vérification des paiements
-- Webhook de paiement
-
-**Méthodes principales :**
-- `createPayment()` - Créer un paiement
-- `refundPayment()` - Rembourser un paiement
-- `confirmPayment()` - Confirmer un paiement
-- `handlePaymentSucceeded()` - Gérer paiement réussi
-- `handlePaymentFailed()` - Gérer paiement échoué
-
-### SubscriptionService
-
-Gestion complète des abonnements Stripe.
-
-**Responsabilités :**
-- Création et mise à jour d'abonnements
-- Gestion des cycles de facturation
-- Gestion des renouvellements
-- Gestion des suspensions et annulations
-- Migration d'abonnements
-
-**Méthodes principales :**
-- `createSubscription()` - Créer un abonnement
-- `updateSubscription()` - Mettre à jour un abonnement
-- `cancelSubscription()` - Annuler un abonnement
-- `reactivateSubscription()` - Réactiver un abonnement
-- `swapAndCancel()` - Échanger et annuler
-
-### CheckoutService
-
-Gestion de Stripe Checkout et du Billing Portal.
-
-**Responsabilités :**
-- Création de sessions Checkout
-- Gestion du Checkout Experience
-- Intégration du Billing Portal
-- Gestion des sessions expirées
-- Gestion des abandons de panier
-
-**Méthodes principales :**
-- `createCheckoutSession()` - Créer une session Checkout
-- `createBillingPortalSession()` - Créer une session Billing Portal
-- `expireCheckoutSession()` - Expirer une session
-- `handleCheckoutCompleted()` - Gérer session complétée
-
-### InvoiceService
-
-Gestion des factures Stripe.
-
-**Responsabilités :**
-- Génération de factures
-- Création d'objets d'écriture
-- Gestion des factures échues
-- Calcul des totaux
-- Gestion des remises
-
-**Méthodes principales :**
-- `createInvoice()` - Créer une facture
-- `createInvoiceItem()` - Créer un élément de facture
-- `finalizeInvoice()` - Finaliser une facture
-- `retryInvoice()` - Retenter le paiement d'une facture
-- `listUpcomingInvoices()` - Lister les prochaines factures
-
-### PaymentMethodService
-
-Gestion des méthodes de paiement.
-
-**Responsabilités :**
-- Attachement de méthodes de paiement
-- Gestion des SetupIntents
-- Validation des méthodes de paiement
-- Gestion des méthodes par défaut
-- Migration entre méthodes
-
-**Méthodes principales :**
-- `attachPaymentMethod()` - Attacher une méthode de paiement
-- `detachPaymentMethod()` - Détacher une méthode de paiement
-- `setAsDefault()` - Définir comme méthode par défaut
-- `retrievePaymentMethod()` - Récupérer une méthode de paiement
-- `listPaymentMethods()` - Lister les méthodes de paiement
-
-### TaxService
-
-Gestion des taxes et calculs fiscaux.
-
-**Responsabilités :**
-- Calcul des taxes automatiques
-- Gestion des TaxRates
-- Configuration des paramètres fiscaux
-- Synchronisation avec TaxJar/Avalara
-- Gestion des taxes locales
-
-**Méthodes principales :**
-- `calculateTax()` - Calculer les taxes
-- `createTaxRate()` - Créer un taux de taxe
-- `listTaxRates()` - Lister les taux de taxe
-- `updateTaxSettings()` - Mettre à jour les paramètres fiscaux
-- `syncTaxJarSettings()` - Synchroniser avec TaxJar
-
-## Modèles
-
-### Payment
-
-Représente un paiement unique dans le système.
-
-| Champ | Type | Description |
-|-------|------|-------------|
-| `id` | string | ID unique local |
-| `stripeId` | string | ID Stripe du paiement |
-| `amount` | int | Montant en cents |
-| `currency` | string | Code de la devise |
-| `status` | string | Statut du paiement |
-| `description` | string | Description du paiement |
-| `metadata` | array | Métadonnées personnalisées |
-| `createdAt` | \DateTimeImmutable | Date de création |
-| `updatedAt` | \DateTimeImmutable | Date de mise à jour |
-
-### Checkout
-
-Représente une session Stripe Checkout.
-
-| Champ | Type | Description |
-|-------|------|-------------|
-| `id` | string | ID unique local |
-| `stripeId` | string | ID Stripe de la session |
-| `customerEmail` | string | Email du client |
-| `amountTotal` | int | Montant total en cents |
-| `currency` | string | Code de la devise |
-| `status` | string | Statut de la session |
-| `expiresAt` | \DateTimeImmutable | Date d'expiration |
-| `metadata` | array | Métadonnées personnalisées |
-
-### Invoice
-
-Représente une facture Stripe.
-
-| Champ | Type | Description |
-|-------|------|-------------|
-| `id` | string | ID unique local |
-| `stripeId` | string | ID Stripe de la facture |
-| `customer` | StripeCustomer | Client associé |
-| `subscription` | Subscription | Abonnement associé |
-| `amountDue` | int | Montant dû en cents |
-| `amountPaid` | int | Montant payé en cents |
-| `amountRemaining` | int | Montant restant en cents |
-| `currency` | string | Code de la devise |
-| `status` | string | Statut de la facture |
-| `hostedInvoiceUrl` | string | URL de la facture en ligne |
-| `invoicePdf` | string | URL du PDF de la facture |
-
-### InvoiceLineItem
-
-Représente un élément de ligne dans une facture.
-
-| Champ | Type | Description |
-|-------|------|-------------|
-| `id` | string | ID unique local |
-| `stripeId` | string | ID Stripe de l'élément |
-| `amount` | int | Montant en cents |
-| `currency` | string | Code de la devise |
-| `description` | string | Description de l'élément |
-| `quantity` | int | Quantité |
-| `subscriptionItem` | SubscriptionItem | Item d'abonnement associé |
-
-### InvoicePayment
-
-Représente un paiement de facture.
-
-| Champ | Type | Description |
-|-------|------|-------------|
-| `id` | string | ID unique local |
-| `stripeId` | string | ID Stripe du paiement |
-| `invoice` | Invoice | Facture associée |
-| `amount` | int | Montant payé en cents |
-| `status` | string | Statut du paiement |
-| `paymentMethod` | PaymentMethod | Méthode de paiement utilisée |
-
-### PaymentMethod
-
-Représente une méthode de paiement Stripe.
-
-| Champ | Type | Description |
-|-------|------|-------------|
-| `id` | string | ID unique local |
-| `stripeId` | string | ID Stripe de la méthode |
-| `type` | string | Type de méthode (card, sepa_debit, etc.) |
-| `customer` | StripeCustomer | Client associé |
-| `isDefault` | bool | Si méthode par défaut |
-| `card` | array | Détails de la carte (si applicable) |
-| `billingDetails` | array | Détails de facturation |
-
-### Coupon
-
-Représente un coupon Stripe.
-
-| Champ | Type | Description |
-|-------|------|-------------|
-| `id` | string | ID unique local |
-| `stripeId` | string | ID Stripe du coupon |
-| `name` | string | Nom du coupon |
-| `percentOff` | int | Pourcentage de réduction |
-| `amountOff` | int | Montant de réduction en cents |
-| `currency` | string | Devise du montant (si applicable) |
-| `duration` | string | Durée du coupon |
-| `durationInMonths` | int | Nombre de mois (si durée limitée) |
-| `maxRedemptions` | int | Nombre maximal de rédemptions |
-| `redeemBy` | \DateTimeImmutable | Date d'expiration du coupon |
-
-### PromotionCode
-
-Représente un code promotionnel Stripe.
-
-| Champ | Type | Description |
-|-------|------|-------------|
-| `id` | string | ID unique local |
-| `stripeId` | string | ID Stripe du code promo |
-| `code` | string | Code promo |
-| `active` | bool | Si actif |
-| `expiresAt` | \DateTimeImmutable | Date d'expiration |
-| `customer` | StripeCustomer | Client associé |
-| `coupon` | Coupon | Coupon associé |
-
-### TaxRate
-
-Représente un taux de taxe Stripe.
-
-| Champ | Type | Description |
-|-------|------|-------------|
-| `id` | string | ID unique local |
-| `stripeId` | string | ID Stripe du taux |
-| `active` | bool | Si actif |
-| `displayName` | string | Nom affiché |
-| `description` | string | Description |
-| `jurisdiction` | string | Jurisdiction |
-| `percentage` | float | Pourcentage de taxe |
-| `inclusive` | bool | Si taxe inclusive |
-| `country` | string | Pays |
-| `state` | string | État/région |
-
-### Tax
-
-Représente une taxe calculée.
-
-| Champ | Type | Description |
-|-------|------|-------------|
-| `id` | string | ID unique local |
-| `stripeId` | string | ID Stripe de la taxe |
-| `amount` | int | Montant de la taxe en cents |
-| `inclusive` | bool | Si taxe inclusive |
-| `taxRate` | TaxRate | Taux de taxe utilisé |
-| `invoice` | Invoice | Facture associée |
-
-### Discount
-
-Représente une remise appliquée.
-
-| Champ | Type | Description |
-|-------|------|-------------|
-| `id` | string | ID unique local |
-| `stripeId` | string | ID Stripe de la remise |
-| `discount` | array | Objet de remisse Stripe |
-| `invoice` | Invoice | Facture associée |
-
-### CustomerBalanceTransaction
-
-Représente une transaction de balance client.
-
-| Champ | Type | Description |
-|-------|------|-------------|
-| `id` | string | ID unique local |
-| `stripeId` | string | ID Stripe de la transaction |
-| `customer` | StripeCustomer | Client associé |
-| `amount` | int | Montant en cents |
-| `type` | string | Type de transaction (adjustment, consumption, etc.) |
-| `status` | string | Statut de la transaction |
-| `description` | string | Description |
-| `createdAt` | \DateTimeImmutable | Date de création |
-
-### SetupIntent
-
-Représente un intent de configuration Stripe.
-
-| Champ | Type | Description |
-|-------|------|-------------|
-| `id` | string | ID unique local |
-| `stripeId` | string | ID Stripe de l'intent |
-| `clientSecret` | string | Secret client pour l'intent |
-| `customer` | StripeCustomer | Client associé |
-| `paymentMethod` | PaymentMethod | Méthode de paiement associée |
-| `status` | string | Statut de l'intent |
-| `usage` | string | Usage de l'intent |
-
-## Entités Doctrine
-
-### StripeCustomer
-
-Entité locale représentant un client Stripe.
-
-| Champ | Type | Description |
-|-------|------|-------------|
-| `id` | int | ID primaire |
-| `stripeId` | string | ID Stripe du client |
-| `entityId` | int | ID de l'entité locale |
-| `entityClass` | string | Classe de l'entité locale |
-| `email` | string | Email du client |
-| `name` | string | Nom du client |
-| `currency` | string | Devise par défaut |
-| `taxId` | string | ID de taxe |
-| `address` | array | Adresse du client |
-| `phone` | string | Téléphone |
-| `preferredLocales` | array | Locales préférées |
-| `createdAt` | \DateTimeImmutable | Date de création |
-| `updatedAt` | \DateTimeImmutable | Date de mise à jour |
-
-### Subscription
-
-Entité locale représentant un abonnement.
-
-| Champ | Type | Description |
-|-------|------|-------------|
-| `id` | int | ID primaire |
-| `stripeId` | string | ID Stripe de l'abonnement |
-| `customer` | StripeCustomer | Client associé |
-| `plan` | string | ID du plan Stripe |
-| `status` | string | Statut de l'abonnement |
-| `currentPeriodStart` | \DateTimeImmutable | Début de la période actuelle |
-| `currentPeriodEnd` | \DateTimeImmutable | Fin de la période actuelle |
-| `trialEnd` | \DateTimeImmutable | Fin de la période d'essai |
-| `cancelAtPeriodEnd` | bool | Annulation à la fin de la période |
-| `metadata` | array | Métadonnées |
-| `createdAt` | \DateTimeImmutable | Date de création |
-| `updatedAt` | \DateTimeImmutable | Date de mise à jour |
-
-### SubscriptionItem
-
-Entité locale représentant un item d'abonnement.
-
-| Champ | Type | Description |
-|-------|------|-------------|
-| `id` | int | ID primaire |
-| `stripeId` | string | ID Stripe de l'item |
-| `subscription` | Subscription | Abonnement associé |
-| `plan` | string | ID du plan Stripe |
-| `quantity` | int | Quantité |
-| `metadata` | array | Métadonnées |
-| `createdAt` | \DateTimeImmutable | Date de création |
-| `updatedAt` | \DateTimeImmutable | Date de mise à jour |
-
-## Interfaces
-
-### BillableInterface
-
-Interface pour les entités facturables.
-
-```php
-interface BillableInterface
-{
-    public function getCashierEmail(): string;
-    public function getCashierName(): string;
-    public function getCashierCurrency(): string;
-}
-```
-
-### BillableEntityInterface
-
-Interface pour les entités Doctrine facturables.
-
-```php
-interface BillableEntityInterface extends BillableInterface
-{
-    public function getStripeCustomer(): ?StripeCustomer;
-    public function setStripeCustomer(?StripeCustomer $customer): void;
-}
-```
-
-### InvoiceRendererInterface
-
-Interface pour les renderers de facture personnalisés.
-
-```php
-interface InvoiceRendererInterface
-{
-    public function render(Invoice $invoice): string;
-    public function supports(string $format): bool;
-}
-```
-
-### WebhookHandlerInterface
-
-Interface pour les handlers de webhook personnalisés.
-
-```php
-interface WebhookHandlerInterface
-{
-    public function handles(string $event): bool;
-    public function handle(array $payload, WebhookReceivedEvent $event): void;
-}
-```
+Cette page référence les briques publiques du bundle que vous pouvez considérer comme stables à intégrer côté application.
+
+## Services principaux
+
+### `CashierBundle\Service\Cashier`
+
+Service principal et utilitaires de formatage.
+
+### `CashierBundle\Service\CustomerService`
+
+Création, mise à jour et synchronisation des customers Stripe.
+
+### `CashierBundle\Service\PaymentService`
+
+Paiements one-shot, refunds et payment intents.
+
+### `CashierBundle\Service\SubscriptionService`
+
+Création et maintenance du cycle de vie des abonnements.
+
+### `CashierBundle\Service\CheckoutService`
+
+Création de sessions Stripe Checkout et Billing Portal.
+
+### `CashierBundle\Service\InvoiceService`
+
+Lecture des invoices Stripe et opérations de facturation.
+
+### `CashierBundle\Service\InvoiceArchiveService`
+
+Archivage local des PDFs et persistance de `GeneratedInvoice`.
+
+## Contrats extensibles
+
+- `CashierBundle\Contract\InvoiceRendererInterface`
+- `CashierBundle\Contract\InvoiceStorageInterface`
+- `CashierBundle\Contract\InvoiceLocaleResolverInterface`
+- `CashierBundle\Contract\InvoiceTranslationProviderInterface`
+- `CashierBundle\Contract\WebhookHandlerInterface`
+
+## Entités Doctrine du bundle
+
+- `CashierBundle\Entity\StripeCustomer`
+- `CashierBundle\Entity\Subscription`
+- `CashierBundle\Entity\SubscriptionItem`
+- `CashierBundle\Entity\GeneratedInvoice`
+
+## Événements publics
+
+- `WebhookReceivedEvent`
+- `WebhookHandledEvent`
+- `SubscriptionCreatedEvent`
+- `SubscriptionUpdatedEvent`
+- `SubscriptionDeletedEvent`
+- `PaymentSucceededEvent`
+- `PaymentFailedEvent`
+
+## Politique de stabilité
+
+La configuration documentée sous `cashier.*`, les contrats listés ci-dessus et les commandes documentées constituent la surface publique à préserver.
+
+Pour tout le reste, considérez les classes non documentées comme internes au bundle.

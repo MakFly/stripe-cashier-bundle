@@ -1,49 +1,79 @@
 # Introduction
 
-Cashier Symfony est un bundle de gestion des paiements Stripe pour Symfony, inspiré de Laravel Cashier.
+`makfly/stripe-cashier-bundle` apporte à Symfony un socle Stripe orienté billing:
 
-## Fonctionnalités
+- abonnements et essais
+- paiements one-shot
+- Stripe Checkout
+- webhooks Stripe avec handlers extensibles
+- archivage PDF des factures payées
+- stockage local des factures dans `var/data/invoices`
+- intégration Doctrine pour les clients Stripe, abonnements et factures générées
 
-- **Abonnements** — Création, mise à jour, annulation, reprise, changement de plan
-- **Périodes d'essai** — Essais gratuits avec `trialDays()` ou `trialUntil()`
-- **Webhooks** — Traitement automatique des événements Stripe avec handlers extensibles
-- **Factures PDF** — Génération via Dompdf ou Snappy
-- **Méthodes de paiement** — Gestion des cartes et moyens de paiement
-- **Intégré à Doctrine** — Entités ORM prêtes à l'emploi
-- **Paiements one-time** — Facturation unique pour produits ou services
-- **Refunds** — Remboursements partiels ou complets
-- **Stripe Checkout** — Intégration transparente avec Stripe Checkout
-- **Billing Portal** — Portail client pour gestion des abonnements
-- **Coupons & Promotions** — Gestion des codes promo et des coupons Stripe
-- **Taxes automatiques** — Calcul automatique des taxes avec Stripe Tax
-- **Commandes CLI** — Outils en ligne de commande pour la gestion
-- **Extension Twig** — Helper Twig pour afficher l'état des abonnements
+Le bundle est pensé pour deux usages:
+
+1. un projet Symfony qui veut une base billing prête à l'emploi
+2. une application métier qui veut garder la main sur son tunnel de commande tout en déléguant Stripe, les webhooks et l'archivage des factures
 
 ## Prérequis
 
 | Dépendance | Version |
 |-----------|---------|
-| PHP | ^8.2 |
-| Symfony | ^7.0 \| ^8.0 |
-| Doctrine ORM | ^3.0 |
-| stripe/stripe-php | ^16.0 |
+| PHP | `^8.2` |
+| Symfony | `^7.0` ou `^8.0` |
+| Doctrine ORM | `^3.0` |
+| Stripe PHP SDK | `^16.0` |
 
-[Installer →](/docs/installation)
+## `ext-intl`
 
-## Documentation complète
+`ext-intl` est **recommandée**, mais **pas obligatoire**.
 
-- [Introduction](/docs/introduction)
-- [Installation](/docs/installation)
-- [Abonnements](/docs/subscriptions)
-- [Webhooks](/docs/webhooks)
-- [Paiements one-time](/docs/one-time-payments)
-- [Refunds](/docs/refunds)
-- [Factures PDF](/docs/invoices)
-- [Stripe Checkout](/docs/checkout)
-- [Billing Portal](/docs/billing-portal)
-- [Méthodes de paiement](/docs/payment-methods)
-- [Coupons & Promotions](/docs/coupons)
-- [Taxes](/docs/taxes)
-- [Commandes CLI](/docs/commands)
-- [Extension Twig](/docs/twig)
-- [Événements](/docs/events)
+Sans `intl`, le bundle continue à fonctionner:
+
+- les montants tombent sur un fallback sûr
+- les dates de facture tombent sur un format ISO (`YYYY-MM-DD`)
+- les traductions de labels FR/EN restent disponibles
+
+Avec `intl` installée, vous obtenez:
+
+- un format monétaire natif par locale
+- des dates localisées plus propres dans les PDF
+- un rendu FR/EN plus proche d'une facture de production
+
+## Contrat du bundle
+
+Le flux officiel d'installation est:
+
+```bash
+composer require makfly/stripe-cashier-bundle
+php bin/console cashier:install
+```
+
+La commande d'installation prépare:
+
+- `config/packages/cashier.yaml`
+- `config/packages/cashier_doctrine.yaml`
+- `config/routes/cashier.yaml`
+- les variables Stripe dans `.env`
+- `var/data`
+- `var/data/invoices`
+
+## Surface couverte
+
+Le bundle gère aujourd'hui:
+
+- `StripeCustomer`
+- `Subscription`
+- `SubscriptionItem`
+- `GeneratedInvoice`
+- les webhooks Stripe courants de billing
+- le rendu et l'archivage PDF des factures
+
+Il laisse volontairement à l'application consommatrice:
+
+- la logique métier de commande
+- les règles d'autorisation
+- les écrans front
+- les workflows de réservation ou fulfillment
+
+[Installer le bundle →](/docs/installation)

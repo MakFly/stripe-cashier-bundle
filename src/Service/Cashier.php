@@ -44,11 +44,15 @@ class Cashier
             return \CashierBundle\Model\Cashier::formatAmount($amount, strtolower($currency), $locale);
         }
 
-        $money = new Money($amount, new Currency($currency));
-        $numberFormatter = new NumberFormatter($locale, NumberFormatter::CURRENCY);
-        $moneyFormatter = new IntlMoneyFormatter($numberFormatter, new ISOCurrencies());
+        try {
+            $money = new Money($amount, new Currency($currency));
+            $numberFormatter = new NumberFormatter($locale, NumberFormatter::CURRENCY);
+            $moneyFormatter = new IntlMoneyFormatter($numberFormatter, new ISOCurrencies());
 
-        return $moneyFormatter->format($money);
+            return $moneyFormatter->format($money);
+        } catch (\Throwable) {
+            return \CashierBundle\Model\Cashier::formatAmount($amount, strtolower($currency), $locale);
+        }
     }
 
     public static function normalizeZeroAmountDecimal(int $amount): int

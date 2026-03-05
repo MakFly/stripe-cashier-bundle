@@ -1,135 +1,64 @@
 # Installation
 
-## Via Composer
+## 1. Installer le bundle
 
 ```bash
 composer require makfly/stripe-cashier-bundle
 ```
 
-## Enregistrer le bundle
+## 2. Installer `ext-intl` si possible
 
-Ajoutez le bundle dans `config/bundles.php` :
+Le bundle fonctionne sans `ext-intl`, mais la qualité de rendu des montants et des dates est meilleure avec l'extension.
 
-```php
-return [
-    // ...
-    CashierBundle\CashierBundle::class => ['all' => true],
-];
+Sur Debian / Ubuntu:
+
+```bash
+sudo apt-get install -y php8.4-intl
 ```
 
-## Variables d'environnement
+Vérification:
 
-Ajoutez ces variables à votre `.env` :
+```bash
+php -m | grep intl
+```
+
+## 3. Générer la configuration
+
+```bash
+php bin/console cashier:install
+```
+
+La commande est idempotente. Elle crée uniquement ce qui manque.
+
+### Fichiers générés
+
+- `config/packages/cashier.yaml`
+- `config/packages/cashier_doctrine.yaml`
+- `config/routes/cashier.yaml`
+- `.env` avec les variables Stripe manquantes
+
+### Répertoires générés
+
+- `var/data`
+- `var/data/invoices`
+
+## 4. Vérifier les variables Stripe
 
 ```env
-STRIPE_KEY=pk_test_xxx
-STRIPE_SECRET=sk_test_xxx
-STRIPE_WEBHOOK_SECRET=whsec_xxx
+STRIPE_KEY=pk_test_change_me
+STRIPE_SECRET=sk_test_change_me
+STRIPE_WEBHOOK_SECRET=whsec_change_me
 ```
 
-## Configuration
+Remplacez les valeurs placeholders avant de brancher un environnement réel.
 
-Créez `config/packages/cashier.yaml` :
+## 5. Déclarer une entité billable
 
-```yaml
-cashier:
-    key: '%env(STRIPE_KEY)%'
-    secret: '%env(STRIPE_SECRET)%'
-
-    webhook:
-        secret: '%env(STRIPE_WEBHOOK_SECRET)%'
-        tolerance: 300  # secondes (défaut)
-        events:
-            - customer.subscription.created
-            - customer.subscription.updated
-            - customer.subscription.deleted
-            - invoice.paid
-            - invoice.payment_failed
-
-    currency: usd               # défaut : usd
-    currency_locale: en         # défaut : en
-
-    invoices:
-        renderer: CashierBundle\Service\InvoiceRenderer\DompdfInvoiceRenderer
-        options:
-            paper: letter
-            remote_enabled: false
-
-## Renderers (facultatif)
-
-Pour générer des factures PDF, installez l'un des renderers :
-
-### Dompdf (recommandé)
-
-```bash
-composer require dompdf/dompdf
-```
-
-### Snappy
-
-```bash
-composer require knplabs/knp-snappy
-```
-
-Configurez le renderer dans `config/packages/cashier.yaml` :
-
-```yaml
-cashier:
-    # ...
-    invoices:
-        renderer: CashierBundle\Service\InvoiceRenderer\DompdfInvoiceRenderer
-        # ou pour Snappy :
-        # renderer: CashierBundle\Service\InvoiceRenderer\SnappyInvoiceRenderer
-```
-
-## Processing asynchrone (recommandé)
-
-Pour traiter les webhooks de manière asynchrone avec Symfony Messenger :
-
-```bash
-composer require symfony/messenger
-```
-
-Configurez Messenger dans `.env` :
-
-```env
-MESSENGER_TRANSPORT_DSN=doctrine://default?auto_setup=0
-```
-
-Et dans `config/packages/messenger.yaml` :
-
-```yaml
-framework:
-    messenger:
-        transports:
-            async:
-                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
-                retry_strategy:
-                    enabled: true
-                    max_retries: 3
-                    delay: 1000  # 1s
-                    multiplier: 2
-                    max_delay: 0
-```
-
-## Route webhook
-
-Importez la route dans `config/routes.yaml` :
-
-```yaml
-cashier_webhooks:
-    resource: '@CashierBundle/Resources/config/routes/webhook.yaml'
-```
-
-Cela expose le endpoint `POST /cashier/webhook`.
-
-## Configurer votre entité
-
-Votre entité utilisateur doit implémenter `BillableEntityInterface` et utiliser `BillableTrait` :
+Votre entité doit implémenter `BillableEntityInterface` et utiliser `BillableTrait`.
 
 ```php
-use CashierBundle\Contract\BillableEntityInterface;
 use CashierBundle\Concerns\BillableTrait;
+use CashierBundle\Contract\BillableEntityInterface;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity]
@@ -142,30 +71,54 @@ class User implements BillableEntityInterface
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 180, unique: true)]
     private string $email;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $name = null;
 
-    public function getId(): ?int { return $this->id; }
-    public function getEmail(): string { return $this->email; }
-    public function getName(): ?string { return $this->name; }
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    public function getEmail(): string
+    {
+        return $this->email;
+    }
+
+    public function getName(): ?string
+    {
+        return $this->name;
+    }
 }
 ```
 
-## Base de données
-
-Créez les tables nécessaires :
+## 6. Générer les migrations
 
 ```bash
 php bin/console doctrine:migrations:diff
 php bin/console doctrine:migrations:migrate
 ```
 
-Deux tables seront créées :
-- `cashier_stripe_customers` — Clients Stripe liés à vos entités
-- `cashier_subscriptions` — Abonnements actifs
-- `cashier_subscription_items` — Items d'abonnement (plans multiples)
+## 7. Vérifier le boot
 
-[Prochain : Abonnements →](/docs/subscriptions)
+```bash
+php bin/console about
+php bin/console debug:router | grep cashier
+php bin/console doctrine:mapping:info
+```
+
+## 8. Vérifier l'installation locale complète
+
+```bash
+php bin/console cashier:webhook:listen --forward-to --base-url http://localhost:8000
+```
+
+Puis déclenchez un paiement test via Stripe Checkout pour vérifier:
+
+- la session Checkout
+- la réception des webhooks
+- la génération du PDF dans `var/data/invoices`
+
+[Configuration →](/docs/configuration)

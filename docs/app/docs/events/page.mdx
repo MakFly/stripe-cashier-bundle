@@ -1,516 +1,71 @@
----
-title: Événements
-description: Écouter et gérer les événements Stripe avec Cashier
----
+# Événements Symfony
 
-# Événements
+Le bundle dispatch des événements Symfony pour permettre à l'application consommatrice de se brancher proprement sur le billing.
 
-Stripe Cashier émet des événements Symfony pour vous permettre de réagir facilement aux actions Stripe importantes.
+## Webhook lifecycle
 
-## Webhook Events
+### `WebhookReceivedEvent`
 
-### WebhookReceivedEvent
+Déclenché dès réception d'un webhook Stripe valide.
 
-Cet événement est déclenché lorsqu'un webhook Stripe est reçu par l'application.
+### `WebhookHandledEvent`
 
-#### Propriétés
+Déclenché après le passage des handlers configurés.
 
-- `stripeEvent`: L'objet `Stripe\Event` original
+## Événements métier
 
-#### Méthodes
+### `SubscriptionCreatedEvent`
 
-- `getStripeEvent()`: Retourne l'événement Stripe
+Émis lorsqu'un abonnement local a été créé ou synchronisé depuis Stripe.
 
-```php
-use CashierBundle\Event\WebhookReceivedEvent;
+### `SubscriptionUpdatedEvent`
 
-class WebhookListener
-{
-    #[AsEventListener(event: WebhookReceivedEvent::class)]
-    public function onWebhookReceived(WebhookReceivedEvent $event): void
-    {
-        $stripeEvent = $event->getStripeEvent();
+Émis lorsqu'un abonnement local est modifié après un webhook ou une synchronisation.
 
-        // Logger l'événement reçu
-        $this->logger->info('Webhook reçu', [
-            'event_type' => $stripeEvent->type,
-            'event_id' => $stripeEvent->id,
-        ]);
-    }
-}
-```
+### `SubscriptionDeletedEvent`
 
-### WebhookHandledEvent
+Émis lorsqu'un abonnement est supprimé ou terminé.
 
-Cet événement est déclenché après qu'un webhook Stripe a été traité par l'application.
+### `PaymentSucceededEvent`
 
-#### Propriétés
+Émis sur paiement confirmé. Cet événement est particulièrement utile pour:
 
-- `stripeEvent`: L'objet `Stripe\Event` original
+- valider une commande
+- déclencher une réservation
+- envoyer une notification
+- archiver une facture applicative additionnelle si besoin
 
-#### Méthodes
+### `PaymentFailedEvent`
 
-- `getStripeEvent()`: Retourne l'événement Stripe
+Émis lorsque Stripe signale un échec de paiement.
 
-```php
-use CashierBundle\Event\WebhookHandledEvent;
-
-class WebhookHandledListener
-{
-    #[AsEventListener(event: WebhookHandledEvent::class)]
-    public function onWebhookHandled(WebhookHandledEvent $event): void
-    {
-        $stripeEvent = $event->getStripeEvent();
-
-        // Logger le traitement
-        $this->logger->info('Webhook traité', [
-            'event_type' => $stripeEvent->type,
-            'event_id' => $stripeEvent->id,
-        ]);
-    }
-}
-```
-
-## Subscription Events
-
-### SubscriptionCreatedEvent
-
-Cet événement est déclenché lorsqu'un nouvel abonnement est créé.
-
-#### Propriétés
-
-- `subscription`: L'objet `Subscription` de l'abonnement
-
-#### Méthodes
-
-- `getSubscription()`: Retourne l'abonnement
-
-```php
-use CashierBundle\Event\SubscriptionCreatedEvent;
-
-class SubscriptionCreatedListener
-{
-    #[AsEventListener(event: SubscriptionCreatedEvent::class)]
-    public function onSubscriptionCreated(SubscriptionCreatedEvent $event): void
-    {
-        $subscription = $event->getSubscription();
-
-        // Envoyer un email de bienvenue
-        $this->emailService->sendWelcomeEmail($subscription->getCustomer());
-
-        // Mettre à jour les statistiques
-        $this->analyticsService->trackSubscriptionStarted($subscription);
-    }
-}
-```
-
-### SubscriptionUpdatedEvent
-
-Cet événement est déclenché lorsqu'un abonnement est mis à jour.
-
-#### Propriétés
-
-- `subscription`: L'objet `Subscription` de l'abonnement
-
-#### Méthodes
-
-- `getSubscription()`: Retourne l'abonnement
-
-```php
-use CashierBundle\Event\SubscriptionUpdatedEvent;
-
-class SubscriptionUpdatedListener
-{
-    #[AsEventListener(event: SubscriptionUpdatedEvent::class)]
-    public function onSubscriptionUpdated(SubscriptionUpdatedEvent $event): void
-    {
-        $subscription = $event->getSubscription();
-
-        // Mettre à jour l'accès aux fonctionnalités
-        $this->featureService->updateUserFeatures($subscription->getCustomer());
-
-        // Logger la mise à jour
-        $this->logger->info('Abonnement mis à jour', [
-            'subscription_id' => $subscription->getId(),
-            'new_status' => $subscription->getStripeStatus(),
-        ]);
-    }
-}
-```
-
-### SubscriptionDeletedEvent
-
-Cet événement est déclenché lorsqu'un abonnement est supprimé.
-
-#### Propriétés
-
-- `subscription`: L'objet `Subscription` de l'abonnement
-
-#### Méthodes
-
-- `getSubscription()`: Retourne l'abonnement
-
-```php
-use CashierBundle\Event\SubscriptionDeletedEvent;
-
-class SubscriptionDeletedListener
-{
-    #[AsEventListener(event: SubscriptionDeletedEvent::class)]
-    public function onSubscriptionDeleted(SubscriptionDeletedEvent $event): void
-    {
-        $subscription = $event->getSubscription();
-
-        // Désactiver l'accès à l'utilisateur
-        $this->userService->deactivateUser($subscription->getCustomer());
-
-        // Envoyer un email de désabonnement
-        $this->emailService->sendCancellationEmail($subscription->getCustomer());
-    }
-}
-```
-
-## Payment Events
-
-### PaymentSucceededEvent
-
-Cet événement est déclenché lorsqu'un paiement réussit.
-
-#### Propriétés
-
-- `customerId`: L'ID du client Stripe
-- `paymentIntentId`: L'ID du PaymentIntent (nullable)
-- `amount`: Le montant du paiement en cents
-- `currency`: La devise du paiement
-
-#### Méthodes
-
-- `getCustomerId()`: Retourne l'ID client
-- `getPaymentIntentId()`: Retourne l'ID PaymentIntent
-- `getAmount()`: Retourne le montant en cents
-- `getCurrency()`: Retourne la devise
-- `getAmountInDecimal()`: Retourne le montant en décimal
+## Exemple d'écoute
 
 ```php
 use CashierBundle\Event\PaymentSucceededEvent;
+use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 
-class PaymentSucceededListener
+#[AsEventListener(event: PaymentSucceededEvent::class)]
+final class ConfirmOrderListener
 {
-    #[AsEventListener(event: PaymentSucceededEvent::class)]
-    public function onPaymentSucceeded(PaymentSucceededEvent $event): void
+    public function __invoke(PaymentSucceededEvent $event): void
     {
         $customerId = $event->getCustomerId();
-        $amount = $event->getAmountInDecimal();
-        $currency = $event->getCurrency();
+        $paymentIntentId = $event->getPaymentIntentId();
 
-        // Mettre à jour le statut de la commande
-        $this->orderService->markAsPaid($customerId);
-
-        // Envoyer une confirmation de paiement
-        $this->notificationService->sendPaymentConfirmation($customerId, $amount, $currency);
-
-        // Mise à jour des statistiques
-        $this->analyticsService->trackPaymentSuccess($customerId, $amount);
+        // retrouver votre commande et la confirmer
     }
 }
 ```
 
-### PaymentFailedEvent
+## Bonne pratique
 
-Cet événement est déclenché lorsqu'un paiement échoue.
+Gardez les listeners métier:
 
-#### Propriétés
+- idempotents
+- rapides
+- traçables
 
-- `customerId`: L'ID du client Stripe
-- `paymentIntentId`: L'ID du PaymentIntent (nullable)
-- `amount`: Le montant du paiement en cents
-- `currency`: La devise du paiement
+Si le traitement devient lourd, déléguez vers Messenger ou un bus applicatif.
 
-#### Méthodes
-
-- `getCustomerId()`: Retourne l'ID client
-- `getPaymentIntentId()`: Retourne l'ID PaymentIntent
-- `getAmount()`: Retourne le montant en cents
-- `getCurrency()`: Retourne la devise
-- `getAmountInDecimal()`: Retourne le montant en décimal
-
-```php
-use CashierBundle\Event\PaymentFailedEvent;
-
-class PaymentFailedListener
-{
-    #[AsEventListener(event: PaymentFailedEvent::class)]
-    public function onPaymentFailed(PaymentFailedEvent $event): void
-    {
-        $customerId = $event->getCustomerId();
-        $amount = $event->getAmountInDecimal();
-
-        // Envoyer un email de paiement échoué
-        $this->emailService->sendPaymentFailedEmail($customerId);
-
-        // Mettre à jour les tentatives de paiement
-        $this->paymentService->incrementFailedAttempts($customerId);
-
-        // Si trop d'échecs, désactiver l'accès
-        if ($this->paymentService->shouldDisableAccess($customerId)) {
-            $this->userService->temporarilyDisable($customerId);
-        }
-    }
-}
-```
-
-## Exemple de configuration complète
-
-```php
-// services.yaml
-services:
-    App\EventListener\WebhookListener:
-        tags:
-            - { name: kernel.event_listener, event: CashierBundle\Event\WebhookReceivedEvent }
-
-    App\EventListener\SubscriptionListeners:
-        tags:
-            - { name: kernel.event_listener, event: CashierBundle\Event\SubscriptionCreatedEvent }
-            - { name: kernel.event_listener, event: CashierBundle\Event\SubscriptionUpdatedEvent }
-            - { name: kernel.event_listener, event: CashierBundle\Event\SubscriptionDeletedEvent }
-
-    App\EventListener\PaymentListeners:
-        tags:
-            - { name: kernel.event_listener, event: CashierBundle\Event\PaymentSucceededEvent }
-            - { name: kernel.event_listener, event: CashierBundle\Event\PaymentFailedEvent }
-```
-
-```php
-// src/EventListener/WebhookListener.php
-namespace App\EventListener;
-
-use CashierBundle\Event\WebhookReceivedEvent;
-use Psr\Log\LoggerInterface;
-
-class WebhookListener
-{
-    public function __construct(
-        private readonly LoggerInterface $logger,
-    ) {
-    }
-
-    public function __invoke(WebhookReceivedEvent $event): void
-    {
-        $stripeEvent = $event->getStripeEvent();
-
-        $this->logger->info('Webhook Stripe reçu', [
-            'event_type' => $stripeEvent->type,
-            'event_id' => $stripeEvent->id,
-            'created_at' => date('Y-m-d H:i:s', $stripeEvent->created),
-        ]);
-    }
-}
-```
-
-```php
-// src/EventListener/PaymentListeners.php
-namespace App\EventListener;
-
-use CashierBundle\Event\PaymentSucceededEvent;
-use CashierBundle\Event\PaymentFailedEvent;
-use App\Service\PaymentService;
-
-class PaymentListeners
-{
-    public function __construct(
-        private readonly PaymentService $paymentService,
-    ) {
-    }
-
-    public function onPaymentSucceeded(PaymentSucceededEvent $event): void
-    {
-        // Logique de traitement du paiement réussi
-        $this->paymentService->handleSuccess($event);
-    }
-
-    public function onPaymentFailed(PaymentFailedEvent $event): void
-    {
-        // Logique de traitement du paiement échoué
-        $this->paymentService->handleFailure($event);
-    }
-}
-```
-
-## Tableau récapitulatif des événements
-
-| Événement | Description | Propriétés | Cas d'usage |
-|-----------|-------------|------------|--------------|
-| `WebhookReceivedEvent` | Webhook reçu | `stripeEvent: StripeEvent` | Logging, validation |
-| `WebhookHandledEvent` | Webhook traité | `stripeEvent: StripeEvent` | Confirmation, suivi |
-| `SubscriptionCreatedEvent` | Abonnement créé | `subscription: Subscription` | Email bienvenue, statiques |
-| `SubscriptionUpdatedEvent` | Abonnement mis à jour | `subscription: Subscription` | Mise à jour fonctionnalités |
-| `SubscriptionDeletedEvent` | Abonnement supprimé | `subscription: Subscription` | Désactivation, email de départ |
-| `PaymentSucceededEvent` | Paiement réussi | `customerId, paymentIntentId, amount, currency` | Confirmation, statiques |
-| `PaymentFailedEvent` | Paiement échoué | `customerId, paymentIntentId, amount, currency` | Email échec, relance |
-
-## Payloads des événements courants
-
-### Événements de facturation
-
-| Type d'événement | Description | Payload typique |
-|------------------|-------------|-----------------|
-| `invoice.created` | Facture créée | `{ "id": "in_123", "customer": "cus_123", "amount": 10000 }` |
-| `invoice.paid` | Facture payée | `{ "id": "in_123", "payment_intent": "pi_123", "amount": 10000 }` |
-| `invoice.payment_failed` | Paiement échoué | `{ "id": "in_123", "payment_intent": "pi_123", "amount": 10000 }` |
-
-### Événements d'abonnement
-
-| Type d'événement | Description | Payload typique |
-|------------------|-------------|-----------------|
-| `customer.subscription.created` | Abonnement créé | `{ "id": "sub_123", "customer": "cus_123", "status": "active" }` |
-| `customer.subscription.updated` | Abonnement mis à jour | `{ "id": "sub_123", "customer": "cus_123", "status": "past_due" }` |
-| `customer.subscription.deleted` | Abonnement supprimé | `{ "id": "sub_123", "customer": "cus_123", "status": "canceled" }` |
-
-### Événements de paiement
-
-| Type d'événement | Description | Payload typique |
-|------------------|-------------|-----------------|
-| `payment_intent.succeeded` | PaymentIntent réussi | `{ "id": "pi_123", "customer": "cus_123", "amount": 10000 }` |
-| `payment_intent.payment_failed` | PaymentIntent échoué | `{ "id": "pi_123", "customer": "cus_123", "amount": 10000 }` |
-| `charge.succeeded` | Charge réussie | `{ "id": "ch_123", "customer": "cus_123", "amount": 10000 }` |
-| `charge.failed` | Charge échouée | `{ "id": "ch_123", "customer": "cus_123", "amount": 10000 }` |
-
-## Bonnes pratiques
-
-### Sécurité
-
-1. **Vérifiez les signatures webhooks**
-
-```php
-use Stripe\Webhook;
-
-class WebhookController extends AbstractController
-{
-    public function handleWebhook(Request $request): Response
-    {
-        $payload = $request->getContent();
-        $sigHeader = $request->headers->get('Stripe-Signature');
-        $webhookSecret = $_ENV['STRIPE_WEBHOOK_SECRET'];
-
-        try {
-            $event = Webhook::constructEvent(
-                $payload,
-                $sigHeader,
-                $webhookSecret
-            );
-
-            // Traiter l'événement
-            $this->dispatcher->dispatch($event, $event->type);
-
-            return new Response();
-        } catch (\Exception $e) {
-            return new Response('Webhook error', 400);
-        }
-    }
-}
-```
-
-### Performance
-
-1. **Traitez rapidement les événements**
-
-```php
-class FastWebhookListener
-{
-    public function __invoke(WebhookReceivedEvent $event): void
-    {
-        // Ne faire que des opations rapides
-        $this->logger->info('Event received', [
-            'type' => $event->getStripeEvent()->type,
-        ]);
-
-        // Les opations longues doivent être mises en file d'attente
-        $this->queue->dispatch(new ProcessWebhookJob($event));
-    }
-}
-```
-
-2. **Utilisez les événements asynchrones**
-
-```yaml
-# config/packages/messenger.yaml
-framework:
-    messenger:
-        transports:
-            async:
-                dsn: '%env(MESSENGER_TRANSPORT_DSN%'
-```
-
-### Monitoring
-
-1. **Loggez tous les événements**
-
-```php
-class MonitoringListener
-{
-    public function __invoke(WebhookReceivedEvent $event): void
-    {
-        $this->metrics->increment('webhook.received', [
-            'type' => $event->getStripeEvent()->type,
-        ]);
-    }
-}
-```
-
-2. **Mesurez le traitement**
-
-```php
-class PerformanceListener
-{
-    public function __invoke(WebhookHandledEvent $event): void
-    {
-        $processingTime = microtime(true) - $event->getProcessingStart();
-
-        $this->metrics->histogram('webhook.processing_time', $processingTime);
-    }
-}
-```
-
-## Configuration avancée
-
-### Filtrer les événements
-
-```php
-class FilteredEventListener
-{
-    #[AsEventListener(event: WebhookReceivedEvent::class, method: 'onImportantWebhooks')]
-    public function onImportantWebhooks(WebhookReceivedEvent $event): void
-    {
-        $eventType = $event->getStripeEvent()->type;
-
-        // Traiter seulement certains types d'événements
-        if (!in_array($eventType, [
-            'invoice.paid',
-            'customer.subscription.created',
-            'payment_intent.succeeded',
-        ])) {
-            return;
-        }
-
-        // Traiter l'événement
-    }
-}
-```
-
-### Priorisation des événements
-
-```php
-class PriorityEventListener
-{
-    #[AsEventListener(event: PaymentSucceededEvent::class, priority: 10)]
-    public function handleHighPriorityPayment(PaymentSucceededEvent $event): void
-    {
-        // Traitements urgents
-    }
-
-    #[AsEventListener(event: PaymentSucceededEvent::class, priority: -10)]
-    public function handleLowPriorityPayment(PaymentSucceededEvent $event): void
-    {
-        // Traitements non urgents
-    }
-}
-```
+[Commandes CLI →](/docs/commands)

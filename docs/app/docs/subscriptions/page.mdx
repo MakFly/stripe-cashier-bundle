@@ -2,209 +2,57 @@
 
 ## Créer un abonnement
 
-Utilisez `newSubscription()` sur votre entité billable. La méthode retourne un `SubscriptionBuilder` :
-
 ```php
-$user->newSubscription('default', 'price_xxx')
+$subscription = $user->newSubscription('default', 'price_monthly')
+    ->trialDays(14)
     ->create('pm_card_visa');
 ```
 
-Le premier argument est le **type** d'abonnement (chaîne libre, ex. `'default'`, `'premium'`).
-Le second argument est l'ID de prix Stripe (optionnel, vous pouvez utiliser `price()` à la place).
-
-## SubscriptionBuilder — méthodes disponibles
-
-### Ajouter des plans
+## Capacités du `SubscriptionBuilder`
 
 ```php
-// Plan standard avec quantité
-$builder->price('price_xxx', quantity: 1);
+$builder = $user->newSubscription('default');
 
-// Plan mesuré (usage-based, sans quantité fixe)
-$builder->meteredPrice('price_yyy');
-
-### Billing basé sur l'usage
-
-Pour les plans basés sur l'utilisation, utilisez les méthodes suivantes :
-
-```php
-// Reporter l'utilisation pour un plan mesuré
-$builder->meteredPrice('price_metered')
-    ->withUsageTracking();
-
-// Reporter manuellement l'utilisation
-$subscription->reportUsage('price_metered', 100);  // 100 unités
-```
-
-Voir [commandes CLI →](/docs/commands) pour `cashier:report-usage`
-
-// Modifier la quantité du dernier plan ajouté
-$builder->quantity(5);
-```
-
-### Période d'essai
-
-```php
-// Essai de N jours
+$builder->price('price_monthly', quantity: 1);
+$builder->meteredPrice('price_metered');
 $builder->trialDays(14);
-
-// Essai jusqu'à une date précise
-$builder->trialUntil(new \DateTimeImmutable('2025-04-01'));
-
-// Pas d'essai (ignore le trial Stripe par défaut)
-$builder->skipTrial();
+$builder->withCoupon('coupon_xxx');
+$builder->withPromotionCode('promo_xxx');
+$builder->withMetadata(['segment' => 'pro']);
+$builder->withOptions(['collection_method' => 'charge_automatically']);
 ```
 
-### Coupons et codes promo
+## Vérifier l'état
 
 ```php
-$builder->withCoupon('COUPON_ID');
-
-$builder->withPromotionCode('PROMO_CODE');
-```
-
-### Options avancées
-
-```php
-// Métadonnées
-$builder->withMetadata(['plan' => 'pro', 'user_id' => 42]);
-
-// Ancrage du cycle de facturation
-$builder->anchorBillingCycleOn(new \DateTimeImmutable('2025-04-01'));
-
-// Seuils de facturation
-$builder->withBillingThresholds(['amount_gte' => 10000]);
-
-// Comportement de paiement Stripe
-$builder->withPaymentBehavior('allow_incomplete');
-
-// Désactiver le prorata
-$builder->noProrate();
-
-// Réactiver le prorata (défaut)
-$builder->prorate();
-
-// Options brutes Stripe
-$builder->withOptions(['collection_method' => 'send_invoice']);
-```
-
-### SubscriptionItem
-
-L'entité `SubscriptionItem` expose des méthodes utiles :
-
-```php
-$item->getStripeProduct();  // Récupère le produit Stripe
-$item->getStripePrice();    // Récupère le prix Stripe
-$item->getQuantity();       // Récupère la quantité
-
-// Pour les plans mesurés
-$item->reportUsage(100);    // Reporter l'utilisation
-```
-
-### Stripe Checkout
-
-Pour créer des abonnements via Stripe Checkout, voir [Checkout →](/docs/checkout)
-```
-
-### Finaliser la création
-
-```php
-$subscription = $builder->create($paymentMethod);
-// $paymentMethod : ID Stripe (string) ou objet PaymentMethod, ou null
-```
-
-## Vérifier un abonnement
-
-```php
-// L'utilisateur a un abonnement actif ?
-$user->subscribed();                  // type 'default'
-$user->subscribed('premium');         // type 'premium'
-$user->subscribed('default', 'price_xxx'); // type + plan précis
-
-// Récupérer l'abonnement
+$user->subscribed('default');
+$user->onTrial('default');
 $subscription = $user->subscription('default');
 
-// Tous les abonnements
-$subscriptions = $user->subscriptions();
-
-// En période d'essai ?
-$user->onTrial();
-$user->onTrial('default', 'price_xxx');
-
-// En essai générique (sans abonnement créé)
-$user->onGenericTrial();
+$subscription->active();
+$subscription->pastDue();
+$subscription->paused();
+$subscription->onGracePeriod();
 ```
 
-## Statuts de l'abonnement
-
-L'entité `Subscription` expose des méthodes de statut :
+## Faire évoluer l'abonnement
 
 ```php
-$sub = $user->subscription('default');
-
-$sub->active();              // actif ou en essai
-$sub->onTrial();             // en période d'essai
-$sub->onGracePeriod();       // annulé mais encore valide
-$sub->canceled();            // annulation planifiée
-$sub->ended();               // abonnement terminé
-$sub->valid();               // active() || onTrial() || onGracePeriod()
-$sub->incomplete();          // paiement en attente
-$sub->pastDue();             // paiement en retard
-$sub->paused();              // abonnement en pause
-$sub->recurring();           // actif, hors essai et hors grâce
-```
-
-Les statuts Stripe disponibles sont exposés comme constantes :
-
-```php
-Subscription::STATUS_ACTIVE
-Subscription::STATUS_CANCELED
-Subscription::STATUS_INCOMPLETE
-Subscription::STATUS_INCOMPLETE_EXPIRED
-Subscription::STATUS_PAST_DUE
-Subscription::STATUS_PAUSED
-Subscription::STATUS_TRIALING
-Subscription::STATUS_UNPAID
-```
-
-## Annuler un abonnement
-
-```php
-use CashierBundle\Service\SubscriptionService;
-
-// Annulation en fin de période
+$subscriptionService->swap($subscription, 'price_yearly');
+$subscriptionService->updateQuantity($subscription, 5);
 $subscriptionService->cancel($subscription);
-
-// Annulation immédiate
-$subscriptionService->cancel($subscription, immediately: true);
-```
-
-Après une annulation non immédiate, `onGracePeriod()` retourne `true` jusqu'à la fin de la période en cours.
-
-## Reprendre un abonnement
-
-Un abonnement annulé peut être repris tant qu'il est en `onGracePeriod()` :
-
-```php
 $subscriptionService->resume($subscription);
 ```
 
-## Changer de plan (swap)
+## Usage-based billing
 
 ```php
-// Passer à un autre prix Stripe
-$subscriptionService->swap($subscription, 'price_new_plan');
-
-// Avec options Stripe
-$subscriptionService->swap($subscription, 'price_new_plan', [
-    'proration_behavior' => 'none',
-]);
+$item = $subscription->items()->first();
+$item->reportUsage(100);
 ```
 
-## Modifier la quantité
+## Checkout subscription
 
-```php
-$subscriptionService->updateQuantity($subscription, 5);
-```
+Si vous préférez un abonnement créé via Stripe Checkout, utilisez `CheckoutService::createSubscription()`.
 
-[Prochain : Webhooks →](/docs/webhooks)
+[Checkout →](/docs/checkout)

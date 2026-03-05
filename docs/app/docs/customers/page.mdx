@@ -1,127 +1,67 @@
 # Clients
 
-Le `CustomerService` gère les clients Stripe liés à vos entités.
+Le bundle persiste une projection locale du customer Stripe dans `CashierBundle\Entity\StripeCustomer`.
 
-## Créer un client
+## Créer ou récupérer un customer Stripe
 
 ```php
 use CashierBundle\Service\CustomerService;
 
-class CheckoutController
+final readonly class CheckoutController
 {
     public function __construct(
-        private readonly CustomerService $customerService,
-    ) {}
+        private CustomerService $customerService,
+    ) {
+    }
 
-    public function create(User $user): Response
+    public function __invoke(User $user): void
     {
-        $stripeId = $this->customerService->create($user);
-
-        // $stripeId = 'cus_xxx'
+        $stripeId = $this->customerService->createOrGetStripeId($user);
     }
 }
 ```
 
-Le client est automatiquement créé dans Stripe avec les données de l'entité :
-- `email` → `getEmail()`
-- `name` → `getName()`
-- `phone` → `getPhone()`
-- `address` → `getAddress()`
+Le payload Stripe est construit à partir de votre entité billable:
 
-### Avec options supplémentaires
+- `getEmail()`
+- `getName()`
+- `getPhone()` si disponible
+- `getAddress()` si disponible
 
-```php
-$stripeId = $this->customerService->create($user, [
-    'metadata' => [
-        'source' => 'registration',
-        'campaign' => 'summer2024',
-    ],
-    'tax_exempt' => 'exempt',
-]);
-```
-
-## Obtenir ou créer
-
-Évite de créer un doublon si le client existe déjà :
-
-```php
-$stripeId = $this->customerService->createOrGetStripeId($user);
-```
-
-## Mettre à jour un client
+## Mettre à jour le customer
 
 ```php
 $this->customerService->update($user, [
-    'email' => 'new@email.com',
-    'name' => 'Jean Dupont',
     'metadata' => [
-        'vip' => 'true',
+        'source' => 'backoffice',
     ],
 ]);
 ```
 
-La base de données locale est synchronisée automatiquement.
+## Synchronisation locale
 
-## Synchroniser un client
+Le bundle conserve les données utiles en local pour éviter de dépendre uniquement d'un fetch Stripe temps réel.
 
-Synchronise les données Stripe vers la base locale :
+Champs utiles de `StripeCustomer`:
 
-```php
-use Stripe\Customer as StripeCustomer;
+- `stripeId`
+- `email`
+- `name`
+- `phone`
+- `currency`
+- `invoicePrefix`
+- `taxExempt`
+- `billableId`
+- `billableType`
 
-$stripeCustomer = $this->stripeClient->customers->retrieve($stripeId);
+## Locale client
 
-$this->customerService->sync($stripeCustomer, $user);
-```
+Pour les factures, la locale suit cette priorité:
 
-## Trouver un client local
+1. locale explicite passée au rendu
+2. `preferred_locales` du customer Stripe
+3. `cashier.invoices.default_locale`
 
-```php
-$localCustomer = $this->customerService->find('cus_xxx');
+Si votre application connaît déjà la langue de l'utilisateur, poussez-la dans Stripe via `preferred_locales` au moment du checkout ou de la mise à jour du customer.
 
-if ($localCustomer !== null) {
-    echo $localCustomer->getEmail();
-    echo $localCustomer->getBalance();
-}
-```
-
-## Payload Stripe
-
-Obtenir les données formatées pour l'API Stripe :
-
-```php
-$payload = $this->customerService->getStripePayload($user);
-// ['email' => '...', 'name' => '...', ...]
-```
-
-## Entité StripeCustomer
-
-L'entité locale `StripeCustomer` stocke :
-
-| Propriété | Description |
-|-----------|-------------|
-| `stripeId` | ID Stripe (`cus_xxx`) |
-| `email` | Email |
-| `name` | Nom |
-| `phone` | Téléphone |
-| `balance` | Balance en cents |
-| `currency` | Devise préférée |
-| `address` | Adresse (array) |
-| `pmType` | Type de paiement par défaut |
-| `invoicePrefix` | Préfixe de facture |
-| `taxExempt` | Exonération TVA |
-
-## Gérer la balance client
-
-La balance est synchronisée depuis Stripe. Pour l'utiliser :
-
-```php
-$customer = $this->customerService->find($user->stripeId());
-
-if ($customer->getBalance() > 0) {
-    // Le client a un crédit
-    $credit = $customer->getBalance() / 100; // en euros
-}
-```
-
-[Prochain : Paiements →](/docs/payments)
+[Paiements →](/docs/payments)

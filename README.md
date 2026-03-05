@@ -5,297 +5,123 @@
 [![PHP](https://img.shields.io/badge/PHP-8.2%20|%208.3%20|%208.4%20|%208.5-777BB4?style=flat-square)](https://php.net)
 [![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
 
-Stripe subscription billing for Symfony 7.x and 8.x, inspired by [Laravel Cashier](https://github.com/laravel/cashier-stripe).
-
-## Requirements
-
-| Dependency | Version |
-|------------|---------|
-| PHP | ^8.2 |
-| Symfony | ^7.0 or ^8.0 (requires PHP 8.4+) |
-| Doctrine ORM | ^3.0 |
-| Stripe PHP SDK | ^16.0 |
-
-## Features
-
-- **Subscription Management** - Create, update, cancel subscriptions with trial support
-- **Payment Processing** - One-time charges, payment intents, setup intents
-- **Invoice Generation** - PDF invoices via Dompdf or Snappy
-- **Webhook Handling** - Automatic Stripe webhook processing with 10+ handlers
-- **Checkout Sessions** - Stripe Checkout integration
-- **Coupons & Discounts** - Full coupon and promotion code support
-- **Tax Management** - Tax rates and automatic tax calculation
-- **Customer Portal** - Billing portal URL generation
-- **Metered Billing** - Usage-based subscription reporting
+Stripe billing for Symfony 7.x and 8.x, inspired by Laravel Cashier.
 
 ## Installation
 
 ```bash
 composer require makfly/stripe-cashier-bundle
+php bin/console cashier:install
 ```
 
-### Recommended
-
-If Symfony Flex is available, use the recipe files shipped with the package as the source of truth for:
+The installer creates the missing bundle files and directories:
 
 - `config/packages/cashier.yaml`
 - `config/packages/cashier_doctrine.yaml`
 - `config/routes/cashier.yaml`
 - Stripe env vars in `.env`
-
-If Flex is not available, run:
-
-```bash
-php bin/console cashier:install
-```
-
-The installer generates config files, Stripe env vars, and local invoice storage directories:
-
 - `var/data`
 - `var/data/invoices`
 
-Your billable entity can be added afterwards as long as it implements `CashierBundle\Contract\BillableEntityInterface`.
+## Runtime requirements
 
-## Configuration
+| Dependency | Version |
+|------------|---------|
+| PHP | `^8.2` |
+| Symfony | `^7.0` or `^8.0` |
+| Doctrine ORM | `^3.0` |
+| Stripe PHP SDK | `^16.0` |
 
-### 1. Environment Variables
+### `ext-intl`
 
-```env
-STRIPE_KEY=pk_test_your_public_key
-STRIPE_SECRET=sk_test_your_secret_key
-STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret
-```
+`ext-intl` is recommended, but not required.
 
-### 2. Bundle Configuration
+Without `intl`, the bundle still works:
 
-Create `config/packages/cashier.yaml`:
+- currency formatting falls back safely
+- invoice dates fall back to ISO format
+- invoice translations still work for shipped locales
+
+With `intl`, invoice rendering is cleaner and more locale-aware.
+
+## Minimal configuration
 
 ```yaml
 cashier:
     key: '%env(STRIPE_KEY)%'
     secret: '%env(STRIPE_SECRET)%'
+    path: cashier
     webhook:
         secret: '%env(STRIPE_WEBHOOK_SECRET)%'
         tolerance: 300
-    currency: 'usd'
-    currency_locale: 'en'
-    default_subscription_type: 'default'
+    currency: usd
+    currency_locale: en
+    default_subscription_type: default
     invoices:
-        renderer: 'CashierBundle\Service\InvoiceRenderer\DompdfInvoiceRenderer'
-        default_locale: 'en'
+        renderer: CashierBundle\Service\InvoiceRenderer\DompdfInvoiceRenderer
+        default_locale: en
         supported_locales: ['en', 'fr']
         storage:
-            driver: 'local'
+            driver: local
             path: '%kernel.project_dir%/var/data/invoices'
 ```
 
-### 3. Doctrine Mapping
+## Invoice pipeline
 
-Create `config/packages/cashier_doctrine.yaml`:
+The bundle can:
 
-```yaml
-doctrine:
-    orm:
-        mappings:
-            CashierBundle:
-                type: attribute
-                is_bundle: false
-                dir: '%kernel.project_dir%/vendor/makfly/stripe-cashier-bundle/src/Entity'
-                prefix: 'CashierBundle\Entity'
-                alias: CashierBundle
-```
+- read Stripe invoices
+- render a PDF through the configured renderer
+- archive paid invoice PDFs to `var/data/invoices`
+- persist invoice archive metadata in `cashier_generated_invoices`
 
-### 4. Routes
+Stripe Checkout sessions created by the bundle propagate checkout metadata to invoice creation metadata. That makes it easier for consumer applications to link:
 
-Create `config/routes/cashier.yaml`:
+- checkout session
+- payment intent
+- Stripe invoice
+- archived PDF
+- local order or booking
 
-```yaml
-cashier_webhooks:
-    resource: '@CashierBundle/Resources/config/routes/webhook.yaml'
-```
+## Invoice customization
 
-### 5. Entity Setup
+You can customize invoices at four levels:
 
-Make your User entity implement `BillableEntityInterface`:
+- override `templates/bundles/CashierBundle/invoice/default.html.twig`
+- replace `cashier.invoices.renderer`
+- replace `CashierBundle\Contract\InvoiceLocaleResolverInterface`
+- replace `CashierBundle\Contract\InvoiceTranslationProviderInterface`
 
-```php
-use CashierBundle\Contract\BillableEntityInterface;
-use CashierBundle\Concerns\BillableTrait;
+## Webhooks
 
-class User implements BillableEntityInterface
-{
-    use BillableTrait;
-}
-```
-
-`BillableTrait` is self-contained: you do not need to add a custom `getCashierService()` method to your entity.
-
-### 6. Database
+The bundle exposes `POST /cashier/webhook` and ships a local CLI helper:
 
 ```bash
-php bin/console doctrine:migrations:diff
-php bin/console doctrine:migrations:migrate
+php bin/console cashier:webhook:listen --forward-to --base-url http://localhost:8000
 ```
 
-### 4. Invoice Storage And Customization
-
-- Paid Stripe invoices are archived automatically after `invoice.paid`
-- Checkout payment sessions created by the bundle enable Stripe `invoice_creation` by default
-- PDFs are stored locally in `var/data/invoices`
-- The persisted invoice metadata is stored in `cashier_generated_invoices`
-
-You can customize the invoice UX in two ways:
-
-- override the Twig template at `templates/bundles/CashierBundle/invoice/default.html.twig`
-- replace the renderer service via `cashier.invoices.renderer`
-
-Invoice locale resolution priority:
-
-- explicit `locale` / `invoice_locale` render data
-- Stripe customer `preferred_locales`
-- `cashier.invoices.default_locale`
-
-The default provider ships with `en` and `fr`. For additional locales, override:
-
-- `CashierBundle\Contract\InvoiceLocaleResolverInterface`
-- `CashierBundle\Contract\InvoiceTranslationProviderInterface`
-
-## v1 Compatibility Policy
-
-From `v1.0.0`, the bundle follows strict SemVer for documented public APIs:
-
-- configuration under `cashier.*`
-- documented commands
-- documented public services/contracts
-- persisted bundle entities and their intended usages
-- public events meant for application integration
-
-Breaking changes will be introduced only in a new major version.
-
-## Production Checklist
-
-- valid Stripe API keys and webhook secret configured
-- webhook endpoint reachable from Stripe
-- invoice storage path writable (`var/data/invoices` by default)
-- queueing strategy decided for webhook processing if using Messenger
-- `cashier:install` executed on the target project
-- PHP runtime validated against the documented bundle requirements
-
-## Quick Start
-
-### Create a Subscription
-
-```php
-use CashierBundle\Service\SubscriptionBuilder;
-
-$user = $userRepository->find(1);
-$subscription = $user->newSubscription('default', 'price_monthly')
-    ->trialDays(14)
-    ->create($paymentMethodId);
-```
-
-### Check Subscription Status
-
-```php
-if ($user->subscribed('default')) {
-    // User has active subscription
-}
-
-if ($user->onTrial('default')) {
-    // User is on trial
-}
-```
-
-### Process Payments
-
-```php
-$payment = $user->charge(1000, $paymentMethodId); // $10.00
-```
-
-### Handle Webhooks
-
-Configure your webhook URL in Stripe dashboard:
-
-```
-https://your-domain.com/cashier/webhook
-```
-
-Or create automatically:
-
-```bash
-php bin/console cashier:webhook --url=https://your-domain.com/cashier/webhook
-```
-
-For local development with Stripe CLI (auto-detect secret + update `.env*`):
-
-```bash
-php bin/console cashier:webhook:listen
-```
-
-## Webhook Events
-
-| Handler | Stripe Event |
-|---------|--------------|
-| SubscriptionCreatedHandler | `customer.subscription.created` |
-| SubscriptionUpdatedHandler | `customer.subscription.updated` |
-| SubscriptionDeletedHandler | `customer.subscription.deleted` |
-| CustomerUpdatedHandler | `customer.updated` |
-| InvoicePaidHandler | `invoice.paid` |
-| CheckoutSessionCompletedHandler | `checkout.session.completed` |
-
-## Symfony Events
-
-Listen to these events in your application:
-
-- `SubscriptionCreatedEvent` - New subscription created
-- `SubscriptionUpdatedEvent` - Subscription updated
-- `SubscriptionDeletedEvent` - Subscription cancelled
-- `PaymentSucceededEvent` - Payment successful
-- `PaymentFailedEvent` - Payment failed
-
-## Services
-
-| Service | Purpose |
-|---------|---------|
-| `CashierBundle\Service\Cashier` | Main service, formatting utilities |
-| `CashierBundle\Service\SubscriptionBuilder` | Build subscriptions |
-| `CashierBundle\Service\CheckoutService` | Stripe Checkout |
-| `CashierBundle\Service\InvoiceService` | Invoice management |
-| `CashierBundle\Service\PaymentService` | Payment processing |
-| `CashierBundle\Service\CustomerService` | Customer management |
-
-## Commands
-
-| Command | Description |
-|---------|-------------|
-| `cashier:webhook` | Create Stripe webhook endpoint |
-| `cashier:webhook:listen` | Start Stripe CLI listener and export/update webhook secret |
-| `cashier:report-usage` | Report metered usage |
-| `cashier:cleanup-sessions` | Cleanup expired checkout sessions |
-
-## Testing
-
-```bash
-./vendor/bin/phpunit --configuration phpunit.xml
-```
-
-## Quality Checks
-
-```bash
-composer lint:phpstan
-composer lint:cs
-composer audit:composer
-composer quality
-```
+This command forwards Stripe CLI events, persists the signing secret, and colorizes incoming events and HTTP responses.
 
 ## Documentation
 
-Full documentation available at [cashier-symfony.vercel.app](https://cashier-symfony.vercel.app)
+Source documentation lives in `docs/` and the main sections are:
 
-- [Installation Guide](https://cashier-symfony.vercel.app/docs/installation)
-- [Subscriptions](https://cashier-symfony.vercel.app/docs/subscriptions)
-- [Webhooks](https://cashier-symfony.vercel.app/docs/webhooks)
+- introduction
+- installation
+- configuration
+- customers
+- payments
+- subscriptions
+- checkout
+- invoices
+- webhooks
+- events
+- commands
+- twig
+- API reference
 
-## License
+## Compatibility policy
 
-MIT License
+The documented configuration under `cashier.*`, documented commands, documented public contracts, and documented events are the supported public API surface.
+
+Breaking changes should only be released in a new major version.

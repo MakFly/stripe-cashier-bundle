@@ -163,13 +163,17 @@ final class InvoiceViewFactory
             return $date->format('Y-m-d');
         }
 
-        $formatter = new \IntlDateFormatter(
-            $locale,
-            \IntlDateFormatter::LONG,
-            \IntlDateFormatter::NONE,
-        );
+        try {
+            $formatter = new \IntlDateFormatter(
+                $locale,
+                \IntlDateFormatter::LONG,
+                \IntlDateFormatter::NONE,
+            );
 
-        return $formatter->format($date) ?: $date->format('Y-m-d');
+            return $formatter->format($date) ?: $date->format('Y-m-d');
+        } catch (\Throwable) {
+            return $date->format('Y-m-d');
+        }
     }
 
     /**
