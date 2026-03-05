@@ -19,6 +19,12 @@ La documentation complète est disponible sur **[docs.cashierbundle.dev](https:/
 composer require makfly/stripe-cashier-bundle
 ```
 
+Sans Symfony Flex, lancez ensuite :
+
+```bash
+php bin/console cashier:install
+```
+
 ## 🔧 Configuration
 
 ### 1. Variables d'environnement
@@ -41,13 +47,33 @@ cashier:
         tolerance: 300
     currency: 'usd'
     currency_locale: 'en'
+    default_subscription_type: 'default'
     invoices:
         renderer: 'CashierBundle\Service\InvoiceRenderer\DompdfInvoiceRenderer'
         options:
             paper: 'letter'
 ```
 
-### 3. Entité User
+### 3. Doctrine
+
+Ajoutez une configuration Doctrine explicite :
+
+```yaml
+# config/packages/cashier_doctrine.yaml
+doctrine:
+    orm:
+        mappings:
+            CashierBundle:
+                type: attribute
+                is_bundle: false
+                dir: '%kernel.project_dir%/vendor/makfly/stripe-cashier-bundle/src/Entity'
+                prefix: 'CashierBundle\Entity'
+                alias: CashierBundle
+        resolve_target_entities:
+            CashierBundle\Contract\BillableEntityInterface: 'App\Entity\User'
+```
+
+### 4. Entité User
 
 Faites implémenter `BillableEntityInterface` à votre entité User :
 
@@ -64,7 +90,7 @@ class User implements BillableEntityInterface
 }
 ```
 
-### 4. Base de données
+### 5. Base de données
 
 ```bash
 php bin/console doctrine:migrations:diff
@@ -123,12 +149,12 @@ return $this->redirect($checkout->url());
 Les webhooks sont gérés automatiquement. Configurez l'URL dans Stripe :
 
 ```
-https://your-domain.com/stripe/webhook
+https://your-domain.com/cashier/webhook
 ```
 
 ```bash
 # Créer le webhook automatiquement
-php bin/console cashier:webhook --url=https://your-domain.com/stripe/webhook
+php bin/console cashier:webhook --url=https://your-domain.com/cashier/webhook
 ```
 
 ## 📋 Fonctionnalités

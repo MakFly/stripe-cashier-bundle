@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace CashierBundle\DependencyInjection;
 
-use CashierBundle\Service\Invoice\DompdfInvoiceRenderer;
+use CashierBundle\Service\InvoiceRenderer\DompdfInvoiceRenderer;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 
@@ -46,6 +46,7 @@ final class Configuration implements ConfigurationInterface
                         ->arrayNode('events')
                             ->scalarPrototype()
                             ->info('List of webhook events to handle')
+                            ->end()
                         ->end()
                     ->end()
                 ->end()
@@ -58,6 +59,11 @@ final class Configuration implements ConfigurationInterface
                     ->defaultValue('en')
                     ->cannotBeEmpty()
                     ->info('Locale for currency formatting')
+                ->end()
+                ->scalarNode('default_subscription_type')
+                    ->defaultValue('default')
+                    ->cannotBeEmpty()
+                    ->info('Default subscription type for webhook-created subscriptions')
                 ->end()
                 ->arrayNode('invoices')
                     ->children()

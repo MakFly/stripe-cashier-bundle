@@ -35,6 +35,7 @@ class WebhookCommand extends Command
     public function __construct(
         private readonly StripeClient $stripe,
         private readonly array $webhookConfig,
+        private readonly string $cashierPath = 'cashier',
     ) {
         parent::__construct();
     }
@@ -85,8 +86,7 @@ class WebhookCommand extends Command
 
     private function guessUrl(): string
     {
-        // Try to guess the webhook URL from the app configuration
-        return 'https://your-app.com/stripe/webhook';
+        return sprintf('https://your-app.com/%s/webhook', trim($this->cashierPath, '/'));
     }
 
     private function maskSecret(string $secret): string

@@ -1,0 +1,15 @@
+{
+    "bundles": {
+        "CashierBundle\\CashierBundle": [
+            "all"
+        ]
+    },
+    "copy-from-recipe": {
+        "config/": "%CONFIG_DIR%/"
+    },
+    "env": {
+        "STRIPE_KEY": "pk_test_change_me",
+        "STRIPE_SECRET": "sk_test_change_me",
+        "STRIPE_WEBHOOK_SECRET": "whsec_change_me"
+    }
+}

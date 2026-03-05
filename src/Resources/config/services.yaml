@@ -16,12 +16,14 @@ services:
         resource: '../../'
         exclude:
             - '../../Entity/'
+            - '../../Command/'
+            - '../../Resources/'
             - '../../Kernel.php'
 
     # Stripe Client Service
     Stripe\StripeClient:
         arguments:
-            $apiKey: '%cashier.secret%'
+            - '%cashier.secret%'
         public: false
 
     # controllers are imported separately to make sure services can be injected
@@ -36,14 +38,27 @@ services:
         exclude: '../../Webhook/{WebhookController}'
         tags: ['cashier.webhook_handler']
 
+    CashierBundle\Webhook\WebhookProcessor:
+        arguments:
+            $webhookSecret: '%cashier.webhook.secret%'
+            $tolerance: '%cashier.webhook.tolerance%'
+
+    CashierBundle\Middleware\VerifyWebhookSignatureMiddleware:
+        arguments:
+            $webhookSecret: '%cashier.webhook.secret%'
+            $tolerance: '%cashier.webhook.tolerance%'
+
     # Invoice renderer
-    CashierBundle\Service\Invoice\InvoiceRendererInterface:
-        alias: '%cashier.invoices.renderer%'
+    CashierBundle\Contract\InvoiceRendererInterface:
+        alias: CashierBundle\Service\InvoiceRenderer\DompdfInvoiceRenderer
 
     # Logger
     CashierBundle\Logger\LoggerInterface:
         alias: '%cashier.logger%'
-        deprecated: 'The "%alias_id%" service alias is deprecated. Use PSR-3 logger instead.'
+        deprecated:
+            package: 'makfly/stripe-cashier-bundle'
+            version: 'dev-main'
+            message: 'The "%alias_id%" service alias is deprecated. Use PSR-3 logger instead.'
 
     # Twig Extension
     CashierBundle\Twig\CashierExtension:
@@ -53,3 +68,23 @@ services:
     CashierBundle\Controller\PaymentController:
         arguments:
             $stripePublishableKey: '%cashier.key%'
+
+    CashierBundle\Command\WebhookCommand:
+        arguments:
+            $webhookConfig: '%cashier.webhook%'
+            $cashierPath: '%cashier.path%'
+        tags: ['console.command']
+
+    CashierBundle\Command\WebhookListenCommand:
+        arguments:
+            $webhookConfig: '%cashier.webhook%'
+        tags: ['console.command']
+
+    CashierBundle\Command\ReportUsageCommand:
+        tags: ['console.command']
+
+    CashierBundle\Command\CleanupExpiredSessionsCommand:
+        tags: ['console.command']
+
+    CashierBundle\Command\InstallCommand:
+        tags: ['console.command']

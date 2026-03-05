@@ -34,6 +34,21 @@ Stripe subscription billing for Symfony 7.x and 8.x, inspired by [Laravel Cashie
 composer require makfly/stripe-cashier-bundle
 ```
 
+### Recommended
+
+If Symfony Flex is available, use the recipe files shipped with the package as the source of truth for:
+
+- `config/packages/cashier.yaml`
+- `config/packages/cashier_doctrine.yaml`
+- `config/routes/cashier.yaml`
+- Stripe env vars in `.env`
+
+If Flex is not available, run:
+
+```bash
+php bin/console cashier:install
+```
+
 ## Configuration
 
 ### 1. Environment Variables
@@ -57,11 +72,39 @@ cashier:
         tolerance: 300
     currency: 'usd'
     currency_locale: 'en'
+    default_subscription_type: 'default'
     invoices:
         renderer: 'CashierBundle\Service\InvoiceRenderer\DompdfInvoiceRenderer'
 ```
 
-### 3. Entity Setup
+### 3. Doctrine Mapping
+
+Create `config/packages/cashier_doctrine.yaml`:
+
+```yaml
+doctrine:
+    orm:
+        mappings:
+            CashierBundle:
+                type: attribute
+                is_bundle: false
+                dir: '%kernel.project_dir%/vendor/makfly/stripe-cashier-bundle/src/Entity'
+                prefix: 'CashierBundle\Entity'
+                alias: CashierBundle
+        resolve_target_entities:
+            CashierBundle\Contract\BillableEntityInterface: 'App\Entity\User'
+```
+
+### 4. Routes
+
+Create `config/routes/cashier.yaml`:
+
+```yaml
+cashier_webhooks:
+    resource: '@CashierBundle/Resources/config/routes/webhook.yaml'
+```
+
+### 5. Entity Setup
 
 Make your User entity implement `BillableEntityInterface`:
 
@@ -78,7 +121,7 @@ class User implements BillableEntityInterface
 }
 ```
 
-### 4. Database
+### 6. Database
 
 ```bash
 php bin/console doctrine:migrations:diff
@@ -121,13 +164,13 @@ $payment = $user->charge(1000, $paymentMethodId); // $10.00
 Configure your webhook URL in Stripe dashboard:
 
 ```
-https://your-domain.com/stripe/webhook
+https://your-domain.com/cashier/webhook
 ```
 
 Or create automatically:
 
 ```bash
-php bin/console cashier:webhook --url=https://your-domain.com/stripe/webhook
+php bin/console cashier:webhook --url=https://your-domain.com/cashier/webhook
 ```
 
 For local development with Stripe CLI (auto-detect secret + update `.env*`):
