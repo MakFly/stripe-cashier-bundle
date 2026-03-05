@@ -43,6 +43,43 @@ final class WebhookCommandTest extends TestCase
         self::assertStringContainsString('STRIPE_WEBHOOK_SECRET=whsec_1234567890', $display);
     }
 
+    public function testConfiguredEventsAreMergedWithDefaults(): void
+    {
+        $spy = new class () {
+            /** @var array<string, mixed>|null */
+            public static ?array $capturedParams = null;
+
+            /**
+             * @param array<string, mixed> $params
+             */
+            public function create(array $params): object
+            {
+                self::$capturedParams = $params;
+
+                return (object) [
+                    'id' => 'we_123',
+                    'url' => $params['url'] ?? 'https://example.test/webhook',
+                    'secret' => 'whsec_1234567890',
+                    'status' => 'enabled',
+                ];
+            }
+        };
+        $stripe = (new TestStripeClient())->withService('webhookEndpoints', $spy);
+
+        $command = new WebhookCommand($stripe, [
+            'events' => ['invoice.paid', 'payment_intent.succeeded'],
+        ]);
+        $tester = new CommandTester($command);
+        $tester->execute(['--url' => 'https://example.test/webhook']);
+
+        $capturedParams = $spy::$capturedParams;
+        self::assertIsArray($capturedParams);
+        self::assertContains('customer.subscription.created', $capturedParams['enabled_events']);
+        self::assertContains('customer.subscription.updated', $capturedParams['enabled_events']);
+        self::assertContains('invoice.paid', $capturedParams['enabled_events']);
+        self::assertContains('payment_intent.succeeded', $capturedParams['enabled_events']);
+    }
+
     private function createStripeClient(): StripeClient
     {
         return (new TestStripeClient())->withService('webhookEndpoints', new class () {
