@@ -7,6 +7,7 @@ namespace CashierBundle\Event;
 use Stripe\Event as StripeEvent;
 use Symfony\Contracts\EventDispatcher\Event;
 
+/** Dispatched immediately after a Stripe webhook event is received and verified. */
 final class WebhookReceivedEvent extends Event
 {
     public function __construct(

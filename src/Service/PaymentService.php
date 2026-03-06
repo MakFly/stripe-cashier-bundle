@@ -14,6 +14,8 @@ use Stripe\Refund;
 use Stripe\StripeClient;
 
 /**
+ * Handles charge, pay, and refund operations for billable entities.
+ *
  * @implements \CashierBundle\Concerns\PerformsCharges<BillableInterface>
  */
 class PaymentService

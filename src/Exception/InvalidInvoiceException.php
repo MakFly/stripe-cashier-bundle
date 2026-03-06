@@ -4,6 +4,7 @@ namespace CashierBundle\Exception;
 
 use Exception;
 
+/** Thrown when an invoice ID is invalid or does not belong to the given customer. */
 class InvalidInvoiceException extends Exception
 {
     public static function invalid(string $invoiceId): self

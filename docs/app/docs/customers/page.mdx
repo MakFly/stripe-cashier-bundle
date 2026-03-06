@@ -5,6 +5,7 @@ Le bundle persiste une projection locale du customer Stripe dans `CashierBundle\
 ## Créer ou récupérer un customer Stripe
 
 ```php
+use CashierBundle\Contract\BillableEntityInterface;
 use CashierBundle\Service\CustomerService;
 
 final readonly class CheckoutController
@@ -14,7 +15,7 @@ final readonly class CheckoutController
     ) {
     }
 
-    public function __invoke(User $user): void
+    public function __invoke(BillableEntityInterface $user): void
     {
         $stripeId = $this->customerService->createOrGetStripeId($user);
     }
@@ -25,8 +26,8 @@ Le payload Stripe est construit à partir de votre entité billable:
 
 - `getEmail()`
 - `getName()`
-- `getPhone()` si disponible
-- `getAddress()` si disponible
+- `getPhone(): ?string` (optionnel)
+- `getAddress(): ?array` (optionnel, doit retourner `['line1' => '...', 'line2' => '...', 'postal_code' => '...', 'city' => '...', 'country' => 'FR']`)
 
 ## Mettre à jour le customer
 
@@ -42,17 +43,62 @@ $this->customerService->update($user, [
 
 Le bundle conserve les données utiles en local pour éviter de dépendre uniquement d'un fetch Stripe temps réel.
 
-Champs utiles de `StripeCustomer`:
+### Champs synchronisés automatiquement
 
+Champs de `StripeCustomer`:
 - `stripeId`
 - `email`
 - `name`
 - `phone`
 - `currency`
+- `balance` (solde en centimes)
+- `address` (tableau)
 - `invoicePrefix`
 - `taxExempt`
+- `pmType` (type de méthode de paiement par défaut)
+- `pmLastFour` (4 derniers chiffres)
 - `billableId`
 - `billableType`
+
+### Synchronisation depuis Stripe
+
+Pour synchroniser les données depuis Stripe (utile dans un handler webhook `customer.updated`):
+
+```php
+$this->customerService->sync($user); // synchronise depuis l'entité locale
+$this->customerService->syncByStripeId('cus_xxx'); // synchronise depuis Stripe API
+```
+
+## Suppression
+
+Quando un customer est supprimé dans Stripe, le webhook `customer.deleted` déclenche `CustomerDeletedHandler` qui supprime le `StripeCustomer` local (pas l'entité User applicative).
+
+## Balance (solde)
+
+Le bundle gère le solde customer Stripe (crédits/débits).
+
+```php
+// Créditer le solde (montant négatif chez Stripe, en centimes)
+$user->creditBalance(1000, 'Crédit bonus'); // 10€
+
+// Débiter le solde
+$user->debitBalance(500, 'Utilisation service');
+
+// Solde formaté
+$user->balance(); // string, ex: "10.00 EUR"
+```
+
+### CustomerBalanceTransaction
+
+Chaque opération de solde est persistée dans `CashierBundle\Entity\CustomerBalanceTransaction`:
+
+- `id` — ID unique
+- `amount` — montant en centimes (négatif = crédit, positif = débit)
+- `currency` — devise
+- `type` — type de transaction
+- `description` — description
+- `isCredit()` — retourne `true` si crédit
+- `isDebit()` — retourne `true` si débit
 
 ## Locale client
 

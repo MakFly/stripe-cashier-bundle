@@ -8,6 +8,9 @@ use CashierBundle\Repository\StripeCustomerRepository;
 use Stripe\Event;
 use Stripe\PaymentMethod as StripePaymentMethod;
 
+/**
+ * Handles payment_method.automatically_updated by refreshing the stored card type and last four digits.
+ */
 final readonly class PaymentMethodUpdatedHandler extends AbstractWebhookHandler
 {
     public function __construct(

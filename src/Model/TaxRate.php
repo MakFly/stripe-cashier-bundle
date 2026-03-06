@@ -6,6 +6,7 @@ namespace CashierBundle\Model;
 
 use Stripe\TaxRate as StripeTaxRate;
 
+/** Wraps a Stripe TaxRate and exposes its percentage, country, and activity status. */
 final class TaxRate
 {
     public function __construct(

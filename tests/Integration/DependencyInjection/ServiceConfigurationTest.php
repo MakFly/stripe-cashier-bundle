@@ -6,6 +6,7 @@ namespace CashierBundle\Tests\Integration\DependencyInjection;
 
 use PHPUnit\Framework\TestCase;
 
+/** Integration test for DI service configuration correctness. */
 final class ServiceConfigurationTest extends TestCase
 {
     public function testBillableServiceLocatorIsExplicitlyPublicInServiceConfiguration(): void

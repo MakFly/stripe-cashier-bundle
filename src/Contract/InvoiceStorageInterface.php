@@ -7,6 +7,9 @@ namespace CashierBundle\Contract;
 use CashierBundle\Model\Invoice;
 use CashierBundle\ValueObject\StoredInvoice;
 
+/**
+ * Stores rendered invoice content and returns a value object with its location.
+ */
 interface InvoiceStorageInterface
 {
     /**

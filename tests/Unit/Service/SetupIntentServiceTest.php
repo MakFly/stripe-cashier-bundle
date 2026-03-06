@@ -10,6 +10,7 @@ use PHPUnit\Framework\TestCase;
 use Stripe\Exception\InvalidRequestException;
 use Stripe\SetupIntent;
 
+/** Test suite for SetupIntentService. */
 final class SetupIntentServiceTest extends TestCase
 {
     public function testFindReturnsNullOnStripeError(): void

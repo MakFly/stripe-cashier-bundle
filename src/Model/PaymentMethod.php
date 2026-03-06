@@ -6,6 +6,7 @@ namespace CashierBundle\Model;
 
 use Stripe\PaymentMethod as StripePaymentMethod;
 
+/** Wraps a Stripe PaymentMethod and exposes card and SEPA debit details. */
 final class PaymentMethod
 {
     public function __construct(

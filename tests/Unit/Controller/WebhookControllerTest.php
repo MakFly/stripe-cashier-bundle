@@ -12,6 +12,7 @@ use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
+/** Test suite for WebhookController. */
 final class WebhookControllerTest extends TestCase
 {
     private string $secret = 'whsec_controller_test_secret';

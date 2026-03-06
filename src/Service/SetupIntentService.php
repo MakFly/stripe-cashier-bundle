@@ -8,6 +8,7 @@ use CashierBundle\Model\SetupIntent;
 use Stripe\Exception\ApiErrorException;
 use Stripe\StripeClient;
 
+/** Manages Stripe SetupIntent creation and lifecycle. */
 class SetupIntentService
 {
     public function __construct(

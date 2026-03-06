@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CashierBundle\Model;
 
+/** Wraps a Stripe PaymentIntent and exposes its status and amount. */
 final class Payment
 {
     public function __construct(

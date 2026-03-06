@@ -18,6 +18,8 @@ use Stripe\StripeClient;
 use Stripe\Subscription as StripeSubscription;
 
 /**
+ * Manages subscription creation, updates, cancellation, and local sync with Stripe.
+ *
  * @phpstan-type SubscriptionItemOptions array{price: string, quantity: int|null}
  */
 class SubscriptionService

@@ -7,6 +7,7 @@ namespace CashierBundle\Event;
 use CashierBundle\Entity\Subscription;
 use Symfony\Contracts\EventDispatcher\Event;
 
+/** Dispatched when a Stripe subscription is cancelled or deleted. */
 final class SubscriptionDeletedEvent extends Event
 {
     public function __construct(

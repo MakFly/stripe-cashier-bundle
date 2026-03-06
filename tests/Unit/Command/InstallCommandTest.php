@@ -10,6 +10,7 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
 
+/** Test suite for InstallCommand. */
 final class InstallCommandTest extends TestCase
 {
     private string $projectDir;

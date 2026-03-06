@@ -14,6 +14,7 @@ use Stripe\Customer;
 use Stripe\Invoice as StripeInvoice;
 use Stripe\InvoiceLineItem;
 
+/** Test suite for InvoiceViewFactory. */
 final class InvoiceViewFactoryTest extends TestCase
 {
     public function testCreateBuildsFrenchLocalizedView(): void

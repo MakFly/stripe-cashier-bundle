@@ -10,6 +10,9 @@ use Stripe\Event;
 use Stripe\Subscription as StripeSubscription;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
+/**
+ * Handles customer.subscription.deleted by marking the local Subscription as canceled and dispatching an event.
+ */
 final readonly class SubscriptionDeletedHandler extends AbstractWebhookHandler
 {
     public function __construct(

@@ -11,6 +11,9 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Table(name: 'cashier_subscription_items')]
 #[ORM\Index(columns: ['subscription_id', 'stripe_price'])]
 #[ORM\HasLifecycleCallbacks]
+/**
+ * Represents a single line item (price/quantity) within a Stripe subscription.
+ */
 class SubscriptionItem
 {
     #[ORM\Id]

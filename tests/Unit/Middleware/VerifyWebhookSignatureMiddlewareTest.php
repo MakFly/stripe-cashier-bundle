@@ -9,6 +9,7 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
+/** Test suite for VerifyWebhookSignatureMiddleware. */
 final class VerifyWebhookSignatureMiddlewareTest extends TestCase
 {
     private string $secret = 'whsec_test_secret';

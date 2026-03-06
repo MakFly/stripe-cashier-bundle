@@ -7,6 +7,7 @@ namespace CashierBundle\Tests\Unit\Service;
 use CashierBundle\Service\WebhookEnvFileManager;
 use PHPUnit\Framework\TestCase;
 
+/** Test suite for WebhookEnvFileManager. */
 final class WebhookEnvFileManagerTest extends TestCase
 {
     private string $projectDir;

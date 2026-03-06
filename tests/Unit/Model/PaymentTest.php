@@ -7,6 +7,7 @@ namespace CashierBundle\Tests\Unit\Model;
 use CashierBundle\Model\Payment;
 use PHPUnit\Framework\TestCase;
 
+/** Test suite for Payment. */
 final class PaymentTest extends TestCase
 {
     private function createPaymentIntent(array $data = []): object

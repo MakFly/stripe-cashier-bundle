@@ -18,6 +18,7 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
     name: 'cashier:webhook:listen',
     description: 'Start Stripe CLI webhook listener and export STRIPE_WEBHOOK_SECRET',
 )]
+/** Starts the Stripe CLI listener, streams events to the local app, and persists the webhook secret. */
 class WebhookListenCommand extends Command
 {
     /**
@@ -190,6 +191,10 @@ class WebhookListenCommand extends Command
         return [$exitCode, $secret];
     }
 
+    /**
+     * Returns the full webhook URL to forward events to.
+     * Uses --forward-to if provided; otherwise builds the URL from --base-url and the cashier path.
+     */
     private function resolveForwardTo(InputInterface $input): string
     {
         $forwardTo = $input->getOption('forward-to');
@@ -284,6 +289,10 @@ class WebhookListenCommand extends Command
         return $escaped;
     }
 
+    /**
+     * Scans a CLI output chunk for a Stripe webhook secret (whsec_…).
+     * Returns the first match found, or null if none is present.
+     */
     private function extractSecret(string $chunk): ?string
     {
         if (preg_match('/whsec_[A-Za-z0-9]+/', $chunk, $matches) === 1) {
@@ -293,6 +302,10 @@ class WebhookListenCommand extends Command
         return null;
     }
 
+    /**
+     * Reads the current APP_ENV from the server/environment superglobals.
+     * Falls back to 'dev' when the variable is absent or empty.
+     */
     private function resolveAppEnv(): string
     {
         $env = $_SERVER['APP_ENV'] ?? $_ENV['APP_ENV'] ?? getenv('APP_ENV');
@@ -303,6 +316,10 @@ class WebhookListenCommand extends Command
         return trim($env);
     }
 
+    /**
+     * Checks whether the `stripe` binary is present and executable in PATH.
+     * On Windows, also inspects PATHEXT extensions (.EXE, .BAT, etc.).
+     */
     protected function isStripeCliAvailable(): bool
     {
         $path = getenv('PATH');

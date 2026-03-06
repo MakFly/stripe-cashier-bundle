@@ -6,6 +6,9 @@ namespace CashierBundle\Contract;
 
 use Stripe\Event;
 
+/**
+ * Handles a specific set of Stripe webhook events.
+ */
 interface WebhookHandlerInterface
 {
     /**

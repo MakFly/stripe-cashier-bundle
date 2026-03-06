@@ -7,6 +7,9 @@ namespace CashierBundle\Contract;
 use CashierBundle\Model\Invoice;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * Renders an invoice as an HTTP response, binary content, or stream.
+ */
 interface InvoiceRendererInterface
 {
     /**

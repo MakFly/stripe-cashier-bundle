@@ -11,6 +11,7 @@ use CashierBundle\Tests\Support\TestStripeClient;
 use PHPUnit\Framework\TestCase;
 use Stripe\Exception\InvalidRequestException;
 
+/** Test suite for PaymentIntentService. */
 final class PaymentIntentServiceTest extends TestCase
 {
     public function testCreateReturnsPaymentModel(): void

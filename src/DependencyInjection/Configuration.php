@@ -8,6 +8,9 @@ use CashierBundle\Service\InvoiceRenderer\DompdfInvoiceRenderer;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 
+/**
+ * Defines the configuration tree for the CashierBundle (Stripe keys, webhook, currency, invoices).
+ */
 final class Configuration implements ConfigurationInterface
 {
     public function getConfigTreeBuilder(): TreeBuilder

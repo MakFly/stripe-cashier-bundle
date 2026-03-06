@@ -6,6 +6,7 @@ namespace CashierBundle\Model;
 
 use Stripe\Discount as StripeDiscount;
 
+/** Wraps a Stripe Discount and exposes its coupon with validity period. */
 final class Discount
 {
     public function __construct(

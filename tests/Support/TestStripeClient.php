@@ -6,6 +6,7 @@ namespace CashierBundle\Tests\Support;
 
 use Stripe\StripeClient;
 
+/** Fake Stripe client for isolated testing. */
 final class TestStripeClient extends StripeClient
 {
     /**

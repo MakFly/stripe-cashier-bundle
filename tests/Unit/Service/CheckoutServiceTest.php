@@ -10,6 +10,7 @@ use CashierBundle\Tests\Support\TestStripeClient;
 use PHPUnit\Framework\TestCase;
 use Stripe\Exception\InvalidRequestException;
 
+/** Test suite for CheckoutService. */
 final class CheckoutServiceTest extends TestCase
 {
     public function testCreateThrowsWhenBillableHasNoStripeId(): void
@@ -149,6 +150,7 @@ final class CheckoutServiceTest extends TestCase
     }
 }
 
+/** Spy for Stripe checkout sessions capturing the submitted payload. */
 final class CheckoutSessionsSpy
 {
     /**

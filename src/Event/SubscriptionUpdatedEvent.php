@@ -7,6 +7,7 @@ namespace CashierBundle\Event;
 use CashierBundle\Entity\Subscription;
 use Symfony\Contracts\EventDispatcher\Event;
 
+/** Dispatched when an existing Stripe subscription is updated. */
 final class SubscriptionUpdatedEvent extends Event
 {
     public function __construct(

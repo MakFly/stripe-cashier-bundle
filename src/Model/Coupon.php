@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CashierBundle\Model;
 
+/** Wraps a Stripe Coupon and exposes discount type, duration, and validity. */
 final class Coupon
 {
     public function __construct(

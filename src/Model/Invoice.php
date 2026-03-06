@@ -9,6 +9,7 @@ use Stripe\Invoice as StripeInvoice;
 use Stripe\InvoiceLineItem as StripeInvoiceLineItem;
 use Symfony\Component\HttpFoundation\Response;
 
+/** Wraps a Stripe Invoice and provides formatted totals, line items, taxes, and rendering. */
 final class Invoice
 {
     public function __construct(

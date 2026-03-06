@@ -11,6 +11,13 @@ cashier:
     webhook:
         secret: '%env(STRIPE_WEBHOOK_SECRET)%'
         tolerance: 300
+        events:
+            - customer.subscription.created
+            - customer.subscription.updated
+            - customer.subscription.deleted
+            - invoice.payment_succeeded
+            - invoice.payment_failed
+            - checkout.session.completed
 
     currency: usd
     currency_locale: en
@@ -53,14 +60,22 @@ cashier_webhooks:
 
 | Option | Description |
 |---|---|
-| `cashier.path` | préfixe des routes du bundle |
-| `cashier.webhook.secret` | secret Stripe de vérification des signatures |
-| `cashier.currency` | devise par défaut |
-| `cashier.currency_locale` | locale par défaut du formatage monétaire |
-| `cashier.default_subscription_type` | type d'abonnement utilisé par défaut |
-| `cashier.invoices.default_locale` | langue facture par défaut |
-| `cashier.invoices.supported_locales` | langues supportées par le provider par défaut |
-| `cashier.invoices.storage.path` | chemin absolu des PDF archivés |
+| `cashier.path` | Préfixe des routes du bundle. Défaut : `cashier`. La route webhook sera `/cashier/webhook`. **Si modifié**, le secret Stripe doit correspondre à la nouvelle URL. |
+| `cashier.webhook.secret` | Secret Stripe de vérification des signatures |
+| `cashier.webhook.events` | Liste des événements Stripe à écouter (voir [Webhooks](/docs/webhooks)) |
+| `cashier.currency` | Devise par défaut (code ISO 4217 : `usd`, `eur`, etc.) |
+| `cashier.currency_locale` | Locale BCP 47 pour le formatage monétaire (`fr`, `en`, `de`, etc.) |
+| `cashier.default_subscription_type` | Type d'abonnement utilisé par défaut pour les webhooks `customer.subscription.*`. Si plusieurs types d'abonnements coexistent, ce paramètre détermine lequel est créé automatiquement. |
+| `cashier.invoices.default_locale` | Langue facture par défaut |
+| `cashier.invoices.supported_locales` | Langues supportées par le provider par défaut |
+| `cashier.invoices.storage.path` | Chemin absolu des PDF archivés |
+
+### Options Dompdf
+
+| Option | Valeur par défaut | Description |
+|---|---|---|
+| `paper` | `letter` | Format du papier (`letter`, `a4`, `legal`) |
+| `remote_enabled` | `false` | Autorise le chargement d'images distantes (désactivé pour sécurité) |
 
 ## Politique `intl`
 
@@ -82,5 +97,20 @@ Le rendu est personnalisable à trois niveaux:
 3. les services de locale et de traduction:
    - `CashierBundle\Contract\InvoiceLocaleResolverInterface`
    - `CashierBundle\Contract\InvoiceTranslationProviderInterface`
+
+## Renderer alternatif
+
+Pour utiliser Snappy (nécessite `knp-snappy` et `wkhtmltopdf`) :
+
+```yaml
+cashier:
+    invoices:
+        renderer: CashierBundle\Service\InvoiceRenderer\SnappyInvoiceRenderer
+        options:
+            paper: letter
+            encoding: UTF-8
+```
+
+> **Prérequis** : `composer require knp-snappy/wkhtmltopdf-binary`
 
 [Clients →](/docs/customers)

@@ -7,6 +7,7 @@ namespace CashierBundle\Service\Invoice;
 use CashierBundle\Contract\InvoiceLocaleResolverInterface;
 use Stripe\Customer as StripeCustomer;
 
+/** Resolves the invoice rendering locale from request data, customer preferences, or the configured default. */
 final readonly class DefaultInvoiceLocaleResolver implements InvoiceLocaleResolverInterface
 {
     /**

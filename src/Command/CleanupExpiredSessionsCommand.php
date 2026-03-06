@@ -16,6 +16,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
     name: 'cashier:cleanup-sessions',
     description: 'Cleanup expired checkout sessions',
 )]
+/** Deletes expired checkout sessions from the database. */
 class CleanupExpiredSessionsCommand extends Command
 {
     public function __construct(

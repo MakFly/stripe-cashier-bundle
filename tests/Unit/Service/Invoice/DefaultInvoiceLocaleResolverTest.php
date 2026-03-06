@@ -8,6 +8,7 @@ use CashierBundle\Service\Invoice\DefaultInvoiceLocaleResolver;
 use PHPUnit\Framework\TestCase;
 use Stripe\Customer;
 
+/** Test suite for DefaultInvoiceLocaleResolver. */
 final class DefaultInvoiceLocaleResolverTest extends TestCase
 {
     public function testResolvePrefersExplicitLocaleAndNormalizesIt(): void

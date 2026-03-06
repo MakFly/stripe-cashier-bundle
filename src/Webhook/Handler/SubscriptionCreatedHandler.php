@@ -14,6 +14,9 @@ use Stripe\Subscription as StripeSubscription;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
+/**
+ * Handles customer.subscription.created by persisting a new local Subscription entity.
+ */
 final readonly class SubscriptionCreatedHandler extends AbstractWebhookHandler
 {
     public function __construct(
@@ -51,6 +54,10 @@ final readonly class SubscriptionCreatedHandler extends AbstractWebhookHandler
         $this->dispatcher->dispatch(new SubscriptionCreatedEvent($subscription));
     }
 
+    /**
+     * Maps a Stripe Subscription to a local Subscription entity, including price, quantity,
+     * trial end date, and scheduled cancellation date when present.
+     */
     private function createSubscriptionFromStripe(
         StripeSubscription $stripeSubscription,
         StripeCustomer $customer,

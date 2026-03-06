@@ -8,6 +8,7 @@ use CashierBundle\Entity\StripeCustomer;
 use Doctrine\Common\Collections\ArrayCollection;
 use PHPUnit\Framework\TestCase;
 
+/** Test suite for StripeCustomer entity. */
 final class StripeCustomerTest extends TestCase
 {
     private function createStripeCustomer(array $data = []): StripeCustomer

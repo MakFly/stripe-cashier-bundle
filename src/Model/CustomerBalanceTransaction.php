@@ -6,6 +6,7 @@ namespace CashierBundle\Model;
 
 use Stripe\CustomerBalanceTransaction as StripeCustomerBalanceTransaction;
 
+/** Wraps a Stripe CustomerBalanceTransaction and indicates credit or debit direction. */
 final class CustomerBalanceTransaction
 {
     public function __construct(

@@ -10,6 +10,7 @@ use Stripe\Exception\ApiErrorException;
 use Stripe\StripeClient;
 use Stripe\TaxRate as StripeTaxRate;
 
+/** Retrieves and manages Stripe tax rates and automatic tax settings. */
 class TaxService
 {
     private bool $automaticTaxEnabled = false;

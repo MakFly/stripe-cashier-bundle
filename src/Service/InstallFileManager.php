@@ -6,6 +6,7 @@ namespace CashierBundle\Service;
 
 use Symfony\Component\Filesystem\Filesystem;
 
+/** Scaffolds configuration files, directories, and env variables during bundle installation. */
 final class InstallFileManager
 {
     private const SKELETON_ROOT = __DIR__ . '/../Resources/skeleton';

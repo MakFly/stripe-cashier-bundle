@@ -7,6 +7,7 @@ namespace CashierBundle\MessageHandler;
 use CashierBundle\Message\UpdateSubscriptionQuantityMessage;
 use CashierBundle\Service\SubscriptionService;
 
+/** Handles UpdateSubscriptionQuantityMessage by updating the subscription seat count via SubscriptionService. */
 class UpdateSubscriptionQuantityHandler
 {
     public function __construct(

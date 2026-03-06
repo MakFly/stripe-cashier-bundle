@@ -11,6 +11,7 @@ use Knp\Snappy\Pdf;
 use Symfony\Component\HttpFoundation\Response;
 use Twig\Environment;
 
+/** Renders invoice PDFs using wkhtmltopdf via KnpSnappy. */
 class SnappyInvoiceRenderer implements InvoiceRendererInterface
 {
     public function __construct(

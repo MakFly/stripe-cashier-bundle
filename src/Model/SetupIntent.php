@@ -6,6 +6,7 @@ namespace CashierBundle\Model;
 
 use Stripe\SetupIntent as StripeSetupIntent;
 
+/** Wraps a Stripe SetupIntent and exposes its status and payment method. */
 final class SetupIntent
 {
     public function __construct(

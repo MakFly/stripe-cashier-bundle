@@ -13,6 +13,7 @@ use CashierBundle\Event\SubscriptionUpdatedEvent;
 use PHPUnit\Framework\TestCase;
 use Symfony\Contracts\EventDispatcher\Event;
 
+/** Test suite for Cashier domain events. */
 final class EventTest extends TestCase
 {
     public function testSubscriptionCreatedEventExtendsSymfonyEvent(): void

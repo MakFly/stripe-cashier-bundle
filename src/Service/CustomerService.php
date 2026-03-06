@@ -15,6 +15,8 @@ use Stripe\Customer as StripeCustomer;
 use Stripe\StripeClient;
 
 /**
+ * Creates, updates, and syncs Stripe customer records with local StripeCustomer entities.
+ *
  * @implements \CashierBundle\Concerns\ManagesCustomer<BillableInterface>
  */
 class CustomerService

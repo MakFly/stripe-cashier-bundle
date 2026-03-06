@@ -23,6 +23,33 @@ php bin/console cashier:install
 
 La commande `cashier:install` est idempotente. Elle complète uniquement ce qui manque.
 
+## Migrer la base de données
+
+### Migration Doctrine
+
+La table `cashier_generated_invoices` est **nouvelle en v1.0.0**. Vous devez générer et exécuter une migration:
+
+```bash
+php bin/console doctrine:migrations:diff
+php bin/console doctrine:migrations:migrate
+```
+
+### Entités existantes
+
+Si vous utilisiez des versions antérieures avec des entités personnalisées pour les customers ou abonnements, vérifiez que:
+
+- Votre entité implémente `BillableEntityInterface` (nouveau nom,之前 était peut-être `BillableInterface`)
+- Le `BillableTrait` est bien utilisé
+
+### Suppression des dépendances v0.x
+
+Si vous aviez des dépendances ou configurations spécifiques à v0.x, vous pouvez les supprimer:
+
+- Anciens services标记 comme dépréciés
+- Anciens paramètres de configuration non listés dans la documentation
+
+Conservez uniquement les fichiers documentés dans cette note de migration.
+
 ## Ce qu'il faut vérifier
 
 ### 1. Configuration générée

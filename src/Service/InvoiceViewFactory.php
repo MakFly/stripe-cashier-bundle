@@ -12,6 +12,7 @@ use CashierBundle\Model\InvoiceLineItem;
 use CashierBundle\Model\Tax;
 use Stripe\Customer as StripeCustomer;
 
+/** Builds the normalized view array passed to invoice Twig templates. */
 final class InvoiceViewFactory
 {
     public function __construct(

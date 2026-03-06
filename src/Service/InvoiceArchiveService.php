@@ -15,6 +15,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Stripe\Exception\ApiErrorException;
 use Stripe\StripeClient;
 
+/** Renders and stores invoice PDFs then persists a GeneratedInvoice record on payment success. */
 final readonly class InvoiceArchiveService
 {
     public function __construct(

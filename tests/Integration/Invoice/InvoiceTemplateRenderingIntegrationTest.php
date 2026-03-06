@@ -17,6 +17,7 @@ use Stripe\InvoiceLineItem;
 use Twig\Environment;
 use Twig\Loader\FilesystemLoader;
 
+/** Integration test for Twig invoice template rendering. */
 final class InvoiceTemplateRenderingIntegrationTest extends TestCase
 {
     public function testTwigTemplateRendersFrenchLabels(): void

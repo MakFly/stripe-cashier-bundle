@@ -9,6 +9,9 @@ use Stripe\Event;
 use Stripe\Invoice as StripeInvoice;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
+/**
+ * Handles invoice.payment_failed by dispatching a PaymentFailedEvent with invoice details.
+ */
 final readonly class InvoicePaymentFailedHandler extends AbstractWebhookHandler
 {
     public function __construct(

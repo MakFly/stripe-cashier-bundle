@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CashierBundle\Service;
 
+/** Resolves the target env file and writes the Stripe webhook secret into it. */
 final class WebhookEnvFileManager
 {
     public function resolveTargetFile(string $projectDir, ?string $appEnv = null, ?string $forcedFile = null): string

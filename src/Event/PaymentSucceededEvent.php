@@ -6,8 +6,14 @@ namespace CashierBundle\Event;
 
 use Symfony\Contracts\EventDispatcher\Event;
 
+/** Dispatched when a Stripe payment succeeds. */
 final class PaymentSucceededEvent extends Event
 {
+    /**
+     * @param int         $amount            Amount in cents
+     * @param string|null $invoiceId         Stripe invoice ID, if payment is linked to an invoice
+     * @param string|null $checkoutSessionId Stripe checkout session ID, if payment originated from a session
+     */
     public function __construct(
         public readonly string $customerId,
         public readonly ?string $paymentIntentId,
@@ -48,6 +54,7 @@ final class PaymentSucceededEvent extends Event
         return $this->checkoutSessionId;
     }
 
+    /** Returns the payment amount as a decimal value (e.g. 10.99 for 1099 cents). */
     public function getAmountInDecimal(): float
     {
         return $this->amount / 100;

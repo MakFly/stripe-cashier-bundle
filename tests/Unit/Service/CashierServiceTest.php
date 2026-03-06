@@ -7,6 +7,7 @@ namespace CashierBundle\Tests\Unit\Service;
 use CashierBundle\Model\Cashier;
 use PHPUnit\Framework\TestCase;
 
+/** Test suite for Cashier model (currency, locale, formatting). */
 final class CashierServiceTest extends TestCase
 {
     protected function setUp(): void

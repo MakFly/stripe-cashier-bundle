@@ -13,10 +13,12 @@ cashier:
             - customer.subscription.created
             - customer.subscription.updated
             - customer.subscription.deleted
-            - invoice.paid
+            - customer.deleted
+            - invoice.payment_succeeded
             - invoice.payment_failed
             - checkout.session.completed
             - payment_intent.succeeded
+            - payment_intent.payment_failed
 ```
 
 ## Rôle des webhooks
@@ -37,10 +39,46 @@ Le bundle fournit des handlers pour les événements billing principaux, notamme
 - `customer.subscription.created`
 - `customer.subscription.updated`
 - `customer.subscription.deleted`
-- `invoice.paid`
+- `customer.deleted`
+- `invoice.payment_succeeded`
 - `invoice.payment_failed`
+- `invoice.payment_action_required`
 - `checkout.session.completed`
+- `checkout.session.expired`
 - `payment_method.updated`
+- `payment_intent.succeeded`
+- `payment_intent.payment_failed`
+
+## Handlers placeholder
+
+Certains handlers sont des points d'extension vides — implémenter via un handler custom:
+
+- `InvoicePaymentActionRequiredHandler` — gère `invoice.payment_action_required`
+- `CheckoutSessionCompletedHandler` — gère `checkout.session.completed`
+
+## Configuration production
+
+Créer le webhook via CLI:
+
+```bash
+php bin/console cashier:webhook --url=https://monsite.com/cashier/webhook --show-secret
+```
+
+Copier le secret dans `STRIPE_WEBHOOK_SECRET`.
+
+Vérifier que le path correspond à `cashier.path` dans `cashier.yaml`.
+
+## Idempotence
+
+Les handlers Stripe peuvent être appelés plusieurs fois avec le même event ID.
+
+Utilisez `$event->id` comme guard : stockez les IDs traités, rejetez les doublons.
+
+## Gestion des exceptions
+
+Si un handler lance une exception, Stripe retentera le webhook (3 jours, intervalles croissants).
+
+Capturez les exceptions métier et retournez `200` si l'événement peut être ignoré:
 
 ## Handler custom
 
@@ -78,6 +116,12 @@ final readonly class SyncOrderHandler implements WebhookHandlerInterface
 - `PaymentFailedEvent`
 
 ## Stripe CLI locale
+
+```bash
+php bin/console cashier:webhook:listen --forward-to=http://127.0.0.1:8000/cashier/webhook
+```
+
+Ou avec `--base-url` pour construire automatiquement l'URL :
 
 ```bash
 php bin/console cashier:webhook:listen --forward-to --base-url http://localhost:8000

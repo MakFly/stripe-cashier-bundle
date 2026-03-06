@@ -15,6 +15,9 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\UniqueConstraint(name: 'stripe_id_unique', columns: ['stripe_id'])]
 #[ORM\UniqueConstraint(name: 'billable_lookup_unique', columns: ['billable_type', 'billable_id'])]
 #[ORM\HasLifecycleCallbacks]
+/**
+ * Represents a Stripe customer record linked to a billable entity.
+ */
 class StripeCustomer
 {
     #[ORM\Id]

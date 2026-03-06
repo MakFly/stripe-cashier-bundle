@@ -13,6 +13,7 @@ use PHPUnit\Framework\TestCase;
 use Stripe\Exception\InvalidRequestException;
 use Stripe\Refund;
 
+/** Test suite for PaymentService (extended scenarios). */
 final class PaymentServiceExtendedTest extends TestCase
 {
     public function testChargeThrowsWhenBillableHasNoStripeId(): void

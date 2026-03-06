@@ -11,6 +11,7 @@ use PHPUnit\Framework\TestCase;
 use Stripe\PaymentMethod;
 use Stripe\StripeObject;
 
+/** Test suite for PaymentMethodService. */
 final class PaymentMethodServiceTest extends TestCase
 {
     public function testHasDefaultReturnsFalseWhenNoStripeId(): void

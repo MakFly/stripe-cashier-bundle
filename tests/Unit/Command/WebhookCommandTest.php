@@ -10,6 +10,7 @@ use PHPUnit\Framework\TestCase;
 use Stripe\StripeClient;
 use Symfony\Component\Console\Tester\CommandTester;
 
+/** Test suite for WebhookCommand. */
 final class WebhookCommandTest extends TestCase
 {
     public function testSecretIsMaskedByDefault(): void

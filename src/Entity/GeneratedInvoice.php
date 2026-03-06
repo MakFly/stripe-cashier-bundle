@@ -11,6 +11,9 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Table(name: 'cashier_generated_invoices')]
 #[ORM\UniqueConstraint(name: 'cashier_generated_invoice_stripe_invoice_unique', columns: ['stripe_invoice_id'])]
 #[ORM\HasLifecycleCallbacks]
+/**
+ * Represents a locally stored invoice PDF generated from a Stripe invoice event.
+ */
 class GeneratedInvoice
 {
     #[ORM\Id]

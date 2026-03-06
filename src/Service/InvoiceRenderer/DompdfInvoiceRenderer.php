@@ -12,6 +12,7 @@ use Dompdf\Options;
 use Symfony\Component\HttpFoundation\Response;
 use Twig\Environment;
 
+/** Renders invoice PDFs using the Dompdf HTML-to-PDF library. */
 class DompdfInvoiceRenderer implements InvoiceRendererInterface
 {
     public function __construct(

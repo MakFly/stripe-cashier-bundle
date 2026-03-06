@@ -11,6 +11,7 @@ use Stripe\Event;
 use Stripe\Invoice;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
+/** Test suite for InvoicePaidHandler. */
 final class InvoicePaidHandlerTest extends TestCase
 {
     public function testHandleDispatchesPaymentSucceededEvent(): void
