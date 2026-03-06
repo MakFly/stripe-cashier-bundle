@@ -1,0 +1,46 @@
+# Root ignore for the example workspace (api + web)
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Env (keep committed templates)
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# PHP/Symfony (api)
+api/vendor/
+api/var/
+api/.phpunit.cache/
+api/phpunit.xml
+
+# Node/JS (web)
+web/node_modules/
+web/dist/
+web/dist-ssr/
+web/build/
+web/.next/
+web/.nuxt/
+web/.svelte-kit/
+web/.vite/
+web/.turbo/
+web/.cache/
+
+# Tooling caches (anywhere)
+.pnpm-store/
+.eslintcache
+*.tsbuildinfo

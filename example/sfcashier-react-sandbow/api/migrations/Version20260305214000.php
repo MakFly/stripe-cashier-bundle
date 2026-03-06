@@ -1,0 +1,28 @@
+<?php
+
+declare(strict_types=1);
+
+namespace DoctrineMigrations;
+
+use Doctrine\DBAL\Schema\Schema;
+use Doctrine\Migrations\AbstractMigration;
+
+final class Version20260305214000 extends AbstractMigration
+{
+    public function getDescription(): string
+    {
+        return 'Add persisted cashier generated invoices table';
+    }
+
+    public function up(Schema $schema): void
+    {
+        $this->addSql('CREATE TABLE cashier_generated_invoices (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, billable_id INTEGER DEFAULT NULL, billable_type VARCHAR(255) DEFAULT NULL, stripe_invoice_id VARCHAR(255) DEFAULT NULL, stripe_payment_intent_id VARCHAR(255) DEFAULT NULL, stripe_checkout_session_id VARCHAR(255) DEFAULT NULL, currency VARCHAR(10) NOT NULL, amount_total INTEGER NOT NULL, status VARCHAR(50) NOT NULL, filename VARCHAR(255) NOT NULL, relative_path VARCHAR(500) NOT NULL, mime_type VARCHAR(100) NOT NULL, size INTEGER NOT NULL, checksum VARCHAR(64) NOT NULL, payload CLOB DEFAULT NULL, created_at DATETIME NOT NULL, updated_at DATETIME NOT NULL, customer_id INTEGER DEFAULT NULL, CONSTRAINT FK_1729E2D69395C3F3 FOREIGN KEY (customer_id) REFERENCES cashier_customers (id) ON DELETE SET NULL NOT DEFERRABLE INITIALLY IMMEDIATE)');
+        $this->addSql('CREATE INDEX IDX_1729E2D69395C3F3 ON cashier_generated_invoices (customer_id)');
+        $this->addSql('CREATE UNIQUE INDEX cashier_generated_invoice_stripe_invoice_unique ON cashier_generated_invoices (stripe_invoice_id)');
+    }
+
+    public function down(Schema $schema): void
+    {
+        $this->addSql('DROP TABLE cashier_generated_invoices');
+    }
+}
