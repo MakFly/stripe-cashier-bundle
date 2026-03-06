@@ -1,0 +1,28 @@
+cashier:
+    key: '%env(STRIPE_KEY)%'
+    secret: '%env(STRIPE_SECRET)%'
+    path: cashier
+    webhook:
+        secret: '%env(STRIPE_WEBHOOK_SECRET)%'
+        tolerance: 300
+        events:
+            - customer.subscription.created
+            - customer.subscription.updated
+            - customer.subscription.deleted
+            - checkout.session.completed
+            - checkout.session.expired
+            - invoice.paid
+            - invoice.payment_failed
+            - payment_intent.payment_failed
+            - payment_intent.succeeded
+    currency: eur
+    currency_locale: fr
+    invoices:
+        renderer: CashierBundle\Service\InvoiceRenderer\DompdfInvoiceRenderer
+        storage:
+            driver: local
+            path: '%kernel.project_dir%/var/data/invoices'
+        options:
+            paper: a4
+            remote_enabled: false
+    logger: logger

@@ -1,0 +1,16 @@
+{
+  "name": "sfcashier-react-sandbow",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"cd api && symfony server:start --port=8000 --no-tls\" \"cd web && bun run dev\"",
+    "dev:api": "cd api && symfony server:start --port=8000 --no-tls",
+    "dev:web": "cd web && bun run dev",
+    "install:all": "cd api && composer install && cd ../web && bun install",
+    "setup:api": "cd api && composer install && php bin/console doctrine:database:create && php bin/console doctrine:schema:create && php bin/console doctrine:fixtures:load -n",
+    "setup:web": "cd web && bun install"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "shadcn": "^3.8.5"
+  }
+}

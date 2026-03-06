@@ -1,0 +1,30 @@
+better_auth:
+    mode: api
+    secret: '%env(BETTER_AUTH_SECRET)%'
+    token:
+        lifetime: 3600
+        refresh_lifetime: 2592000
+    two_factor:
+        enabled: true
+        issuer: '%env(APP_NAME)%'
+        backup_codes_count: 10
+    magic_link:
+        enabled: true
+        lifetime: 900
+        allow_user_creation: false
+    email_verification:
+        enabled: true
+        lifetime: 86400
+    password_reset:
+        enabled: true
+        lifetime: 3600
+    security:
+        auto_configure: false
+        firewall_name: api
+        firewall_pattern: ^/api/v1
+        public_routes_pattern: ^/api/v1/auth
+    routing:
+        auto_configure: false
+    session:
+        lifetime: 604800
+        cookie_name: better_auth_session
