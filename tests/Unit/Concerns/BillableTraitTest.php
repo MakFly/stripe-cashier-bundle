@@ -16,6 +16,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
 use Stripe\PaymentMethod as StripePaymentMethod;
 
+/** Test suite for BillableTrait. */
 final class BillableTraitTest extends TestCase
 {
     protected function tearDown(): void

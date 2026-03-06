@@ -7,6 +7,7 @@ namespace CashierBundle\MessageHandler;
 use CashierBundle\Message\CancelSubscriptionMessage;
 use CashierBundle\Service\SubscriptionService;
 
+/** Handles CancelSubscriptionMessage by delegating subscription cancellation to SubscriptionService. */
 class CancelSubscriptionHandler
 {
     public function __construct(

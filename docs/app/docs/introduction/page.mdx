@@ -1,14 +1,19 @@
 # Introduction
 
+[![Version](https://img.shields.io/packagist/v/makfly/stripe-cashier-bundle.svg)](https://packagist.org/packages/makfly/stripe-cashier-bundle)
+[![PHP](https://img.shields.io/packagist/php-v/makfly/stripe-cashier-bundle.svg)](https://packagist.org/packages/makfly/stripe-cashier-bundle)
+[![Licence](https://img.shields.io/packagist/l/makfly/stripe-cashier-bundle.svg)](https://packagist.org/packages/makfly/stripe-cashier-bundle)
+
 `makfly/stripe-cashier-bundle` apporte à Symfony un socle Stripe orienté billing:
 
 - abonnements et essais
 - paiements one-shot
 - Stripe Checkout
 - webhooks Stripe avec handlers extensibles
-- archivage PDF des factures payées
+- archivage automatique PDF des factures payées (GeneratedInvoice)
 - stockage local des factures dans `var/data/invoices`
 - intégration Doctrine pour les clients Stripe, abonnements et factures générées
+- **[optionnel]** intégration Symfony Messenger pour le traitement asynchrone des webhooks
 
 Le bundle est pensé pour deux usages:
 
@@ -23,6 +28,8 @@ Le bundle est pensé pour deux usages:
 | Symfony | `^7.0` ou `^8.0` |
 | Doctrine ORM | `^3.0` |
 | Stripe PHP SDK | `^16.0` |
+| dompdf/dompdf | `^3.1` (renderer PDF par défaut) |
+| symfony/messenger | Optionnel (pour webhooks async) |
 
 ## `ext-intl`
 

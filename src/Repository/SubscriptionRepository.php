@@ -10,6 +10,8 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
+ * Repository for Subscription entities with active-status and type-scoped lookups.
+ *
  * @extends ServiceEntityRepository<Subscription>
  */
 class SubscriptionRepository extends ServiceEntityRepository

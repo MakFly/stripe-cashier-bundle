@@ -3,9 +3,23 @@
 ## Créer un abonnement
 
 ```php
-$subscription = $user->newSubscription('default', 'price_monthly')
-    ->trialDays(14)
-    ->create('pm_card_visa');
+use CashierBundle\Contract\BillableEntityInterface;
+use CashierBundle\Service\SubscriptionService;
+
+final readonly class SubscriptionController
+{
+    public function __construct(
+        private SubscriptionService $subscriptionService,
+    ) {
+    }
+
+    public function create(BillableEntityInterface $user): void
+    {
+        $subscription = $user->newSubscription('default', 'price_monthly')
+            ->trialDays(14)
+            ->create('pm_card_visa');
+    }
+}
 ```
 
 ## Capacités du `SubscriptionBuilder`
@@ -20,6 +34,10 @@ $builder->withCoupon('coupon_xxx');
 $builder->withPromotionCode('promo_xxx');
 $builder->withMetadata(['segment' => 'pro']);
 $builder->withOptions(['collection_method' => 'charge_automatically']);
+$builder->withBillingThresholds(['threshold_cycles' => 3]);
+$builder->anchorBillingCycleOn(new \DateTime('2025-01-01'));
+$builder->withPaymentBehavior('default_incomplete');
+$builder->noProrate(); // ou prorate()
 ```
 
 ## Vérifier l'état
@@ -28,7 +46,24 @@ $builder->withOptions(['collection_method' => 'charge_automatically']);
 $user->subscribed('default');
 $user->onTrial('default');
 $subscription = $user->subscription('default');
+```
 
+### Cycle de vie complet
+
+| Méthode | Description |
+|---------|-------------|
+| `active()` | Statut `active` ou `trialing` |
+| `valid()` | `active` OU `onTrial` OU `onGracePeriod` — cas d'usage courant pour « l'abonnement donne accès au service » |
+| `onGracePeriod()` | Abonnement annulé mais `ends_at` dans le futur — l'accès doit encore être accordé |
+| `paused()` | Abonnement Stripe `paused` |
+| `notPaused()` | Abonnement Stripe non `paused` |
+| `onPausedGracePeriod()` | Abonnement `paused` avec période de grâce |
+| `ended()` | Annulé ET `ends_at` dans le passé |
+| `incomplete()` | Statut d'échec de paiement (configurer `Cashier::$deactivateIncomplete`) |
+| `pastDue()` | Statut de paiement en attente (configurer `Cashier::$deactivatePastDue`) |
+| `recurring()` | Actif, pas en trial, pas en grace period |
+
+```php
 $subscription->active();
 $subscription->pastDue();
 $subscription->paused();
@@ -38,10 +73,36 @@ $subscription->onGracePeriod();
 ## Faire évoluer l'abonnement
 
 ```php
-$subscriptionService->swap($subscription, 'price_yearly');
+$subscriptionService->swap($subscription, 'price_yearly'); // proration par défaut, trialDays non maintenu
 $subscriptionService->updateQuantity($subscription, 5);
-$subscriptionService->cancel($subscription);
-$subscriptionService->resume($subscription);
+$subscriptionService->cancel($subscription); // fin de période
+$subscriptionService->cancel($subscription, immediately: true); // immédiat
+$subscriptionService->resume($subscription); // exige que onGracePeriod() soit true
+```
+
+### Multi-prix
+
+Pour un abonnement avec plusieurs prix (base + add-on):
+
+```php
+$user->newSubscription('default')
+    ->price('price_monthly_base')
+    ->price('price_add_on', 1)
+    ->create('pm_card_visa');
+```
+
+### SubscriptionItem
+
+Chaque prix d'un abonnement correspond à un `SubscriptionItem`:
+
+```php
+$subscription->items; // Collection de SubscriptionItem
+$item = $subscription->items()->first();
+
+$item->stripePrice; // price_xxx
+$item->quantity;
+$item->meterId; // pour usage-based
+$item->meterEventName;
 ```
 
 ## Usage-based billing

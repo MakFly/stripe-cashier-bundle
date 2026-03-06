@@ -17,6 +17,7 @@ use Doctrine\Common\Collections\Collection;
 use Stripe\Customer as StripeCustomer;
 use Stripe\Refund;
 
+/** Fake billable entity for testing purposes. */
 class FakeBillable implements BillableInterface
 {
     public function __construct(private ?string $stripeId = null)
@@ -217,7 +218,7 @@ class FakeBillable implements BillableInterface
     }
 
     /**
-     * @return array<int, mixed>
+     * @return array<string, mixed>
      */
     public function taxRates(): array
     {

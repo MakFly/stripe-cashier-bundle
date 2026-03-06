@@ -8,6 +8,9 @@ use CashierBundle\Repository\StripeCustomerRepository;
 use Stripe\Customer as StripeCustomer;
 use Stripe\Event;
 
+/**
+ * Handles customer.deleted by removing the matching local StripeCustomer record.
+ */
 final readonly class CustomerDeletedHandler extends AbstractWebhookHandler
 {
     public function __construct(

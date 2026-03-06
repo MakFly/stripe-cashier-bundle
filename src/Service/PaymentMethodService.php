@@ -14,6 +14,8 @@ use Stripe\PaymentMethod as StripePaymentMethod;
 use Stripe\StripeClient;
 
 /**
+ * Attaches, detaches, and lists Stripe payment methods for billable entities.
+ *
  * @implements \CashierBundle\Concerns\ManagesPaymentMethods<BillableInterface>
  */
 class PaymentMethodService

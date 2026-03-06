@@ -7,6 +7,7 @@ namespace CashierBundle\Tests\Unit\Service;
 use CashierBundle\Service\InstallFileManager;
 use PHPUnit\Framework\TestCase;
 
+/** Test suite for InstallFileManager. */
 final class InstallFileManagerTest extends TestCase
 {
     private string $projectDir;

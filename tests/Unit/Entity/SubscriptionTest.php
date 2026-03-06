@@ -7,6 +7,7 @@ namespace CashierBundle\Tests\Unit\Entity;
 use CashierBundle\Entity\Subscription;
 use PHPUnit\Framework\TestCase;
 
+/** Test suite for Subscription entity. */
 final class SubscriptionTest extends TestCase
 {
     private function createSubscription(array $data = []): Subscription

@@ -17,6 +17,8 @@ use Stripe\StripeClient;
 use Stripe\Subscription as StripeSubscription;
 
 /**
+ * Fluent builder for creating Stripe subscriptions with trial, coupon, and payment options.
+ *
  * @phpstan-type SubscriptionItem array{price: string, quantity: int|null, metadata: array<string, mixed>}
  */
 class SubscriptionBuilder

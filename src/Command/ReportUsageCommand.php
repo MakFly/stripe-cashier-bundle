@@ -18,6 +18,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
     name: 'cashier:report-usage',
     description: 'Report usage for a metered subscription item',
 )]
+/** Reports usage quantity for a metered subscription item to Stripe. */
 class ReportUsageCommand extends Command
 {
     public function __construct(

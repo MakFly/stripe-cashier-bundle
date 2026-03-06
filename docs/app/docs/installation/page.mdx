@@ -3,18 +3,30 @@
 ## 1. Installer le bundle
 
 ```bash
-composer require makfly/stripe-cashier-bundle
+composer require makfly/stripe-cashier-bundle dompdf/dompdf:^3.1
 ```
+
+> **Note** : `dompdf/dompdf` ^3.1 est installé par défaut (renderer PDF). Vous pouvez utiliser un autre renderer comme Snappy (voir [Configuration](/docs/configuration)).
+
+Pour activer le traitement asynchrone des webhooks, installez également :
+
+```bash
+composer require symfony/messenger
+```
+
+Cela permet aux événements Stripe d'être traités via des messages async (voir [Events - Messenger](/docs/events#intégration-messenger)).
 
 ## 2. Installer `ext-intl` si possible
 
 Le bundle fonctionne sans `ext-intl`, mais la qualité de rendu des montants et des dates est meilleure avec l'extension.
 
-Sur Debian / Ubuntu:
+Sur Debian / Ubuntu (remplacez `8.x` par votre version de PHP, ex: 8.2, 8.3 ou 8.4):
 
 ```bash
-sudo apt-get install -y php8.4-intl
+sudo apt-get install -y php8.x-intl
 ```
+
+> **Note** : L'extension `intl` est recommandée pour le formatage monétaire et les dates dans les factures PDF.
 
 Vérification:
 
@@ -110,6 +122,14 @@ php bin/console doctrine:mapping:info
 ```
 
 ## 8. Vérifier l'installation locale complète
+
+> **Prérequis** : La [Stripe CLI](https://stripe.com/docs/stripe-cli) doit être installée localement pour tester les webhooks.
+
+```bash
+php bin/console cashier:webhook:listen --forward-to=http://127.0.0.1:8000/cashier/webhook
+```
+
+Ou avec `--base-url` pour construire automatiquement l'URL :
 
 ```bash
 php bin/console cashier:webhook:listen --forward-to --base-url http://localhost:8000

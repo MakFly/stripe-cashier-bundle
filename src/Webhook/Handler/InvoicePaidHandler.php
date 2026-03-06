@@ -9,6 +9,9 @@ use Stripe\Event;
 use Stripe\Invoice as StripeInvoice;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
+/**
+ * Handles invoice.paid by dispatching a PaymentSucceededEvent with invoice details.
+ */
 final readonly class InvoicePaidHandler extends AbstractWebhookHandler
 {
     public function __construct(

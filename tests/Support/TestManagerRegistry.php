@@ -9,6 +9,7 @@ use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\Persistence\ObjectManager;
 use Doctrine\Persistence\ObjectRepository;
 
+/** Test implementation of ManagerRegistry for unit tests. */
 final readonly class TestManagerRegistry implements ManagerRegistry
 {
     public function __construct(

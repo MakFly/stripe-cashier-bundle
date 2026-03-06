@@ -6,31 +6,59 @@ Cette page référence les briques publiques du bundle que vous pouvez considér
 
 ### `CashierBundle\Service\Cashier`
 
-Service principal et utilitaires de formatage.
+Service principal et utilitaires de formatage. Voir [Twig](/docs/twig).
 
 ### `CashierBundle\Service\CustomerService`
 
-Création, mise à jour et synchronisation des customers Stripe.
+Création, mise à jour et synchronisation des customers Stripe. Voir [Customers](/docs/customers).
 
 ### `CashierBundle\Service\PaymentService`
 
-Paiements one-shot, refunds et payment intents.
+Paiements one-shot, refunds et payment intents. Voir [Paiements](/docs/payments).
+
+### `CashierBundle\Service\PaymentIntentService`
+
+Service bas niveau pour créer et gérer les PaymentIntents:
+
+- `create(array $options)` — crée un PaymentIntent
+- `capture(string $paymentIntentId, ?int $amount)` — capture
+- `cancel(string $paymentIntentId)` — annule
+- `confirm(string $paymentIntentId, array $options)` — confirme
+
+Voir [Paiements](/docs/payments).
+
+### `CashierBundle\Service\PaymentMethodService`
+
+Gestion des méthodes de paiement. Voir [Méthodes de paiement](/docs/payment-methods).
+
+### `CashierBundle\Service\SetupIntentService`
+
+Service pour créer des SetupIntents (sauvegarde de PM sans paiement):
+
+- `create(array $options = [])` — crée un SetupIntent (défaut: `payment_method_types: ['card']`)
+- `clientSecret()` — retourne le secret pour le frontend
+
+Voir [Méthodes de paiement - Setup Intents](/docs/payment-methods#setup-intents).
 
 ### `CashierBundle\Service\SubscriptionService`
 
-Création et maintenance du cycle de vie des abonnements.
+Création et maintenance du cycle de vie des abonnements. Voir [Abonnements](/docs/subscriptions).
 
 ### `CashierBundle\Service\CheckoutService`
 
-Création de sessions Stripe Checkout et Billing Portal.
+Création de sessions Stripe Checkout et Billing Portal. Voir [Checkout](/docs/checkout).
 
 ### `CashierBundle\Service\InvoiceService`
 
-Lecture des invoices Stripe et opérations de facturation.
+Lecture des invoices Stripe et opérations de facturation. Voir [Factures](/docs/invoices).
 
 ### `CashierBundle\Service\InvoiceArchiveService`
 
-Archivage local des PDFs et persistance de `GeneratedInvoice`.
+Archivage local des PDFs et persistance de `GeneratedInvoice`. Voir [Factures - Archivage](/docs/invoices#archivage-automatique).
+
+### `CashierBundle\Service\TaxService`
+
+Gestion des taxes. Voir [Taxes](/docs/taxes).
 
 ## Contrats extensibles
 
@@ -46,6 +74,20 @@ Archivage local des PDFs et persistance de `GeneratedInvoice`.
 - `CashierBundle\Entity\Subscription`
 - `CashierBundle\Entity\SubscriptionItem`
 - `CashierBundle\Entity\GeneratedInvoice`
+- `CashierBundle\Entity\CustomerBalanceTransaction`
+
+## Modèles (Value Objects)
+
+- `CashierBundle\Model\Invoice` — invoice Stripe
+- `CashierBundle\Model\InvoiceLineItem` — ligne de facture
+- `CashierBundle\Model\InvoicePayment` — paiement d invoice
+- `CashierBundle\Model\Tax` — taxe
+- `CashierBundle\Model\TaxRate` — taux de taxe
+- `CashierBundle\Model\PaymentMethod` — méthode de paiement
+- `CashierBundle\Model\Coupon` — coupon Stripe
+- `CashierBundle\Model\PromotionCode` — code promotionnel
+- `CashierBundle\Model\Checkout` — session Checkout
+- `CashierBundle\Model\StoredInvoice` — invoice archivée ( voir [Factures](/docs/invoices))
 
 ## Événements publics
 
@@ -57,8 +99,26 @@ Archivage local des PDFs et persistance de `GeneratedInvoice`.
 - `PaymentSucceededEvent`
 - `PaymentFailedEvent`
 
+Voir [Événements](/docs/events).
+
+## Messages Messenger
+
+Pour le traitement asynchrone (nécessite `symfony/messenger`):
+
+- `CashierBundle\Message\CancelSubscriptionMessage`
+- `CashierBundle\Message\ProcessInvoiceMessage`
+- `CashierBundle\Message\RetryPaymentMessage`
+- `CashierBundle\Message\SyncCustomerDetailsMessage`
+- `CashierBundle\Message\UpdateSubscriptionQuantityMessage`
+
+Voir [Événements - Messenger](/docs/events#intégration-messenger).
+
 ## Politique de stabilité
 
-La configuration documentée sous `cashier.*`, les contrats listés ci-dessus et les commandes documentées constituent la surface publique à préserver.
+Les services publics, interfaces, entités et événements documentés constituent l'API stable du bundle.
 
-Pour tout le reste, considérez les classes non documentées comme internes au bundle.
+Les classes dans les répertoires suivants sont internes et peuvent changer sans préavis:
+
+- `src/Webhook/Handler/`
+- `src/Infrastructure/`
+- `src/DependencyInjection/`

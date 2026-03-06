@@ -8,6 +8,9 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
+/**
+ * Verifies the Stripe-Signature header of incoming webhook requests and throws a 400 on failure.
+ */
 final readonly class VerifyWebhookSignatureMiddleware
 {
     public function __construct(

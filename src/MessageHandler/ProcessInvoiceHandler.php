@@ -7,6 +7,7 @@ namespace CashierBundle\MessageHandler;
 use CashierBundle\Message\ProcessInvoiceMessage;
 use CashierBundle\Service\InvoiceService;
 
+/** Handles ProcessInvoiceMessage by retrieving and optionally auto-paying a Stripe invoice. */
 class ProcessInvoiceHandler
 {
     public function __construct(

@@ -11,6 +11,7 @@ use PHPUnit\Framework\TestCase;
 use Stripe\Invoice as StripeInvoice;
 use Symfony\Component\HttpFoundation\Response;
 
+/** Test suite for LocalInvoiceStorage. */
 final class LocalInvoiceStorageTest extends TestCase
 {
     private string $storagePath;

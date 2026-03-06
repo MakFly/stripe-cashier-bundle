@@ -9,6 +9,9 @@ use CashierBundle\Repository\SubscriptionRepository;
 use Stripe\Checkout\Session as StripeSession;
 use Stripe\Event;
 
+/**
+ * Handles checkout.session.completed for both subscription and one-time payment sessions.
+ */
 final readonly class CheckoutSessionCompletedHandler extends AbstractWebhookHandler
 {
     public function __construct(

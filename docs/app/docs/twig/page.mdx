@@ -9,12 +9,62 @@ Le bundle expose un filtre `stripe_amount` pour afficher des montants Stripe dan
 {{ order.total|stripe_amount(order.currency) }}
 ```
 
+## Formatage en PHP
+
+Vous pouvez également utiliser le formatage directement en PHP:
+
+```php
+use CashierBundle\Cashier;
+
+$formatted = Cashier::formatAmount(1999, 'eur', 'fr'); // "19,99 €"
+```
+
 ## Comportement
 
 Le filtre s'appuie sur `Cashier::formatAmount()`.
 
 - avec `ext-intl`: formatage monétaire localisé
 - sans `ext-intl`: fallback sûr sans erreur runtime
+
+## Surcharger le template de facture
+
+Pour personaliser le template de facture par défaut:
+
+```
+templates/bundles/CashierBundle/invoice/default.html.twig
+```
+
+Le bundle utilisera automatiquement ce fichier s'il existe.
+
+## Variables disponibles dans le template
+
+Les variables transmises au template (via `InvoiceViewFactory::create()`):
+
+| Variable | Description |
+|----------|-------------|
+| `meta` | Locale et labels de traduction |
+| `invoice` | ID, number, status, dates, montants, items, discounts, taxes |
+| `customer` | name, email, adresse |
+| `company` | name, address, email, phone |
+| `footer` | Texte de pied de page |
+
+## Locales supportées
+
+Le bundle supporte `en` et `fr` par défaut.
+
+Pour ajouter une locale, implémentez `InvoiceTranslationProviderInterface`:
+
+```php
+use CashierBundle\Contract\InvoiceTranslationProviderInterface;
+
+final class MyTranslationProvider implements InvoiceTranslationProviderInterface
+{
+    public function getTranslations(string $locale): array
+    {
+        // Retourne les labels traduits pour la locale
+    }
+}
+```
 
 ## Exemple
 

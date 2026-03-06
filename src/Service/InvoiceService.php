@@ -17,6 +17,8 @@ use Stripe\Exception\ApiErrorException;
 use Stripe\StripeClient;
 
 /**
+ * Lists, creates, pays, and manages Stripe invoices and customer balance transactions.
+ *
  * @implements \CashierBundle\Concerns\ManagesInvoices<BillableInterface>
  */
 class InvoiceService

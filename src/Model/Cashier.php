@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CashierBundle\Model;
 
+/** Static configuration and utility helper for currency formatting and service resolution. */
 final class Cashier
 {
     private static string $currency = 'usd';
@@ -15,6 +16,9 @@ final class Cashier
      */
     private static ?\Closure $serviceResolver = null;
 
+    /**
+     * @param int $amount Amount in cents
+     */
     public static function formatAmount(int $amount, ?string $currency = null, ?string $locale = null): string
     {
         $currency = $currency ?? self::$currency;

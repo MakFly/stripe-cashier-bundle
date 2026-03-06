@@ -2,17 +2,25 @@
 
 `CheckoutService` sert à créer des sessions Stripe Checkout en mode paiement ou abonnement.
 
+## Modes Checkout
+
+| Méthode | Mode | Usage |
+|---------|------|-------|
+| `create()` | payment | Paiement unique |
+| `createSubscription()` | subscription | Abonnement |
+| SetupIntentService | setup | Collecter un PM sans paiement |
+
 ## Paiement produit / commande
 
 ```php
 use CashierBundle\Service\CheckoutService;
 
-$checkout = $checkoutService->create($user, [
+$checkout = $checkoutService->create($user, [ // retourne CashierBundle\Model\Checkout
     [
         'price_data' => [
             'currency' => 'eur',
             'product_data' => ['name' => 'Réservation premium'],
-            'unit_amount' => 4990,
+            'unit_amount' => 4990, // 49.90 € en centimes
         ],
         'quantity' => 1,
     ],
@@ -23,10 +31,19 @@ $checkout = $checkoutService->create($user, [
         'app_order_id' => '42',
         'app_user_id' => '4',
     ],
+    'customer_email' => 'user@example.com',
+    'allow_promotion_codes' => true,
 ]);
 
 return new RedirectResponse($checkout->url());
 ```
+
+### Propagation des metadata
+
+Pour `create()` : les metadata sont automatiquement propagées vers `invoice_creation.invoice_data.metadata`.
+Pour `createSubscription()` : les metadata sont propagées vers `subscription_data.metadata`.
+
+Utile pour le linkage avec `InvoiceArchiveService` (voir [Factures](/docs/invoices)).
 
 ## Ce que le bundle ajoute pour vous
 
@@ -34,7 +51,7 @@ Par défaut, le bundle active:
 
 - `invoice_creation.enabled = true`
 - la propagation des `metadata` vers `invoice_creation.invoice_data.metadata`
-- l'archivage local du PDF après `invoice.paid`
+- l'archivage local du PDF après `invoice.payment_succeeded`
 
 Cela permet ensuite de lier plus proprement:
 
@@ -47,11 +64,15 @@ Cela permet ensuite de lier plus proprement:
 ## Abonnement via Checkout
 
 ```php
-$checkout = $checkoutService->createSubscription($user, [
+$checkout = $checkoutService->createSubscription($user, [ // retourne CashierBundle\Model\Checkout
     ['price' => 'price_monthly', 'quantity' => 1],
 ], [
     'success_url' => 'https://example.com/account?checkout=success',
     'cancel_url' => 'https://example.com/account?checkout=cancel',
+    'metadata' => [
+        'plan_code' => 'premium',
+    ],
+    'automatic_tax' => ['enabled' => true],
 ]);
 ```
 
@@ -67,7 +88,7 @@ $url = $checkoutService->billingPortal(
 ## Retrouver une session
 
 ```php
-$session = $checkoutService->findSession('cs_test_xxx');
+$session = $checkoutService->findSession('cs_test_xxx'); // retourne ?CashierBundle\Model\Checkout
 
 if ($session?->isComplete()) {
     // paiement confirmé

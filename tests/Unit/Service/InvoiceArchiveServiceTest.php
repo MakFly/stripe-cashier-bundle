@@ -19,6 +19,7 @@ use PHPUnit\Framework\TestCase;
 use Stripe\Invoice as StripeInvoice;
 use Symfony\Component\HttpFoundation\Response;
 
+/** Test suite for InvoiceArchiveService. */
 final class InvoiceArchiveServiceTest extends TestCase
 {
     public function testArchiveFromPaymentSuccessPersistsInvoiceWhenMissing(): void

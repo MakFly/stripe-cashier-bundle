@@ -8,8 +8,15 @@ use CashierBundle\Model\Cashier as CashierRuntime;
 use CashierBundle\Service\Cashier as CashierService;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 
+/**
+ * Symfony bundle providing Stripe Cashier integration with billing, subscriptions, and invoice management.
+ */
 class CashierBundle extends Bundle
 {
+    /**
+     * Initialises the Cashier runtime by configuring currency, locale, and service resolver
+     * via the billable service locator retrieved from the container.
+     */
     public function boot(): void
     {
         parent::boot();
@@ -28,6 +35,9 @@ class CashierBundle extends Bundle
         CashierService::$currencyLocale = (string) $this->container->getParameter('cashier.currency_locale');
     }
 
+    /**
+     * Clears the Cashier service resolver to prevent stale references between requests.
+     */
     public function shutdown(): void
     {
         CashierRuntime::clearServiceResolver();

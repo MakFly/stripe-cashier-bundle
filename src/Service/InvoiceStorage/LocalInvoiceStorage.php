@@ -9,6 +9,7 @@ use CashierBundle\Model\Invoice;
 use CashierBundle\ValueObject\StoredInvoice;
 use Symfony\Component\Filesystem\Filesystem;
 
+/** Stores invoice PDF files on the local filesystem and returns a StoredInvoice value object. */
 final class LocalInvoiceStorage implements InvoiceStorageInterface
 {
     public function __construct(

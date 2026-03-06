@@ -13,6 +13,9 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Table(name: 'cashier_subscriptions')]
 #[ORM\Index(columns: ['customer_id', 'stripe_status'])]
 #[ORM\HasLifecycleCallbacks]
+/**
+ * Represents a Stripe subscription linked to a customer, tracking its lifecycle and status.
+ */
 class Subscription
 {
     public const STATUS_ACTIVE = 'active';
@@ -222,31 +225,49 @@ class Subscription
 
     // Status methods
 
+    /**
+     * Returns true if the subscription is active, on trial, or on grace period.
+     */
     public function valid(): bool
     {
         return $this->active() || $this->onTrial() || $this->onGracePeriod();
     }
 
+    /**
+     * Returns true if the subscription is active and not paused.
+     */
     public function active(): bool
     {
         return $this->stripeStatus === self::STATUS_ACTIVE || $this->onTrial();
     }
 
+    /**
+     * Returns true if the subscription is within its trial period.
+     */
     public function onTrial(): bool
     {
         return $this->trialEndsAt !== null && $this->trialEndsAt > new \DateTimeImmutable();
     }
 
+    /**
+     * Returns true if the subscription is canceled but still within the grace period.
+     */
     public function onGracePeriod(): bool
     {
         return $this->endsAt !== null && $this->endsAt > new \DateTimeImmutable();
     }
 
+    /**
+     * Returns true if the subscription has been canceled.
+     */
     public function canceled(): bool
     {
         return $this->endsAt !== null;
     }
 
+    /**
+     * Returns true if the subscription has ended.
+     */
     public function ended(): bool
     {
         return $this->canceled() && $this->endsAt->getTimestamp() <= (new \DateTimeImmutable())->getTimestamp();
@@ -262,6 +283,9 @@ class Subscription
         return $this->stripeStatus === self::STATUS_PAST_DUE;
     }
 
+    /**
+     * Returns true if the subscription is incomplete and has expired.
+     */
     public function incompleteAndExpired(): bool
     {
         return $this->stripeStatus === self::STATUS_INCOMPLETE_EXPIRED;
@@ -277,11 +301,17 @@ class Subscription
         return !$this->onTrial();
     }
 
+    /**
+     * Returns true if the subscription is active, not on trial, and not on grace period.
+     */
     public function recurring(): bool
     {
         return $this->active() && !$this->onTrial() && !$this->onGracePeriod();
     }
 
+    /**
+     * Returns true if the subscription is paused.
+     */
     public function paused(): bool
     {
         return $this->stripeStatus === self::STATUS_PAUSED;

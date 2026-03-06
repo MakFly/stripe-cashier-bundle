@@ -7,6 +7,9 @@ namespace CashierBundle\Webhook\Handler;
 use Stripe\Event;
 use Stripe\Invoice as StripeInvoice;
 
+/**
+ * Handles invoice.payment_action_required for invoices awaiting customer authentication.
+ */
 final readonly class InvoicePaymentActionRequiredHandler extends AbstractWebhookHandler
 {
     public function handles(): array

@@ -10,6 +10,8 @@ use Stripe\Exception\ApiErrorException;
 use Stripe\StripeClient;
 
 /**
+ * Creates Stripe Checkout sessions for one-time payments, subscriptions, and billing portal.
+ *
  * @phpstan-type CheckoutItem array{price?: string, quantity?: int|null}
  */
 class CheckoutService

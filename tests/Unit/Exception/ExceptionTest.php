@@ -15,6 +15,7 @@ use CashierBundle\Model\Payment;
 use PHPUnit\Framework\TestCase;
 use Stripe\PaymentIntent;
 
+/** Test suite for Cashier exception classes. */
 final class ExceptionTest extends TestCase
 {
     public function testCustomerAlreadyCreatedException(): void

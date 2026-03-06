@@ -17,6 +17,7 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
     name: 'cashier:install',
     description: 'Install Cashier configuration files into the host Symfony application',
 )]
+/** Copies Cashier configuration files and env variables into the host Symfony application. */
 final class InstallCommand extends Command
 {
     public function __construct(

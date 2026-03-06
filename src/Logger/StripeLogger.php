@@ -6,6 +6,9 @@ namespace CashierBundle\Logger;
 
 use Psr\Log\LoggerInterface;
 
+/**
+ * PSR-3 logger decorator that forwards all Stripe SDK log calls to the configured Symfony logger channel.
+ */
 class StripeLogger implements LoggerInterface
 {
     public function __construct(

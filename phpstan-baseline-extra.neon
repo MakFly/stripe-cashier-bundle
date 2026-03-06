@@ -101,7 +101,7 @@ parameters:
 			path: tests/Unit/Model/CheckoutTest.php
 
 		-
-			message: "#^Method class@anonymous/tests/Unit/Model/CheckoutTest\\.php\\:14\\:\\:__construct\\(\\) has parameter \\$data with no value type specified in iterable type array\\.$#"
+			message: "#^Method class@anonymous/tests/Unit/Model/CheckoutTest\\.php\\:15\\:\\:__construct\\(\\) has parameter \\$data with no value type specified in iterable type array\\.$#"
 			count: 1
 			path: tests/Unit/Model/CheckoutTest.php
 
@@ -111,7 +111,7 @@ parameters:
 			path: tests/Unit/Model/CouponTest.php
 
 		-
-			message: "#^Method class@anonymous/tests/Unit/Model/CouponTest\\.php\\:14\\:\\:__construct\\(\\) has parameter \\$data with no value type specified in iterable type array\\.$#"
+			message: "#^Method class@anonymous/tests/Unit/Model/CouponTest\\.php\\:15\\:\\:__construct\\(\\) has parameter \\$data with no value type specified in iterable type array\\.$#"
 			count: 1
 			path: tests/Unit/Model/CouponTest.php
 
@@ -121,6 +121,6 @@ parameters:
 			path: tests/Unit/Model/PaymentTest.php
 
 		-
-			message: "#^Method class@anonymous/tests/Unit/Model/PaymentTest\\.php\\:14\\:\\:__construct\\(\\) has parameter \\$data with no value type specified in iterable type array\\.$#"
+			message: "#^Method class@anonymous/tests/Unit/Model/PaymentTest\\.php\\:15\\:\\:__construct\\(\\) has parameter \\$data with no value type specified in iterable type array\\.$#"
 			count: 1
 			path: tests/Unit/Model/PaymentTest.php

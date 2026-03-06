@@ -11,6 +11,9 @@ use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\DependencyInjection\Loader\PhpFileLoader;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 
+/**
+ * Loads CashierBundle configuration and registers all bundle services and parameters.
+ */
 final class CashierExtension extends Extension
 {
     public function load(array $configs, ContainerBuilder $container): void
@@ -31,6 +34,9 @@ final class CashierExtension extends Extension
         $this->registerConfigurationParameters($container, $config);
     }
 
+    /**
+     * @param array<string, mixed> $config
+     */
     private function registerConfigurationParameters(ContainerBuilder $container, array $config): void
     {
         $container->setParameter('cashier.key', $config['key']);

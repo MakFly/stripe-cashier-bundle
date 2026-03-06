@@ -6,6 +6,7 @@ namespace CashierBundle\Model;
 
 use Stripe\InvoiceLineItem as StripeInvoiceLineItem;
 
+/** Wraps a Stripe InvoiceLineItem and exposes its description, amount, and price. */
 final class InvoiceLineItem
 {
     public function __construct(

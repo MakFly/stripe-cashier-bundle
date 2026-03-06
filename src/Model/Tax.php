@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CashierBundle\Model;
 
+/** Value object representing a tax amount applied to an invoice. */
 final class Tax
 {
     public function __construct(

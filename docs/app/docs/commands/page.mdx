@@ -40,8 +40,16 @@ Options utiles:
 Ouvre un listener Stripe CLI local.
 
 ```bash
+php bin/console cashier:webhook:listen --forward-to=http://127.0.0.1:8000/cashier/webhook
+```
+
+Ou avec `--base-url` pour construire automatiquement l'URL :
+
+```bash
 php bin/console cashier:webhook:listen --forward-to --base-url http://localhost:8000
 ```
+
+> **Note** : La [Stripe CLI](https://stripe.com/docs/stripe-cli) doit être installée localement.
 
 Cette commande sert à:
 
@@ -49,14 +57,45 @@ Cette commande sert à:
 - récupérer et persister le secret `whsec_...`
 - lire visuellement les réponses HTTP grâce aux couleurs console
 
+### Événements Stripe enregistrés par défaut
+
+La commande `cashier:webhook` crée un webhook avec les événements suivants:
+
+- `customer.subscription.created`
+- `customer.subscription.updated`
+- `customer.subscription.deleted`
+- `customer.deleted`
+- `invoice.payment_succeeded`
+- `invoice.payment_failed`
+- `invoice.payment_action_required`
+- `checkout.session.completed`
+- `checkout.session.expired`
+- `payment_intent.succeeded`
+- `payment_intent.payment_failed`
+- `payment_method.updated`
+
 ## `cashier:report-usage`
 
 Rapporte l'usage d'un `SubscriptionItem` metered.
 
 ```bash
+# 1 = ID local (clé primaire) de l'entité SubscriptionItem en base
+# 100 = quantité d'usage à déclarer
 php bin/console cashier:report-usage 1 100
+
+# Pour définir une valeur absolue plutôt qu'incrémenter
 php bin/console cashier:report-usage 1 100 --action=set
 ```
+
+## `cashier:cleanup-sessions`
+
+> **Avertissement** : Cette commande nécessite l'entité `CheckoutSession` qui n'est pas implémentée dans cette version.
+
+```bash
+php bin/console cashier:cleanup-sessions
+```
+
+Commande placeholder pour nettoyer les sessions Checkout expirées.
 
 ## Commande officielle d'init
 

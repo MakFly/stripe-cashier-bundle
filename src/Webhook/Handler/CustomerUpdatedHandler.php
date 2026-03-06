@@ -9,6 +9,9 @@ use Stripe\Customer as StripeCustomer;
 use Stripe\Event;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
+/**
+ * Handles customer.updated by syncing the default payment method onto the local StripeCustomer.
+ */
 final readonly class CustomerUpdatedHandler extends AbstractWebhookHandler
 {
     public function __construct(

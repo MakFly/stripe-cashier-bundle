@@ -7,6 +7,7 @@ namespace CashierBundle\Tests\Unit\Model;
 use CashierBundle\Model\Coupon;
 use PHPUnit\Framework\TestCase;
 
+/** Test suite for Coupon. */
 final class CouponTest extends TestCase
 {
     private function createCoupon(array $data = []): object

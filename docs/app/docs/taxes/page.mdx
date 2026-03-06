@@ -51,6 +51,8 @@ $taxCalculation = $taxService->calculate([
 ]);
 ```
 
+> **Note** : Retourne le tableau brut de l'API Stripe Tax. Voir la [documentation Stripe](https://stripe.com/docs/tax/tax-codes) pour la structure complète.
+
 #### `isAutomaticTaxEnabled(): bool`
 
 Vérifie si la taxation automatique est activée.
@@ -67,6 +69,8 @@ Active ou désactive la taxation automatique.
 // Activer la taxation automatique
 $taxService->setAutomaticTaxEnabled(true);
 ```
+
+> **Note** : Cette méthode configure uniquement la valeur locale utilisée lors de la création des sessions Checkout et PaymentIntents via ce bundle. Ce n'est pas un paramètre global Stripe Dashboard. La taxation automatique Stripe se configure séparément dans le Dashboard Stripe.
 
 #### `createTaxRate(string $displayName, float $percentage, bool $inclusive, array $options = []): string`
 
@@ -100,6 +104,33 @@ Liste tous les taux de taxe disponibles.
 // Lister tous les taux de taxe
 $allTaxRates = $taxService->listAllTaxRates();
 ```
+
+## Stripe Tax vs Tax Rates manuels
+
+Deux approches distinctes :
+
+### Stripe Tax (automatique)
+
+La taxation automatique utilise l'adresse du client pour calculer les taxes:
+
+```php
+$checkoutService->createSubscription($user, $items, [
+    'automatic_tax' => ['enabled' => true],
+]);
+```
+
+Stripe détermine automatiquement les taxes en fonction du pays/région du client.
+
+### Tax Rates manuels
+
+Vous pouvez créer et attacher vos propres taux de taxe:
+
+```php
+$taxRateId = $this->taxService->createTaxRate('TVA 20%', 20.0, false);
+$this->taxService->attachTaxRatesToPrice('price_monthly', [$taxRateId]);
+```
+
+Cette approche est utile si vous avez des taux de taxe fixes ou spécifiques à votre activité.
 
 ## Modèle TaxRate
 

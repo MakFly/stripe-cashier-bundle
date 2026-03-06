@@ -14,6 +14,7 @@ use Stripe\Event;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
+/** Integration test suite for WebhookProcessor. */
 final class WebhookProcessorTest extends TestCase
 {
     private string $testSecret = 'whsec_test_secret_key_for_testing_purposes_only';
@@ -124,6 +125,7 @@ final class WebhookProcessorTest extends TestCase
     }
 }
 
+/** In-memory service locator for webhook processor tests. */
 final class TestServiceLocator implements ContainerInterface
 {
     /**
@@ -164,6 +166,7 @@ final class TestServiceLocator implements ContainerInterface
     }
 }
 
+/** Webhook handler stub that tracks invocation count for assertions. */
 final class TrackingHandler implements WebhookHandlerInterface
 {
     public int $handledCount = 0;

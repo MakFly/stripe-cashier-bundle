@@ -23,6 +23,7 @@ use PHPUnit\Framework\TestCase;
 use Stripe\Invoice as StripeInvoice;
 use Symfony\Component\HttpFoundation\Response;
 
+/** Integration test for InvoiceArchiveService with SQLite in-memory database. */
 final class InvoiceArchiveServiceIntegrationTest extends TestCase
 {
     private EntityManager $entityManager;

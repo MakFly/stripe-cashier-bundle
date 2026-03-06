@@ -9,6 +9,8 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
+ * Repository for GeneratedInvoice entities, providing lookup by Stripe invoice ID and resource.
+ *
  * @extends ServiceEntityRepository<GeneratedInvoice>
  */
 class GeneratedInvoiceRepository extends ServiceEntityRepository
@@ -18,6 +20,7 @@ class GeneratedInvoiceRepository extends ServiceEntityRepository
         parent::__construct($registry, GeneratedInvoice::class);
     }
 
+    /** @param string|null $stripeInvoiceId */
     public function findOneForStripeInvoice(?string $stripeInvoiceId): ?GeneratedInvoice
     {
         if ($stripeInvoiceId === null || $stripeInvoiceId === '') {

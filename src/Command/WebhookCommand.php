@@ -17,6 +17,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
     name: 'cashier:webhook',
     description: 'Create a Stripe webhook endpoint',
 )]
+/** Creates a Stripe webhook endpoint via the API and displays its secret. */
 class WebhookCommand extends Command
 {
     public const DEFAULT_EVENTS = [
@@ -102,11 +103,20 @@ class WebhookCommand extends Command
         return array_values(array_unique([...self::DEFAULT_EVENTS, ...$normalized]));
     }
 
+    /**
+     * Builds a placeholder webhook URL using the configured cashier path.
+     * The hostname is a generic example; users should override it via --url.
+     */
     private function guessUrl(): string
     {
         return sprintf('https://your-app.com/%s/webhook', trim($this->cashierPath, '/'));
     }
 
+    /**
+     * Obscures a webhook secret by keeping the first and last 4 characters
+     * and replacing all intermediate characters with asterisks.
+     * Secrets of 8 characters or fewer are fully masked.
+     */
     private function maskSecret(string $secret): string
     {
         if (strlen($secret) <= 8) {

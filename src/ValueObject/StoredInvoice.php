@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CashierBundle\ValueObject;
 
+/** Immutable value object holding the file metadata of a successfully stored invoice PDF. */
 final readonly class StoredInvoice
 {
     public function __construct(

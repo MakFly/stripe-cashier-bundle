@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CashierBundle\Model;
 
+/** Wraps a Stripe Checkout Session and exposes its status and associated identifiers. */
 final class Checkout
 {
     public function __construct(

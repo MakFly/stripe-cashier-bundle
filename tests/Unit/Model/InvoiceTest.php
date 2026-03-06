@@ -13,6 +13,7 @@ use Stripe\Invoice as StripeInvoice;
 use Stripe\InvoiceLineItem as StripeInvoiceLineItem;
 use Symfony\Component\HttpFoundation\Response;
 
+/** Test suite for Invoice. */
 final class InvoiceTest extends TestCase
 {
     public function testItemsSupportStripeAutoPagingIteratorGenerator(): void

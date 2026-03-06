@@ -10,6 +10,8 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
+ * Repository for StripeCustomer entities with lookups by Stripe ID and billable identity.
+ *
  * @extends ServiceEntityRepository<StripeCustomer>
  */
 class StripeCustomerRepository extends ServiceEntityRepository

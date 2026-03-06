@@ -7,6 +7,7 @@ namespace CashierBundle\Tests\Unit\Service;
 use CashierBundle\Service\Cashier;
 use PHPUnit\Framework\TestCase;
 
+/** Test suite for Cashier service. */
 final class CashierTest extends TestCase
 {
     public function testFormatAmountKeepsWorkingWithUnexpectedLocaleInput(): void

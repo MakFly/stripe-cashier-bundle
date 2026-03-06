@@ -6,8 +6,12 @@ namespace CashierBundle\Event;
 
 use Symfony\Contracts\EventDispatcher\Event;
 
+/** Dispatched when a Stripe payment attempt fails. */
 final class PaymentFailedEvent extends Event
 {
+    /**
+     * @param int $amount Amount in cents
+     */
     public function __construct(
         public readonly string $customerId,
         public readonly ?string $paymentIntentId,
@@ -36,6 +40,7 @@ final class PaymentFailedEvent extends Event
         return $this->currency;
     }
 
+    /** Returns the payment amount as a decimal value (e.g. 10.99 for 1099 cents). */
     public function getAmountInDecimal(): float
     {
         return $this->amount / 100;

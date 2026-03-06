@@ -9,6 +9,9 @@ use CashierBundle\Service\InvoiceArchiveService;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
+/**
+ * Archives a paid invoice when a PaymentSucceededEvent is dispatched.
+ */
 final readonly class GenerateInvoiceOnPaymentSucceededSubscriber implements EventSubscriberInterface
 {
     public function __construct(
@@ -17,6 +20,9 @@ final readonly class GenerateInvoiceOnPaymentSucceededSubscriber implements Even
     ) {
     }
 
+    /**
+     * @return array<string, string>
+     */
     public static function getSubscribedEvents(): array
     {
         return [

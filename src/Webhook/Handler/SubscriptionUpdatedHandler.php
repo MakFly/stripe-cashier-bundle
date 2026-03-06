@@ -10,6 +10,9 @@ use Stripe\Event;
 use Stripe\Subscription as StripeSubscription;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
+/**
+ * Handles customer.subscription.updated by syncing status, price, quantity, trial, and cancellation date.
+ */
 final readonly class SubscriptionUpdatedHandler extends AbstractWebhookHandler
 {
     public function __construct(

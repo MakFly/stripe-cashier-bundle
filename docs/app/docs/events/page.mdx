@@ -2,6 +2,18 @@
 
 Le bundle dispatch des événements Symfony pour permettre à l'application consommatrice de se brancher proprement sur le billing.
 
+## Tableau des événements et propriétés
+
+| Event | Méthodes disponibles |
+|-------|---------------------|
+| `PaymentSucceededEvent` | `getCustomerId()`, `getPaymentIntentId()`, `getAmount()` (centimes), `getCurrency()`, `getInvoiceId(): ?string`, `getCheckoutSessionId(): ?string`, `getAmountInDecimal(): float` |
+| `PaymentFailedEvent` | `getCustomerId()`, `getPaymentIntentId()`, `getAmount()`, `getCurrency()`, `getAmountInDecimal(): float` |
+| `SubscriptionCreatedEvent` | `getSubscription(): Subscription` |
+| `SubscriptionUpdatedEvent` | `getSubscription(): Subscription` |
+| `SubscriptionDeletedEvent` | `getSubscription(): Subscription` |
+| `WebhookReceivedEvent` | `getEvent(): \Stripe\Event` |
+| `WebhookHandledEvent` | `getEvent(): \Stripe\Event` |
+
 ## Webhook lifecycle
 
 ### `WebhookReceivedEvent`
@@ -67,5 +79,40 @@ Gardez les listeners métier:
 - traçables
 
 Si le traitement devient lourd, déléguez vers Messenger ou un bus applicatif.
+
+## Intégration Messenger
+
+Les événements Symfony peuvent déclencher des messages async. Messages disponibles:
+
+- `CancelSubscriptionMessage`
+- `ProcessInvoiceMessage`
+- `RetryPaymentMessage`
+- `SyncCustomerDetailsMessage`
+- `UpdateSubscriptionQuantityMessage`
+
+Nécessite `symfony/messenger` dans `composer.json`.
+
+Exemple : déclencher `SyncCustomerDetailsMessage` depuis un listener `CustomerUpdatedEvent`:
+
+```php
+use CashierBundle\Event\CustomerUpdatedEvent;
+use CashierBundle\Message\SyncCustomerDetailsMessage;
+use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
+use Symfony\Component\Messenger\MessageBusInterface;
+
+#[AsEventListener(event: CustomerUpdatedEvent::class)]
+final class SyncCustomerDetailsListener
+{
+    public function __construct(
+        private MessageBusInterface $messageBus,
+    ) {
+    }
+
+    public function __invoke(CustomerUpdatedEvent $event): void
+    {
+        $this->messageBus->dispatch(new SyncCustomerDetailsMessage($event->getStripeCustomerId()));
+    }
+}
+```
 
 [Commandes CLI →](/docs/commands)

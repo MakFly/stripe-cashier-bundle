@@ -11,6 +11,7 @@ use Stripe\Exception\ApiErrorException;
 use Stripe\PaymentIntent as StripePaymentIntent;
 use Stripe\StripeClient;
 
+/** Manages Stripe PaymentIntent lifecycle operations. */
 class PaymentIntentService
 {
     public function __construct(

@@ -7,6 +7,7 @@ namespace CashierBundle\Tests\Unit\Model;
 use CashierBundle\Model\Checkout;
 use PHPUnit\Framework\TestCase;
 
+/** Test suite for Checkout. */
 final class CheckoutTest extends TestCase
 {
     private function createSession(array $data = []): object

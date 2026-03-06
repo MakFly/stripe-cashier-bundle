@@ -6,6 +6,7 @@ namespace CashierBundle\Model;
 
 use Stripe\PromotionCode as StripePromotionCode;
 
+/** Wraps a Stripe PromotionCode and exposes its coupon, redemption count, and activity. */
 final class PromotionCode
 {
     public function __construct(

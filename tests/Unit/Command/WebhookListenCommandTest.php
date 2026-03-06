@@ -11,6 +11,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Console\Tester\CommandTester;
 
+/** Test suite for WebhookListenCommand. */
 final class WebhookListenCommandTest extends TestCase
 {
     private string $projectDir;

@@ -10,6 +10,8 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
+ * Repository for SubscriptionItem entities with subscription and price-scoped lookups.
+ *
  * @extends ServiceEntityRepository<SubscriptionItem>
  */
 class SubscriptionItemRepository extends ServiceEntityRepository

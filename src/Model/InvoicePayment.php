@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CashierBundle\Model;
 
+/** Value object representing a payment attempt linked to an invoice. */
 final class InvoicePayment
 {
     public function __construct(

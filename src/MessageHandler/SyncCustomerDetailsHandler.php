@@ -7,6 +7,7 @@ namespace CashierBundle\MessageHandler;
 use CashierBundle\Message\SyncCustomerDetailsMessage;
 use CashierBundle\Service\CustomerService;
 
+/** Handles SyncCustomerDetailsMessage by syncing Stripe customer data via CustomerService. */
 class SyncCustomerDetailsHandler
 {
     public function __construct(

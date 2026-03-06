@@ -17,6 +17,7 @@ use Money\Money;
 use NumberFormatter;
 use Stripe\StripeClient;
 
+/** Central facade exposing global Cashier configuration and Stripe lookup helpers. */
 class Cashier
 {
     public const VERSION = '1.0.0';

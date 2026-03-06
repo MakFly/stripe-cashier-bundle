@@ -10,7 +10,7 @@ Le bundle couvre deux aspects différents:
 ```php
 use CashierBundle\Service\InvoiceService;
 
-$invoices = $invoiceService->list($user);
+$invoices = $invoiceService->list($user); // Collection<int, CashierBundle\Model\Invoice>
 $invoice = $invoiceService->find('in_xxx');
 $upcoming = $invoiceService->upcoming($user);
 ```
@@ -22,7 +22,12 @@ $response = $invoice->download([
     'company_name' => 'SF Cashier',
     'company_email' => 'billing@example.test',
     'locale' => 'fr',
-]);
+]); // Symfony\Component\HttpFoundation\Response (disposition attachment)
+
+// Pour streamer inline
+$response = $invoice->stream([
+    'locale' => 'fr',
+]); // Symfony\Component\HttpFoundation\Response (inline)
 ```
 
 Le renderer par défaut sait:
@@ -31,15 +36,54 @@ Le renderer par défaut sait:
 - retourner une `Response` HTTP
 - streamer le PDF inline
 
+## One-time invoices
+
+Pour les factures uniques (non liées à un abonnement):
+
+```php
+// Ajouter un item à la prochaine invoice (sera facturé au prochain paiement)
+$user->tab('Service premium', 4999); // 49.99 € en centimes
+
+// Créer une invoice pour un item précis immédiatement
+$invoice = $user->invoiceFor('Frais de configuration', 9900); // 99.00 € en centimes
+```
+
 ## Archivage automatique
 
-Lorsqu'un paiement Stripe déclenche `invoice.paid`, le bundle:
+Lorsqu'un paiement Stripe déclenche `invoice.payment_succeeded`, le bundle:
 
 1. récupère l'invoice Stripe
 2. construit la vue de facture
 3. rend le PDF
 4. stocke le fichier dans `var/data/invoices`
 5. persiste la trace dans `cashier_generated_invoices`
+
+L'archivage automatique est géré par `InvoiceArchiveService`.
+
+## Servir les PDF archivés
+
+Les PDF sont stockés dans `var/data/invoices/`. Exemple de controller pour servir un fichier:
+
+```php
+use CashierBundle\Entity\GeneratedInvoice;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+
+final class InvoiceController extends AbstractController
+{
+    public function download(GeneratedInvoice $invoice): BinaryFileResponse
+    {
+        $path = $this->getParameter('kernel.project_dir') . '/' . $invoice->relativePath;
+        
+        return new BinaryFileResponse($path, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => sprintf('attachment; filename="%s.pdf"', $invoice->filename),
+        ]);
+    }
+}
+```
+
+`GeneratedInvoice::$relativePath` est le chemin relatif depuis la racine du projet.
 
 ## `GeneratedInvoice`
 
@@ -55,6 +99,45 @@ La table d'archivage stocke notamment:
 - `payload`
 
 Le `payload` archive aussi les `metadata` Stripe utiles pour rapprocher la facture d'une commande métier.
+
+## Méthodes de Invoice
+
+| Méthode | Retour |
+|---------|--------|
+| `id(): string` | ID de l'invoice |
+| `number(): string` | Numéro de facture |
+| `status(): string` | Statut (paid, open, void, etc.) |
+| `date(): \Carbon\Carbon` | Date de création |
+| `dueDate(): ?\Carbon\Carbon` | Date d'échéance |
+| `items(): array<int, InvoiceLineItem>` | Lignes de facture |
+| `taxes(): array<int, Tax>` | Taxes |
+| `payments(): array<int, InvoicePayment>` | Paiements |
+| `discounts(): array<int, Discount>` | Remises |
+| `total(): int` | Total en centimes |
+| `subtotal(): int` | Sous-total en centimes |
+| `tax(): int` | Montant taxes en centimes |
+| `currency(): string` | Devise |
+
+## Conventions de metadata pour le linkage métier
+
+Pour lier une facture à une ressource applicative, utilisez les metadata Stripe:
+
+```php
+$checkoutService->create($user, [
+    'invoice_creation' => [
+        'enabled' => true,
+        'invoice_data' => [
+            'metadata' => [
+                'app_resource_type' => 'order',
+                'app_resource_id' => '123',
+                'plan_code' => 'premium',
+            ],
+        ],
+    ],
+]);
+```
+
+Ces clés sont extraites par `InvoiceArchiveService` et stockées dans `GeneratedInvoice` (resource_type, resource_id, plan_code).
 
 ## Internationalisation
 

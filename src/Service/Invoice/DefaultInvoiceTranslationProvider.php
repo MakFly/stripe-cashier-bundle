@@ -6,6 +6,7 @@ namespace CashierBundle\Service\Invoice;
 
 use CashierBundle\Contract\InvoiceTranslationProviderInterface;
 
+/** Provides built-in invoice label translations for English and French locales. */
 final class DefaultInvoiceTranslationProvider implements InvoiceTranslationProviderInterface
 {
     /**

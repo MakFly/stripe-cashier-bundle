@@ -6,6 +6,9 @@ namespace CashierBundle\Contract;
 
 use Stripe\Customer as StripeCustomer;
 
+/**
+ * Resolves the locale to use when rendering an invoice.
+ */
 interface InvoiceLocaleResolverInterface
 {
     /**
