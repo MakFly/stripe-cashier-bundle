@@ -28,7 +28,8 @@ api/var/
 api/.phpunit.cache/
 api/phpunit.xml
 
-# Node/JS (web)
+# Node/JS (root + web)
+node_modules/
 web/node_modules/
 web/dist/
 web/dist-ssr/
