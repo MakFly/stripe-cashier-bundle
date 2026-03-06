@@ -1,0 +1,108 @@
+# Checkout
+
+`CheckoutService` is used to create Stripe Checkout sessions in payment or subscription mode.
+
+## Checkout modes
+
+| Method | Mode | Usage |
+|---------|------|-------|
+| `create()` | payment | One-time payment |
+| `createSubscription()` | subscription | Subscription |
+| SetupIntentService | setup | Collect a PM without payment |
+
+## Product / order payment
+
+```php
+use CashierBundle\Service\CheckoutService;
+
+$checkout = $checkoutService->create($user, [ // returns CashierBundle\Model\Checkout
+    [
+        'price_data' => [
+            'currency' => 'eur',
+            'product_data' => ['name' => 'Premium booking'],
+            'unit_amount' => 4990, // 49.90 € in cents
+        ],
+        'quantity' => 1,
+    ],
+], [
+    'success_url' => 'https://example.com/checkout/success?session_id={CHECKOUT_SESSION_ID}',
+    'cancel_url' => 'https://example.com/checkout/cancel',
+    'metadata' => [
+        'app_order_id' => '42',
+        'app_user_id' => '4',
+    ],
+    'customer_email' => 'user@example.com',
+    'allow_promotion_codes' => true,
+]);
+
+return new RedirectResponse($checkout->url());
+```
+
+### Metadata propagation
+
+For `create()`: metadata are automatically propagated to `invoice_creation.invoice_data.metadata`.
+For `createSubscription()`: metadata are propagated to `subscription_data.metadata`.
+
+Useful for linking with `InvoiceArchiveService` (see [Invoices](/docs/invoices)).
+
+## What the bundle adds for you
+
+By default, the bundle enables:
+
+- `invoice_creation.enabled = true`
+- propagation of `metadata` to `invoice_creation.invoice_data.metadata`
+- local PDF archiving after `invoice.payment_succeeded`
+
+This then allows cleaner linking between:
+
+- the checkout session
+- the payment intent
+- the Stripe invoice
+- the locally archived invoice
+- your business resource via `metadata`
+
+## Subscription via Checkout
+
+```php
+$checkout = $checkoutService->createSubscription($user, [ // returns CashierBundle\Model\Checkout
+    ['price' => 'price_monthly', 'quantity' => 1],
+], [
+    'success_url' => 'https://example.com/account?checkout=success',
+    'cancel_url' => 'https://example.com/account?checkout=cancel',
+    'metadata' => [
+        'plan_code' => 'premium',
+    ],
+    'automatic_tax' => ['enabled' => true],
+]);
+```
+
+## Billing portal
+
+```php
+$url = $checkoutService->billingPortal(
+    billable: $user,
+    returnUrl: 'https://example.com/account',
+);
+```
+
+## Retrieve a session
+
+```php
+$session = $checkoutService->findSession('cs_test_xxx'); // returns ?CashierBundle\Model\Checkout
+
+if ($session?->isComplete()) {
+    // payment confirmed
+}
+```
+
+## Integration advice
+
+Do not make your business logic depend solely on the frontend return.
+
+Use Stripe webhooks to:
+
+- confirm payment server-side
+- archive the invoice
+- trigger your post-payment business actions
+
+[Invoices →](/docs/invoices)

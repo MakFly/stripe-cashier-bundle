@@ -1,0 +1,171 @@
+# Invoices
+
+The bundle covers two different aspects:
+
+1. reading Stripe invoices
+2. local archiving of a generated PDF in `var/data/invoices`
+
+## Read Stripe invoices
+
+```php
+use CashierBundle\Service\InvoiceService;
+
+$invoices = $invoiceService->list($user); // Collection<int, CashierBundle\Model\Invoice>
+$invoice = $invoiceService->find('in_xxx');
+$upcoming = $invoiceService->upcoming($user);
+```
+
+## Download a PDF on demand
+
+```php
+$response = $invoice->download([
+    'company_name' => 'SF Cashier',
+    'company_email' => 'billing@example.test',
+    'locale' => 'en',
+]); // Symfony\Component\HttpFoundation\Response (attachment disposition)
+
+// To stream inline
+$response = $invoice->stream([
+    'locale' => 'en',
+]); // Symfony\Component\HttpFoundation\Response (inline)
+```
+
+The default renderer knows how to:
+
+- generate the binary PDF
+- return an HTTP `Response`
+- stream the PDF inline
+
+## One-time invoices
+
+For one-off invoices (not linked to a subscription):
+
+```php
+// Add an item to the next invoice (will be billed at next payment)
+$user->tab('Premium service', 4999); // 49.99 € in cents
+
+// Create an invoice for a specific item immediately
+$invoice = $user->invoiceFor('Setup fee', 9900); // 99.00 € in cents
+```
+
+## Automatic archiving
+
+When a Stripe payment triggers `invoice.payment_succeeded`, the bundle:
+
+1. retrieves the Stripe invoice
+2. builds the invoice view
+3. renders the PDF
+4. stores the file in `var/data/invoices`
+5. persists the record in `cashier_generated_invoices`
+
+Automatic archiving is managed by `InvoiceArchiveService`.
+
+## Serving archived PDFs
+
+PDFs are stored in `var/data/invoices/`. Example controller to serve a file:
+
+```php
+use CashierBundle\Entity\GeneratedInvoice;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+
+final class InvoiceController extends AbstractController
+{
+    public function download(GeneratedInvoice $invoice): BinaryFileResponse
+    {
+        $path = $this->getParameter('kernel.project_dir') . '/' . $invoice->relativePath;
+
+        return new BinaryFileResponse($path, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => sprintf('attachment; filename="%s.pdf"', $invoice->filename),
+        ]);
+    }
+}
+```
+
+`GeneratedInvoice::$relativePath` is the relative path from the project root.
+
+## `GeneratedInvoice`
+
+The archiving table stores in particular:
+
+- `stripeInvoiceId`
+- `stripePaymentIntentId`
+- `stripeCheckoutSessionId`
+- `filename`
+- `relativePath`
+- `currency`
+- `total`
+- `payload`
+
+The `payload` also archives the Stripe `metadata` useful for reconciling the invoice with a business order.
+
+## Invoice methods
+
+| Method | Return |
+|---------|--------|
+| `id(): string` | Invoice ID |
+| `number(): string` | Invoice number |
+| `status(): string` | Status (paid, open, void, etc.) |
+| `date(): \Carbon\Carbon` | Creation date |
+| `dueDate(): ?\Carbon\Carbon` | Due date |
+| `items(): array<int, InvoiceLineItem>` | Invoice lines |
+| `taxes(): array<int, Tax>` | Taxes |
+| `payments(): array<int, InvoicePayment>` | Payments |
+| `discounts(): array<int, Discount>` | Discounts |
+| `total(): int` | Total in cents |
+| `subtotal(): int` | Subtotal in cents |
+| `tax(): int` | Tax amount in cents |
+| `currency(): string` | Currency |
+
+## Metadata conventions for business linking
+
+To link an invoice to an application resource, use Stripe metadata:
+
+```php
+$checkoutService->create($user, [
+    'invoice_creation' => [
+        'enabled' => true,
+        'invoice_data' => [
+            'metadata' => [
+                'app_resource_type' => 'order',
+                'app_resource_id' => '123',
+                'plan_code' => 'premium',
+            ],
+        ],
+    ],
+]);
+```
+
+These keys are extracted by `InvoiceArchiveService` and stored in `GeneratedInvoice` (resource_type, resource_id, plan_code).
+
+## Internationalization
+
+The default provider supports `en` and `fr`.
+
+Language priority:
+
+1. `locale` or `invoice_locale` passed to rendering
+2. `preferred_locales` of the Stripe customer
+3. `cashier.invoices.default_locale`
+
+## Without `ext-intl`
+
+The bundle remains usable.
+
+Fallbacks:
+
+- dates in `YYYY-MM-DD`
+- simplified monetary format
+- translated labels preserved
+
+## Customize the invoice UI
+
+You can override:
+
+- the Twig template `templates/bundles/CashierBundle/invoice/default.html.twig`
+- `CashierBundle\Contract\InvoiceRendererInterface`
+- `CashierBundle\Contract\InvoiceLocaleResolverInterface`
+- `CashierBundle\Contract\InvoiceTranslationProviderInterface`
+
+[Webhooks →](/docs/webhooks)

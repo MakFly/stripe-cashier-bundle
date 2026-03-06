@@ -23,3 +23,116 @@ html {
     0.3
   );
 }
+
+/* ─── Homepage theme-aware tokens ─── */
+:root {
+  --hp-bg: #fafafa;
+  --hp-bg-card: #f5f5f5;
+  --hp-bg-code: #f0f0f0;
+  --hp-text: #18181b;
+  --hp-text-muted: rgba(24, 24, 27, 0.5);
+  --hp-text-faint: rgba(24, 24, 27, 0.25);
+  --hp-border: rgba(24, 24, 27, 0.1);
+  --hp-border-faint: rgba(24, 24, 27, 0.06);
+  --hp-code-comment: #6b7280;
+  --hp-code-var: #7c3aed;
+  --hp-code-str: #059669;
+  --hp-code-punct: #18181b;
+  --hp-btn-secondary-border: rgba(24, 24, 27, 0.15);
+  --hp-btn-secondary-text: rgba(24, 24, 27, 0.6);
+}
+.dark {
+  --hp-bg: #09090b;
+  --hp-bg-card: #111116;
+  --hp-bg-code: rgba(244, 240, 235, 0.03);
+  --hp-text: #f4f0eb;
+  --hp-text-muted: rgba(244, 240, 235, 0.5);
+  --hp-text-faint: rgba(244, 240, 235, 0.25);
+  --hp-border: rgba(244, 240, 235, 0.08);
+  --hp-border-faint: rgba(244, 240, 235, 0.06);
+  --hp-code-comment: #4b5563;
+  --hp-code-var: #a78bfa;
+  --hp-code-str: #10b981;
+  --hp-code-punct: #f4f0eb;
+  --hp-btn-secondary-border: rgba(244, 240, 235, 0.12);
+  --hp-btn-secondary-text: rgba(244, 240, 235, 0.65);
+}
+
+/* ─── Locale switcher ─── */
+.locale-pill-group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 0.5rem;
+  background: rgba(128, 128, 128, 0.1);
+}
+.dark .locale-pill-group {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.locale-pill {
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-decoration: none;
+  color: rgb(156 163 175);
+  transition: all 0.15s ease;
+}
+:root:not(.dark) .locale-pill {
+  color: rgb(107 114 128);
+}
+.locale-pill:hover {
+  color: rgb(229 231 235);
+}
+:root:not(.dark) .locale-pill:hover {
+  color: rgb(17 24 39);
+}
+.locale-pill[data-active="true"] {
+  background: rgba(16, 185, 129, 0.12);
+  color: #10b981;
+}
+
+/* Theme toggle */
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  border: none;
+  background: transparent;
+  color: rgb(156 163 175);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+:root:not(.dark) .theme-toggle {
+  color: rgb(107 114 128);
+}
+.theme-toggle:hover {
+  background: rgba(128, 128, 128, 0.1);
+  color: rgb(229 231 235);
+}
+:root:not(.dark) .theme-toggle:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: rgb(17 24 39);
+}
+
+/* ─── Homepage: hide sidebar, toc, footer, AND navbar ─── */
+body:has([data-homepage]) .nextra-navbar {
+  display: none !important;
+}
+body:has([data-homepage]) aside {
+  display: none !important;
+}
+body:has([data-homepage]) .nextra-toc {
+  display: none !important;
+}
+body:has([data-homepage]) article {
+  max-width: none !important;
+  padding: 0 !important;
+}
+body:has([data-homepage]) footer {
+  display: none !important;
+}

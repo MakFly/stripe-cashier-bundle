@@ -1,0 +1,124 @@
+# API Reference
+
+This page references the public building blocks of the bundle that you can consider stable to integrate on the application side.
+
+## Main services
+
+### `CashierBundle\Service\Cashier`
+
+Main service and formatting utilities. See [Twig](/docs/twig).
+
+### `CashierBundle\Service\CustomerService`
+
+Creation, update and synchronization of Stripe customers. See [Customers](/docs/customers).
+
+### `CashierBundle\Service\PaymentService`
+
+One-shot payments, refunds and payment intents. See [Payments](/docs/payments).
+
+### `CashierBundle\Service\PaymentIntentService`
+
+Low-level service to create and manage PaymentIntents:
+
+- `create(array $options)` — creates a PaymentIntent
+- `capture(string $paymentIntentId, ?int $amount)` — capture
+- `cancel(string $paymentIntentId)` — cancel
+- `confirm(string $paymentIntentId, array $options)` — confirm
+
+See [Payments](/docs/payments).
+
+### `CashierBundle\Service\PaymentMethodService`
+
+Payment method management. See [Payment Methods](/docs/payment-methods).
+
+### `CashierBundle\Service\SetupIntentService`
+
+Service to create SetupIntents (PM save without payment):
+
+- `create(array $options = [])` — creates a SetupIntent (default: `payment_method_types: ['card']`)
+- `clientSecret()` — returns the secret for the frontend
+
+See [Payment Methods - Setup Intents](/docs/payment-methods#setup-intents).
+
+### `CashierBundle\Service\SubscriptionService`
+
+Creation and lifecycle management of subscriptions. See [Subscriptions](/docs/subscriptions).
+
+### `CashierBundle\Service\CheckoutService`
+
+Creation of Stripe Checkout sessions and Billing Portal. See [Checkout](/docs/checkout).
+
+### `CashierBundle\Service\InvoiceService`
+
+Reading Stripe invoices and billing operations. See [Invoices](/docs/invoices).
+
+### `CashierBundle\Service\InvoiceArchiveService`
+
+Local PDF archiving and `GeneratedInvoice` persistence. See [Invoices - Archiving](/docs/invoices#automatic-archiving).
+
+### `CashierBundle\Service\TaxService`
+
+Tax management. See [Taxes](/docs/taxes).
+
+## Extensible contracts
+
+- `CashierBundle\Contract\InvoiceRendererInterface`
+- `CashierBundle\Contract\InvoiceStorageInterface`
+- `CashierBundle\Contract\InvoiceLocaleResolverInterface`
+- `CashierBundle\Contract\InvoiceTranslationProviderInterface`
+- `CashierBundle\Contract\WebhookHandlerInterface`
+
+## Bundle Doctrine entities
+
+- `CashierBundle\Entity\StripeCustomer`
+- `CashierBundle\Entity\Subscription`
+- `CashierBundle\Entity\SubscriptionItem`
+- `CashierBundle\Entity\GeneratedInvoice`
+- `CashierBundle\Entity\CustomerBalanceTransaction`
+
+## Models (Value Objects)
+
+- `CashierBundle\Model\Invoice` — Stripe invoice
+- `CashierBundle\Model\InvoiceLineItem` — invoice line
+- `CashierBundle\Model\InvoicePayment` — invoice payment
+- `CashierBundle\Model\Tax` — tax
+- `CashierBundle\Model\TaxRate` — tax rate
+- `CashierBundle\Model\PaymentMethod` — payment method
+- `CashierBundle\Model\Coupon` — Stripe coupon
+- `CashierBundle\Model\PromotionCode` — promotion code
+- `CashierBundle\Model\Checkout` — Checkout session
+- `CashierBundle\Model\StoredInvoice` — archived invoice (see [Invoices](/docs/invoices))
+
+## Public events
+
+- `WebhookReceivedEvent`
+- `WebhookHandledEvent`
+- `SubscriptionCreatedEvent`
+- `SubscriptionUpdatedEvent`
+- `SubscriptionDeletedEvent`
+- `PaymentSucceededEvent`
+- `PaymentFailedEvent`
+
+See [Events](/docs/events).
+
+## Messenger messages
+
+For asynchronous processing (requires `symfony/messenger`):
+
+- `CashierBundle\Message\CancelSubscriptionMessage`
+- `CashierBundle\Message\ProcessInvoiceMessage`
+- `CashierBundle\Message\RetryPaymentMessage`
+- `CashierBundle\Message\SyncCustomerDetailsMessage`
+- `CashierBundle\Message\UpdateSubscriptionQuantityMessage`
+
+See [Events - Messenger](/docs/events#messenger-integration).
+
+## Stability policy
+
+The documented public services, interfaces, entities and events constitute the stable API of the bundle.
+
+Classes in the following directories are internal and may change without notice:
+
+- `src/Webhook/Handler/`
+- `src/Infrastructure/`
+- `src/DependencyInjection/`

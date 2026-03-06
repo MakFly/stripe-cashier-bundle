@@ -1,0 +1,104 @@
+# CLI Commands
+
+## `cashier:install`
+
+Installs the minimal bundle configuration in a Symfony project.
+
+```bash
+php bin/console cashier:install
+```
+
+Effects:
+
+- creates missing config files
+- creates missing Stripe variables in `.env`
+- creates `var/data` and `var/data/invoices`
+- does not overwrite existing files
+
+### Option
+
+```bash
+php bin/console cashier:install --env-file=.env.local
+```
+
+## `cashier:webhook`
+
+Creates or updates a webhook endpoint on the Stripe side.
+
+```bash
+php bin/console cashier:webhook --url=https://example.com/cashier/webhook
+```
+
+Useful options:
+
+- `--disabled`
+- `--api-version`
+- `--show-secret`
+
+## `cashier:webhook:listen`
+
+Opens a local Stripe CLI listener.
+
+```bash
+php bin/console cashier:webhook:listen --forward-to=http://127.0.0.1:8000/cashier/webhook
+```
+
+Or with `--base-url` to automatically build the URL:
+
+```bash
+php bin/console cashier:webhook:listen --forward-to --base-url http://localhost:8000
+```
+
+> **Note**: The [Stripe CLI](https://stripe.com/docs/stripe-cli) must be installed locally.
+
+This command is used to:
+
+- forward Stripe events to your local app
+- retrieve and persist the `whsec_...` secret
+- visually read HTTP responses through console colors
+
+### Default registered Stripe events
+
+The `cashier:webhook` command creates a webhook with the following events:
+
+- `customer.subscription.created`
+- `customer.subscription.updated`
+- `customer.subscription.deleted`
+- `customer.deleted`
+- `invoice.payment_succeeded`
+- `invoice.payment_failed`
+- `invoice.payment_action_required`
+- `checkout.session.completed`
+- `checkout.session.expired`
+- `payment_intent.succeeded`
+- `payment_intent.payment_failed`
+- `payment_method.updated`
+
+## `cashier:report-usage`
+
+Reports usage for a metered `SubscriptionItem`.
+
+```bash
+# 1 = local ID (primary key) of the SubscriptionItem entity in the database
+# 100 = usage quantity to report
+php bin/console cashier:report-usage 1 100
+
+# To set an absolute value rather than incrementing
+php bin/console cashier:report-usage 1 100 --action=set
+```
+
+## `cashier:cleanup-sessions`
+
+> **Warning**: This command requires the `CheckoutSession` entity which is not implemented in this version.
+
+```bash
+php bin/console cashier:cleanup-sessions
+```
+
+Placeholder command to clean up expired Checkout sessions.
+
+## Official init command
+
+Until a published Flex recipe is the canonical way in your distribution, consider `cashier:install` as the official bundle bootstrap command.
+
+[Twig →](/docs/twig)

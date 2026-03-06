@@ -1,0 +1,82 @@
+# Twig
+
+The bundle exposes a `stripe_amount` filter to display Stripe amounts in your templates.
+
+## Usage
+
+```twig
+{{ 1999|stripe_amount('eur') }}
+{{ order.total|stripe_amount(order.currency) }}
+```
+
+## PHP formatting
+
+You can also use formatting directly in PHP:
+
+```php
+use CashierBundle\Cashier;
+
+$formatted = Cashier::formatAmount(1999, 'eur', 'en'); // "€19.99"
+```
+
+## Behavior
+
+The filter relies on `Cashier::formatAmount()`.
+
+- with `ext-intl`: localized monetary formatting
+- without `ext-intl`: safe fallback without runtime error
+
+## Override the invoice template
+
+To customize the default invoice template:
+
+```
+templates/bundles/CashierBundle/invoice/default.html.twig
+```
+
+The bundle will automatically use this file if it exists.
+
+## Available variables in the template
+
+Variables passed to the template (via `InvoiceViewFactory::create()`):
+
+| Variable | Description |
+|----------|-------------|
+| `meta` | Locale and translation labels |
+| `invoice` | ID, number, status, dates, amounts, items, discounts, taxes |
+| `customer` | name, email, address |
+| `company` | name, address, email, phone |
+| `footer` | Footer text |
+
+## Supported locales
+
+The bundle supports `en` and `fr` by default.
+
+To add a locale, implement `InvoiceTranslationProviderInterface`:
+
+```php
+use CashierBundle\Contract\InvoiceTranslationProviderInterface;
+
+final class MyTranslationProvider implements InvoiceTranslationProviderInterface
+{
+    public function getTranslations(string $locale): array
+    {
+        // Returns translated labels for the locale
+    }
+}
+```
+
+## Example
+
+```twig
+<div class="invoice-total">
+  <strong>Total:</strong>
+  {{ invoice.total|stripe_amount(invoice.currency) }}
+</div>
+```
+
+## Tip
+
+If your application needs to display a custom HTML invoice before PDF, reuse the same locale strategy as the bundle to avoid visual discrepancies between the screen and the PDF.
+
+[API Reference →](/docs/api)

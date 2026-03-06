@@ -1,0 +1,116 @@
+# Configuration
+
+## Minimal configuration
+
+```yaml
+cashier:
+    key: '%env(STRIPE_KEY)%'
+    secret: '%env(STRIPE_SECRET)%'
+    path: cashier
+
+    webhook:
+        secret: '%env(STRIPE_WEBHOOK_SECRET)%'
+        tolerance: 300
+        events:
+            - customer.subscription.created
+            - customer.subscription.updated
+            - customer.subscription.deleted
+            - invoice.payment_succeeded
+            - invoice.payment_failed
+            - checkout.session.completed
+
+    currency: usd
+    currency_locale: en
+    default_subscription_type: default
+
+    invoices:
+        renderer: CashierBundle\Service\InvoiceRenderer\DompdfInvoiceRenderer
+        default_locale: en
+        supported_locales: ['en', 'fr']
+        storage:
+            driver: local
+            path: '%kernel.project_dir%/var/data/invoices'
+        options:
+            paper: letter
+            remote_enabled: false
+```
+
+## Doctrine
+
+```yaml
+doctrine:
+    orm:
+        mappings:
+            CashierBundle:
+                type: attribute
+                is_bundle: false
+                dir: '%kernel.project_dir%/vendor/makfly/stripe-cashier-bundle/src/Entity'
+                prefix: 'CashierBundle\Entity'
+                alias: CashierBundle
+```
+
+## Routes
+
+```yaml
+cashier_webhooks:
+    resource: '@CashierBundle/Resources/config/routes/webhook.yaml'
+```
+
+## Important options
+
+| Option | Description |
+|---|---|
+| `cashier.path` | Bundle route prefix. Default: `cashier`. The webhook route will be `/cashier/webhook`. **If changed**, the Stripe secret must match the new URL. |
+| `cashier.webhook.secret` | Stripe secret for signature verification |
+| `cashier.webhook.events` | List of Stripe events to listen to (see [Webhooks](/docs/webhooks)) |
+| `cashier.currency` | Default currency (ISO 4217 code: `usd`, `eur`, etc.) |
+| `cashier.currency_locale` | BCP 47 locale for monetary formatting (`fr`, `en`, `de`, etc.) |
+| `cashier.default_subscription_type` | Default subscription type used for `customer.subscription.*` webhooks. If multiple subscription types coexist, this parameter determines which one is created automatically. |
+| `cashier.invoices.default_locale` | Default invoice language |
+| `cashier.invoices.supported_locales` | Languages supported by the default provider |
+| `cashier.invoices.storage.path` | Absolute path for archived PDFs |
+
+### Dompdf options
+
+| Option | Default value | Description |
+|---|---|---|
+| `paper` | `letter` | Paper format (`letter`, `a4`, `legal`) |
+| `remote_enabled` | `false` | Allow loading remote images (disabled for security) |
+
+## `intl` policy
+
+The bundle does not force `ext-intl`.
+
+Behavior:
+
+- with `intl`: localized monetary formatting and dates
+- without `intl`: safe fallback without runtime crash
+
+You can therefore deploy the bundle on a minimal runtime, then improve PDF rendering later by installing the extension.
+
+## Invoice customization
+
+Rendering is customizable at three levels:
+
+1. the Twig template `templates/bundles/CashierBundle/invoice/default.html.twig`
+2. the service configured in `cashier.invoices.renderer`
+3. locale and translation services:
+   - `CashierBundle\Contract\InvoiceLocaleResolverInterface`
+   - `CashierBundle\Contract\InvoiceTranslationProviderInterface`
+
+## Alternative renderer
+
+To use Snappy (requires `knp-snappy` and `wkhtmltopdf`):
+
+```yaml
+cashier:
+    invoices:
+        renderer: CashierBundle\Service\InvoiceRenderer\SnappyInvoiceRenderer
+        options:
+            paper: letter
+            encoding: UTF-8
+```
+
+> **Prerequisite**: `composer require knp-snappy/wkhtmltopdf-binary`
+
+[Customers →](/docs/customers)

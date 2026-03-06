@@ -1,0 +1,486 @@
+---
+title: Tax Management
+description: Configure and calculate taxes automatically with Stripe Cashier
+---
+
+# Tax Management
+
+Stripe Cashier integrates Stripe's taxation system to allow you to automatically calculate taxes on your prices and invoices.
+
+## TaxService
+
+`TaxService` manages all tax-related operations.
+
+### Available methods
+
+#### `getTaxRates(BillableInterface $billable): array`
+
+Gets applicable tax rates for a customer.
+
+```php
+use CashierBundle\Service\TaxService;
+use CashierBundle\Contract\BillableInterface;
+
+// Get tax rates for a customer
+$taxRates = $taxService->getTaxRates($user);
+```
+
+#### `getPriceTaxRates(string $priceId): array`
+
+Gets the tax rates applied to a specific price.
+
+```php
+// Get tax rates for a price
+$priceTaxRates = $taxService->getPriceTaxRates('price_monthly');
+```
+
+#### `calculate(array $payload): array`
+
+Calculates taxes for a transaction.
+
+```php
+// Calculate taxes for a purchase
+$taxCalculation = $taxService->calculate([
+    'customer' => 'cus_xxxxxxxx',
+    'line_items' => [
+        [
+            'amount' => 10000,
+            'currency' => 'eur',
+        ],
+    ],
+]);
+```
+
+> **Note**: Returns the raw array from the Stripe Tax API. See the [Stripe documentation](https://stripe.com/docs/tax/tax-codes) for the full structure.
+
+#### `isAutomaticTaxEnabled(): bool`
+
+Checks if automatic taxation is enabled.
+
+```php
+$isEnabled = $taxService->isAutomaticTaxEnabled();
+```
+
+#### `setAutomaticTaxEnabled(bool $enabled): void`
+
+Enables or disables automatic taxation.
+
+```php
+// Enable automatic taxation
+$taxService->setAutomaticTaxEnabled(true);
+```
+
+> **Note**: This method only configures the local value used when creating Checkout sessions and PaymentIntents via this bundle. It is not a global Stripe Dashboard setting. Automatic Stripe taxation is configured separately in the Stripe Dashboard.
+
+#### `createTaxRate(string $displayName, float $percentage, bool $inclusive, array $options = []): string`
+
+Creates a new tax rate.
+
+```php
+// Create a 20% tax rate (exclusive)
+$taxRateId = $taxService->createTaxRate('VAT 20%', 20.0, false);
+
+// Create an inclusive tax rate
+$taxRateId = $taxService->createTaxRate('Local tax', 5.0, true, [
+    'country' => 'FR',
+    'state' => 'IDF',
+]);
+```
+
+#### `attachTaxRatesToPrice(string $priceId, array $taxRateIds): void`
+
+Attaches tax rates to a price.
+
+```php
+// Attach tax rates to a price
+$taxService->attachTaxRatesToPrice('price_monthly', ['txr_123', 'txr_456']);
+```
+
+#### `listAllTaxRates(): array`
+
+Lists all available tax rates.
+
+```php
+// List all tax rates
+$allTaxRates = $taxService->listAllTaxRates();
+```
+
+## Stripe Tax vs manual Tax Rates
+
+Two distinct approaches:
+
+### Stripe Tax (automatic)
+
+Automatic taxation uses the customer's address to calculate taxes:
+
+```php
+$checkoutService->createSubscription($user, $items, [
+    'automatic_tax' => ['enabled' => true],
+]);
+```
+
+Stripe automatically determines taxes based on the customer's country/region.
+
+### Manual Tax Rates
+
+You can create and attach your own tax rates:
+
+```php
+$taxRateId = $this->taxService->createTaxRate('VAT 20%', 20.0, false);
+$this->taxService->attachTaxRatesToPrice('price_monthly', [$taxRateId]);
+```
+
+This approach is useful if you have fixed or activity-specific tax rates.
+
+## TaxRate model
+
+The `TaxRate` model represents a Stripe tax rate.
+
+### Available methods
+
+#### `id(): string`
+
+Returns the tax rate ID.
+
+```php
+$taxRateId = $taxRate->id(); // e.g. 'txr_123'
+```
+
+#### `displayName(): string`
+
+Returns the display name of the tax rate.
+
+```php
+$displayName = $taxRate->displayName(); // e.g. 'VAT 20%'
+```
+
+#### `percentage(): float`
+
+Returns the percentage of the tax rate.
+
+```php
+$percentage = $taxRate->percentage(); // e.g. 20.0
+```
+
+#### `inclusive(): bool`
+
+Returns true if the tax is included in the price.
+
+```php
+$inclusive = $taxRate->inclusive();
+```
+
+#### `active(): bool`
+
+Returns true if the tax rate is active.
+
+```php
+$active = $taxRate->active();
+```
+
+#### `country(): ?string`
+
+Returns the country of the tax rate.
+
+```php
+$country = $taxRate->country(); // e.g. 'FR'
+```
+
+#### `state(): ?string`
+
+Returns the region/state of the tax rate.
+
+```php
+$state = $taxRate->state(); // e.g. 'IDF'
+```
+
+#### `description(): ?string`
+
+Returns the description of the tax rate.
+
+```php
+$description = $taxRate->description();
+```
+
+## Tax configuration
+
+### Enable automatic taxation
+
+```php
+use CashierBundle\Service\TaxService;
+
+class TaxConfigController
+{
+    public function __construct(
+        private readonly TaxService $taxService,
+    ) {
+    }
+
+    public function enableAutomaticTax(): void
+    {
+        $this->taxService->setAutomaticTaxEnabled(true);
+
+        // You can also configure the settings in Stripe Dashboard
+        // to specify default taxation parameters
+    }
+
+    public function disableAutomaticTax(): void
+    {
+        $this->taxService->setAutomaticTaxEnabled(false);
+    }
+}
+```
+
+### Create custom tax rates
+
+```php
+public function createCustomTaxRates(): void
+{
+    // Standard VAT in France
+    $vatRate = $this->taxService->createTaxRate('VAT 20%', 20.0, false, [
+        'country' => 'FR',
+        'description' => 'Standard VAT applicable in France',
+    ]);
+
+    // Local tax specific to Paris
+    $localTax = $this->taxService->createTaxRate('Paris tourism tax', 5.2, true, [
+        'country' => 'FR',
+        'state' => 'IDF',
+        'city' => 'Paris',
+        'description' => 'Inclusive tourism tax in Paris',
+    ]);
+
+    // Service tax
+    $serviceTax = $this->taxService->createTaxRate('Service tax', 10.0, false, [
+        'country' => 'FR',
+        'jurisdiction' => 'FR-SERV',
+        'description' => 'Tax on services',
+    ]);
+}
+```
+
+### Attach tax rates to prices
+
+```php
+public function attachTaxesToPrices(): void
+{
+    // Monthly subscription with VAT
+    $this->taxService->attachTaxRatesToPrice('price_monthly', ['txr_123']);
+
+    // Annual subscription with VAT and local tax
+    $this->taxService->attachTaxRatesToPrice('price_yearly', [
+        'txr_123', // VAT
+        'txr_456',  // Local tax
+    ]);
+
+    // Single product without tax
+    $this->taxService->attachTaxRatesToPrice('price_product', []);
+}
+```
+
+## Tax calculation
+
+### Calculate taxes for a transaction
+
+```php
+public function calculateOrderTax(BillableInterface $user, array $items): array
+{
+    $payload = [
+        'customer' => $user->stripeId(),
+        'line_items' => [],
+    ];
+
+    foreach ($items as $item) {
+        $payload['line_items'][] = [
+            'amount' => $item['amount'],
+            'currency' => $item['currency'],
+        ];
+    }
+
+    try {
+        $taxResult = $this->taxService->calculate($payload);
+
+        return [
+            'subtotal' => array_sum(array_column($items, 'amount')),
+            'tax_amount' => $taxResult['tax_amount'] ?? 0,
+            'total' => ($taxResult['total_amount'] ?? 0),
+            'breakdown' => $taxResult['line_items'] ?? [],
+        ];
+    } catch (\Exception $e) {
+        throw new \RuntimeException('Tax calculation error: ' . $e->getMessage());
+    }
+}
+```
+
+### Handle taxes in a cart
+
+```php
+class ShoppingCart
+{
+    public function __construct(
+        private readonly TaxService $taxService,
+        private readonly BillableInterface $user,
+    ) {
+    }
+
+    public function getTaxedTotal(): array
+    {
+        // Calculate total with taxes
+        $taxResult = $this->taxService->calculate([
+            'customer' => $this->user->stripeId(),
+            'line_items' => $this->getLineItems(),
+        ]);
+
+        return [
+            'subtotal' => $this->getSubtotal(),
+            'tax_amount' => $taxResult['tax_amount'] ?? 0,
+            'total' => $taxResult['total_amount'] ?? 0,
+        ];
+    }
+
+    private function getLineItems(): array
+    {
+        // Implementation to get cart items
+        return [];
+    }
+
+    private function getSubtotal(): int
+    {
+        // Implementation to get subtotal
+        return 0;
+    }
+}
+```
+
+## Regional tax management
+
+```php
+class TaxRegionManager
+{
+    public function __construct(
+        private readonly TaxService $taxService,
+    ) {
+    }
+
+    public function getRegionTaxRates(string $country, ?string $state = null): array
+    {
+        $rates = $this->taxService->listAllTaxRates();
+
+        return array_filter($rates, function (TaxRate $rate) use ($country, $state) {
+            if ($rate->country() !== $country) {
+                return false;
+            }
+
+            if ($state !== null && $rate->state() !== $state) {
+                return false;
+            }
+
+            return $rate->active();
+        });
+    }
+
+    public function applyRegionalTax(
+        string $priceId,
+        string $country,
+        ?string $state = null
+    ): void {
+        $taxRates = $this->getRegionTaxRates($country, $state);
+
+        if (count($taxRates) > 0) {
+            $taxRateIds = array_map(function (TaxRate $rate) {
+                return $rate->id();
+            }, $taxRates);
+
+            $this->taxService->attachTaxRatesToPrice($priceId, $taxRateIds);
+        }
+    }
+}
+```
+
+## Complete example
+
+```php
+use CashierBundle\Service\TaxService;
+use CashierBundle\Contract\BillableInterface;
+
+class TaxManagementController extends AbstractController
+{
+    public function __construct(
+        private readonly TaxService $taxService,
+    ) {
+    }
+
+    #[Route('/admin/taxes', name='admin_taxes')]
+    public function index(): Response
+    {
+        $taxRates = $this->taxService->listAllTaxRates();
+        $automaticTaxEnabled = $this->taxService->isAutomaticTaxEnabled();
+
+        return $this->render('admin/taxes/index.html.twig', [
+            'taxRates' => $taxRates,
+            'automaticTaxEnabled' => $automaticTaxEnabled,
+        ]);
+    }
+
+    #[Route('/admin/taxes/create', name='admin_taxes_create')]
+    public function createTaxRate(Request $request): Response
+    {
+        $displayName = $request->request->get('display_name');
+        $percentage = (float) $request->request->get('percentage');
+        $inclusive = $request->request->get('inclusive') === '1';
+        $country = $request->request->get('country');
+        $state = $request->request->get('state');
+
+        if (!$displayName || !$percentage) {
+            throw new BadRequestHttpException('Required fields missing');
+        }
+
+        $options = [];
+        if ($country) {
+            $options['country'] = $country;
+        }
+        if ($state) {
+            $options['state'] = $state;
+        }
+
+        $taxRateId = $this->taxService->createTaxRate(
+            $displayName,
+            $percentage,
+            $inclusive,
+            $options
+        );
+
+        return $this->redirectToRoute('admin_taxes');
+    }
+
+    #[Route('/admin/taxes/toggle-automatic', name='admin_taxes_toggle')]
+    public function toggleAutomaticTax(): Response
+    {
+        $currentStatus = $this->taxService->isAutomaticTaxEnabled();
+        $this->taxService->setAutomaticTaxEnabled(!$currentStatus);
+
+        return $this->redirectToRoute('admin_taxes');
+    }
+}
+```
+
+## Summary table
+
+| Method | Description | Parameters | Return |
+|---------|-------------|------------|--------|
+| `getTaxRates()` | Customer tax rates | `BillableInterface $billable` | `array<TaxRate>` |
+| `getPriceTaxRates()` | Price tax rates | `string $priceId` | `array<TaxRate>` |
+| `calculate()` | Calculate taxes | `array $payload` | `array` |
+| `isAutomaticTaxEnabled()` | Automatic tax enabled | - | `bool` |
+| `setAutomaticTaxEnabled()` | Configure automatic tax | `bool $enabled` | `void` |
+| `createTaxRate()` | Create tax rate | `string $displayName`, `float $percentage`, `bool $inclusive`, `array $options` | `string` |
+| `attachTaxRatesToPrice()` | Attach taxes to price | `string $priceId`, `array $taxRateIds` | `void` |
+| `listAllTaxRates()` | List all rates | - | `array<TaxRate>` |
+| `id()` | Rate ID | - | `string` |
+| `displayName()` | Display name | - | `string` |
+| `percentage()` | Percentage | - | `float` |
+| `inclusive()` | Inclusive tax | - | `bool` |
+| `active()` | Rate active | - | `bool` |
+| `country()` | Country | - | `?string` |
+| `state()` | Region | - | `?string` |
+| `description()` | Description | - | `?string` |

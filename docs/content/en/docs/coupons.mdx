@@ -1,0 +1,433 @@
+---
+title: Coupons & Promotions
+description: Manage coupons and promotion codes with Stripe Cashier
+---
+
+# Coupons & Promotions
+
+Stripe Cashier allows you to easily apply coupons and promotion codes to your subscriptions and invoices.
+
+## Coupons
+
+### Coupon model
+
+The `Coupon` model represents a Stripe coupon with the following methods:
+
+#### `id(): string`
+
+Returns the coupon ID.
+
+```php
+$couponId = $coupon->id(); // e.g. '25OFF'
+```
+
+#### `name(): ?string`
+
+Returns the coupon name.
+
+```php
+$name = $coupon->name(); // e.g. '25% discount'
+```
+
+#### `percentOff(): ?float`
+
+Returns the discount percentage.
+
+```php
+$percent = $coupon->percentOff(); // e.g. 25.0
+```
+
+#### `amountOff(): ?int`
+
+Returns the discount amount in cents.
+
+```php
+$amount = $coupon->amountOff(); // e.g. 5000 (50.00 €)
+```
+
+#### `currency(): ?string`
+
+Returns the currency of the discount amount.
+
+```php
+$currency = $coupon->currency(); // e.g. 'eur'
+```
+
+#### `duration(): string`
+
+Returns the coupon duration.
+
+```php
+$duration = $coupon->duration(); // e.g. 'once', 'repeating', 'forever'
+```
+
+#### `durationInMonths(): ?int`
+
+Returns the number of months of duration (for `repeating`).
+
+```php
+$months = $coupon->durationInMonths(); // e.g. 3
+```
+
+#### `valid(): bool`
+
+Returns true if the coupon is valid.
+
+```php
+$isValid = $coupon->valid();
+```
+
+#### `isPercentage(): bool`
+
+Returns true if the coupon is a percentage.
+
+```php
+$isPercentage = $coupon->isPercentage();
+```
+
+#### `isFixedAmount(): bool`
+
+Returns true if the coupon is a fixed amount.
+
+```php
+$isFixedAmount = $coupon->isFixedAmount();
+```
+
+## Promotion Codes
+
+### PromotionCode model
+
+The `PromotionCode` model represents a Stripe promotion code.
+
+#### `id(): string`
+
+Returns the promotion code ID.
+
+```php
+$codeId = $promotionCode->id(); // e.g. 'promo_123'
+```
+
+#### `code(): string`
+
+Returns the promotion code.
+
+```php
+$code = $promotionCode->code(); // e.g. 'SUMMER2024'
+```
+
+#### `coupon(): Coupon`
+
+Returns the associated coupon.
+
+```php
+$coupon = $promotionCode->coupon();
+```
+
+#### `active(): bool`
+
+Returns true if the code is active.
+
+```php
+$isActive = $promotionCode->active();
+```
+
+#### `maxRedemptions(): ?int`
+
+Returns the maximum number of redemptions.
+
+```php
+$maxRedemptions = $promotionCode->maxRedemptions();
+```
+
+#### `timesRedeemed(): int`
+
+Returns the number of times the code has been used.
+
+```php
+$timesRedeemed = $promotionCode->timesRedeemed();
+```
+
+## SubscriptionBuilder
+
+The `SubscriptionBuilder` allows applying coupons when creating a subscription. It is not a singleton service — it is created via `$user->newSubscription()` or `SubscriptionService::newSubscription()`.
+
+### Available methods
+
+#### `withCoupon(?string $couponId): self`
+
+Applies a coupon to the subscription.
+
+```php
+$subscription = $user->newSubscription('default', 'price_monthly')
+    ->withCoupon('25OFF')
+    ->create('pm_card_visa');
+```
+
+#### `withPromotionCode(?string $code): self`
+
+Applies a promotion code to the subscription.
+
+```php
+$subscription = $user->newSubscription('default', 'price_monthly')
+    ->withPromotionCode('SUMMER2024')
+    ->create('pm_card_visa');
+```
+
+## Usage examples
+
+### Apply a coupon to a subscription
+
+```php
+use CashierBundle\Contract\BillableEntityInterface;
+
+public function subscribeWithCouponAction(BillableEntityInterface $user): Response
+{
+    // Create a subscription with a coupon
+    $subscription = $user->newSubscription('default', 'price_monthly')
+        ->withCoupon('WELCOME50')
+        ->create('pm_card_visa');
+
+    return new Response('Subscription created with coupon');
+}
+```
+
+### Apply a promotion code
+
+```php
+public function subscribeWithPromoCodeAction(BillableEntityInterface $user, string $promoCode): Response
+{
+    $subscription = $user->newSubscription('default', 'price_yearly')
+        ->withPromotionCode($promoCode)
+        ->create('pm_card_visa');
+
+    return new Response('Subscription created with promotion code');
+}
+```
+
+### Check coupon information
+
+```php
+use CashierBundle\Model\Coupon;
+use CashierBundle\Model\PromotionCode;
+
+public function displayCouponInfo(Coupon|PromotionCode $coupon): array
+{
+    if ($coupon instanceof Coupon) {
+        return [
+            'type' => 'coupon',
+            'id' => $coupon->id(),
+            'name' => $coupon->name(),
+            'isPercentage' => $coupon->isPercentage(),
+            'isFixedAmount' => $coupon->isFixedAmount(),
+            'percentOff' => $coupon->percentOff(),
+            'amountOff' => $coupon->amountOff(),
+            'currency' => $coupon->currency(),
+            'duration' => $coupon->duration(),
+            'durationInMonths' => $coupon->durationInMonths(),
+            'valid' => $coupon->valid(),
+        ];
+    } else {
+        $coupon = $coupon->coupon();
+
+        return [
+            'type' => 'promotion_code',
+            'code' => $coupon->code(),
+            'coupon' => [
+                'id' => $coupon->id(),
+                'name' => $coupon->name(),
+                'isPercentage' => $coupon->isPercentage(),
+                'isFixedAmount' => $coupon->isFixedAmount(),
+                'percentOff' => $coupon->percentOff(),
+                'amountOff' => $coupon->amountOff(),
+                'currency' => $coupon->currency(),
+                'duration' => $coupon->duration(),
+                'durationInMonths' => $coupon->durationInMonths(),
+                'valid' => $coupon->valid(),
+            ],
+            'active' => $coupon->active(),
+            'maxRedemptions' => $coupon->maxRedemptions(),
+            'timesRedeemed' => $coupon->timesRedeemed(),
+        ];
+    }
+}
+```
+
+### Manage coupons in a form
+
+```php
+use CashierBundle\Contract\BillableEntityInterface;
+
+class CouponController extends AbstractController
+{
+    #[Route('/subscription/coupon', name: 'subscription_coupon')]
+    public function applyCoupon(BillableEntityInterface $user, Request $request): Response
+    {
+        $couponCode = $request->request->get('coupon_code');
+
+        if (!$couponCode) {
+            throw new BadRequestHttpException('Missing coupon code');
+        }
+
+        try {
+            $subscription = $user->newSubscription('default', 'price_monthly')
+                ->withCoupon($couponCode)
+                ->create('pm_card_visa');
+
+            return $this->redirectToRoute('subscription_success');
+        } catch (\Exception $e) {
+            return $this->redirectToRoute('subscription_form', [
+                'error' => 'Invalid or expired coupon'
+            ]);
+        }
+    }
+
+    #[Route('/subscription/promo-code', name: 'subscription_promo_code')]
+    public function applyPromoCode(BillableEntityInterface $user, Request $request): Response
+    {
+        $promoCode = $request->request->get('promo_code');
+
+        if (!$promoCode) {
+            throw new BadRequestHttpException('Missing promotion code');
+        }
+
+        try {
+            $subscription = $user->newSubscription('default', 'price_monthly')
+                ->withPromotionCode($promoCode)
+                ->create('pm_card_visa');
+
+            return $this->redirectToRoute('subscription_success');
+        } catch (\Exception $e) {
+            return $this->redirectToRoute('subscription_form', [
+                'error' => 'Invalid promotion code'
+            ]);
+        }
+    }
+}
+```
+
+## Coupon types
+
+| Type | Description | Examples |
+|------|-------------|----------|
+| `once` | Applies once | `WELCOME10`, `FIRSTPURCHASE` |
+| `repeating` | Applies for a number of months | `3MONTHFREE`, `HALFOFF3MONTHS` |
+| `forever` | Applies indefinitely | `STUDENT`, `NONPROFIT` |
+
+## Discount calculation
+
+### Percentage
+
+```php
+// 25% discount coupon
+$originalAmount = 10000; // 100.00 €
+$discountPercent = 0.25;
+$discountAmount = $originalAmount * $discountPercent; // 2500 (25.00 €)
+$finalAmount = $originalAmount - $discountAmount; // 7500 (75.00 €)
+```
+
+### Fixed amount
+
+```php
+// 10€ discount coupon
+$originalAmount = 15000; // 150.00 €
+$discountAmount = 1000; // 10.00 €
+$finalAmount = $originalAmount - $discountAmount; // 14000 (140.00 €)
+```
+
+## Coupon validation
+
+```php
+use CashierBundle\Model\Coupon;
+use CashierBundle\Model\PromotionCode;
+
+class CouponValidator
+{
+    public static function isValid(Coupon|PromotionCode $coupon): bool
+    {
+        if ($coupon instanceof Coupon) {
+            return $coupon->valid();
+        }
+
+        return $coupon->active();
+    }
+
+    public static function getDiscountDetails(Coupon|PromotionCode $coupon): array
+    {
+        if (!self::isValid($coupon)) {
+            return [
+                'valid' => false,
+                'message' => 'Invalid coupon',
+            ];
+        }
+
+        $couponObj = $coupon instanceof PromotionCode ? $coupon->coupon() : $coupon;
+
+        if ($couponObj->isPercentage()) {
+            return [
+                'valid' => true,
+                'type' => 'percentage',
+                'value' => $couponObj->percentOff(),
+                'message' => sprintf('%d%% discount', $couponObj->percentOff()),
+            ];
+        } else {
+            return [
+                'valid' => true,
+                'type' => 'fixed',
+                'value' => $couponObj->amountOff(),
+                'currency' => $couponObj->currency(),
+                'message' => sprintf('%.2f € discount', $couponObj->amountOff() / 100),
+            ];
+        }
+    }
+}
+```
+
+## Apply a coupon to an existing subscription
+
+To apply a coupon to an already existing subscription, use `SubscriptionService::update()`:
+
+```php
+use CashierBundle\Service\SubscriptionService;
+
+$this->subscriptionService->update($subscription, [
+    'coupon' => '25OFF',
+]);
+```
+
+## Verify a coupon before applying
+
+You can verify the validity of a coupon before applying it:
+
+```php
+use CashierBundle\Service\CouponService;
+
+$coupon = $this->couponService->find('25OFF');
+
+if ($coupon && $coupon->valid()) {
+    // The coupon is valid, you can apply it
+}
+```
+
+## Summary table
+
+| Method | Description | Return |
+|---------|-------------|--------|
+| `id()` | Coupon ID | `string` |
+| `name()` | Coupon name | `?string` |
+| `percentOff()` | Discount percentage | `?float` |
+| `amountOff()` | Discount amount | `?int` |
+| `currency()` | Amount currency | `?string` |
+| `duration()` | Coupon duration | `string` |
+| `durationInMonths()` | Number of months | `?int` |
+| `valid()` | Is valid | `bool` |
+| `isPercentage()` | Is a percentage | `bool` |
+| `isFixedAmount()` | Is a fixed amount | `bool` |
+| `code()` | Promotion code | `string` |
+| `coupon()` | Associated coupon | `Coupon` |
+| `active()` | Is active | `bool` |
+| `maxRedemptions()` | Max redemptions | `?int` |
+| `timesRedeemed()` | Number of redemptions | `int` |
+| `withCoupon()` | Apply coupon | `SubscriptionBuilder` |
+| `withPromotionCode()` | Apply promo code | `SubscriptionBuilder` |
+
+[Taxes →](/docs/taxes)

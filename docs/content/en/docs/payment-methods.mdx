@@ -1,0 +1,392 @@
+---
+title: Payment Methods
+description: Manage customer payment methods with Stripe Cashier
+---
+
+# Payment Methods
+
+The Stripe Cashier payment method service allows you to easily add, update and remove payment methods for your customers.
+
+## PaymentMethodService
+
+`PaymentMethodService` is the main service for managing all payment methods for a customer.
+
+### Available methods
+
+#### `add(BillableEntityInterface $billable, string $paymentMethod): PaymentMethod`
+
+Adds a new payment method to a customer.
+
+```php
+use CashierBundle\Service\PaymentMethodService;
+use CashierBundle\Contract\BillableEntityInterface;
+
+// Add a payment method via its PM ID
+$paymentMethod = $paymentMethodService->add($user, 'pm_card_visa');
+```
+
+#### `updateDefault(BillableEntityInterface $billable, string $paymentMethod): PaymentMethod`
+
+Sets a payment method as the default.
+
+```php
+// Set a default payment method
+$defaultMethod = $paymentMethodService->updateDefault($user, 'pm_card_visa');
+```
+
+#### `list(BillableEntityInterface $billable, ?string $type = null): Collection`
+
+Lists all payment methods for a customer.
+
+```php
+// List all payment methods
+$allMethods = $paymentMethodService->list($user);
+
+// List credit cards only
+$creditCards = $paymentMethodService->list($user, 'card');
+
+// List bank accounts only
+$bankAccounts = $paymentMethodService->list($user, 'sepa_debit');
+```
+
+#### `default(BillableEntityInterface $billable): ?PaymentMethod`
+
+Gets the default payment method for a customer.
+
+```php
+$defaultMethod = $paymentMethodService->default($user);
+```
+
+#### `hasDefault(BillableEntityInterface $billable): bool`
+
+Checks if a customer has a default payment method.
+
+```php
+if ($paymentMethodService->hasDefault($user)) {
+    // The customer has a default payment method
+}
+```
+
+#### `remove(BillableEntityInterface $billable, string $paymentMethod): void`
+
+Removes a payment method from a customer.
+
+```php
+// Remove a payment method
+$paymentMethodService->remove($user, 'pm_card_visa');
+```
+
+## PaymentMethod model
+
+The `PaymentMethod` model represents a Stripe payment method with useful methods.
+
+### Available methods
+
+#### `id(): string`
+
+Returns the payment method ID.
+
+```php
+$methodId = $paymentMethod->id(); // e.g. pm_card_visa
+```
+
+#### `type(): string`
+
+Returns the payment method type.
+
+```php
+$type = $paymentMethod->type(); // e.g. 'card', 'sepa_debit'
+```
+
+#### `isDefault(): bool`
+
+Returns true if this method is the default.
+
+```php
+$isDefault = $paymentMethod->isDefault();
+```
+
+#### `brand(): ?string`
+
+Returns the card brand for card payments.
+
+```php
+$brand = $paymentMethod->brand(); // e.g. 'visa', 'mastercard'
+```
+
+#### `lastFour(): ?string`
+
+Returns the last 4 digits of the card.
+
+```php
+$lastFour = $paymentMethod->lastFour(); // e.g. '4242'
+```
+
+#### `expiryMonth(): ?int`
+
+Returns the card expiry month.
+
+```php
+$expiryMonth = $paymentMethod->expiryMonth(); // e.g. 12
+```
+
+#### `expiryYear(): ?int`
+
+Returns the card expiry year.
+
+```php
+$expiryYear = $paymentMethod->expiryYear(); // e.g. 2025
+```
+
+#### `bank(): ?string`
+
+Returns the bank name for SEPA bank accounts.
+
+```php
+$bank = $paymentMethod->bank(); // e.g. 'BNP Paribas'
+```
+
+## Managing payment methods
+
+### Add and set a default method
+
+```php
+use CashierBundle\Service\PaymentMethodService;
+use CashierBundle\Contract\BillableEntityInterface;
+
+class PaymentMethodController
+{
+    public function __construct(
+        private readonly PaymentMethodService $paymentMethodService,
+    ) {
+    }
+
+    public function addPaymentMethodAction(BillableEntityInterface $user, string $paymentMethodId): Response
+    {
+        try {
+            // Add the payment method
+            $method = $this->paymentMethodService->add($user, $paymentMethodId);
+
+            // Set as default
+            $defaultMethod = $this->paymentMethodService->updateDefault($user, $paymentMethodId);
+
+            return new Response('Payment method added and set as default');
+        } catch (\Exception $e) {
+            throw new \RuntimeException('Error: ' . $e->getMessage());
+        }
+    }
+}
+```
+
+### List all payment methods
+
+```php
+public function listPaymentMethodsAction(BillableEntityInterface $user): Response
+{
+    $allMethods = $this->paymentMethodService->list($user);
+    $defaultMethod = $this->paymentMethodService->default($user);
+
+    $methods = [];
+    foreach ($allMethods as $method) {
+        $methods[] = [
+            'id' => $method->id(),
+            'type' => $method->type(),
+            'brand' => $method->brand(),
+            'lastFour' => $method->lastFour(),
+            'expiry' => $method->expiryMonth() . '/' . $method->expiryYear(),
+            'isDefault' => $method->isDefault(),
+        ];
+    }
+
+    return new Response(json_encode($methods));
+}
+```
+
+### Remove a payment method
+
+```php
+public function removePaymentMethodAction(BillableEntityInterface $user, string $paymentMethodId): Response
+{
+    try {
+        $this->paymentMethodService->remove($user, $paymentMethodId);
+
+        // Check if a new default method needs to be set
+        $remainingMethods = $this->paymentMethodService->list($user);
+        if (count($remainingMethods) > 0 && !$this->paymentMethodService->hasDefault($user)) {
+            // Set the first remaining method as default
+            $firstMethod = $remainingMethods->first();
+            $this->paymentMethodService->updateDefault($user, $firstMethod->id());
+        }
+
+        return new Response('Payment method removed');
+    } catch (\Exception $e) {
+        throw new \RuntimeException('Error: ' . $e->getMessage());
+    }
+}
+```
+
+## Payment method types
+
+| Type | Description | Brand example |
+|------|-------------|------------------|
+| `card` | Credit/debit card | visa, mastercard, amex, discover |
+| `sepa_debit` | SEPA bank account | - |
+| `us_bank_account` | US bank account | - |
+| `link` | Stripe Link | - |
+| `ideal` | iDEAL | - |
+| `bancontact` | Bancontact | - |
+| `eps` | EPS | - |
+| `multibanco` | Multibanco | - |
+| `wechat_pay` | WeChat Pay | - |
+| `alipay` | Alipay | - |
+| `paypal` | PayPal | - |
+
+## Setup Intents
+
+Setup Intents allow saving a payment method without making an immediate payment. Useful for setting up a payment method for a future subscription.
+
+### Creation
+
+```php
+use CashierBundle\Service\SetupIntentService;
+
+$setupIntent = $this->setupIntentService->create([
+    'payment_method_types' => ['card'], // default: ['card']
+    'usage' => 'off_session',
+]);
+```
+
+Returns a `SetupIntent` object with:
+- `id` — SetupIntent ID
+- `clientSecret` — to pass to the frontend for Stripe Elements
+
+### Full flow
+
+1. **Backend**: Create the SetupIntent and retrieve the `clientSecret`
+2. **Frontend**: Use Stripe Elements to collect card details
+3. **Backend**: Once confirmed via Stripe, call `addPaymentMethod()`
+
+```php
+// After SetupIntent confirmation on the frontend
+$this->paymentMethodService->add($user, $paymentMethodId);
+$this->paymentMethodService->updateDefault($user, $paymentMethodId);
+```
+
+### Example: payment method setup form
+
+```php
+use CashierBundle\Service\SetupIntentService;
+
+final readonly class PaymentMethodSetupController
+{
+    public function __construct(
+        private SetupIntentService $setupIntentService,
+        private PaymentMethodService $paymentMethodService,
+    ) {
+    }
+
+    public function createSetupIntent(): array
+    {
+        $setupIntent = $this->setupIntentService->create();
+
+        return [
+            'clientSecret' => $setupIntent->clientSecret(),
+        ];
+    }
+}
+```
+
+```php
+public function formatCardInfo(PaymentMethod $method): array
+{
+    return [
+        'type' => $method->type(),
+        'brand' => $method->brand() ?: 'unknown',
+        'lastFour' => $method->lastFour() ?: '',
+        'expiry' => sprintf('%02d/%d', $method->expiryMonth() ?: 0, $method->expiryYear() ?: 0),
+        'isDefault' => $method->isDefault(),
+    ];
+}
+```
+
+## Complete example with form
+
+```php
+use CashierBundle\Service\PaymentMethodService;
+use CashierBundle\Contract\BillableEntityInterface;
+
+class PaymentMethodController extends AbstractController
+{
+    public function __construct(
+        private readonly PaymentMethodService $paymentMethodService,
+    ) {
+    }
+
+    #[Route('/profile/payment-methods', name: 'profile_payment_methods')]
+    public function index(BillableEntityInterface $user): Response
+    {
+        $methods = $this->paymentMethodService->list($user);
+        $defaultMethod = $this->paymentMethodService->default($user);
+
+        return $this->render('profile/payment_methods.html.twig', [
+            'methods' => $methods,
+            'defaultMethod' => $defaultMethod,
+        ]);
+    }
+
+    #[Route('/profile/payment-methods/add', name: 'profile_payment_methods_add')]
+    public function addPaymentMethod(
+        BillableEntityInterface $user,
+        Request $request
+    ): Response {
+        $paymentMethodId = $request->request->get('payment_method_id');
+
+        if (!$paymentMethodId) {
+            throw new BadRequestHttpException('Missing payment method ID');
+        }
+
+        $method = $this->paymentMethodService->add($user, $paymentMethodId);
+
+        return $this->redirectToRoute('profile_payment_methods');
+    }
+
+    #[Route('/profile/payment-methods/{id}/default', name: 'profile_payment_methods_default')]
+    public function setDefault(
+        BillableEntityInterface $user,
+        string $id
+    ): Response {
+        $this->paymentMethodService->updateDefault($user, $id);
+
+        return $this->redirectToRoute('profile_payment_methods');
+    }
+
+    #[Route('/profile/payment-methods/{id}/remove', name: 'profile_payment_methods_remove')]
+    public function removePaymentMethod(
+        BillableEntityInterface $user,
+        string $id
+    ): Response {
+        $this->paymentMethodService->remove($user, $id);
+
+        return $this->redirectToRoute('profile_payment_methods');
+    }
+}
+```
+
+## Summary table
+
+| Method | Description | Parameters | Return |
+|---------|-------------|------------|--------|
+| `add()` | Add a payment method | `BillableEntityInterface $billable`, `string $paymentMethod` | `PaymentMethod` |
+| `updateDefault()` | Set default method | `BillableEntityInterface $billable`, `string $paymentMethod` | `PaymentMethod` |
+| `list()` | List methods | `BillableEntityInterface $billable`, `?string $type` | `Collection<PaymentMethod>` |
+| `default()` | Get default method | `BillableEntityInterface $billable` | `?PaymentMethod` |
+| `hasDefault()` | Check default method | `BillableEntityInterface $billable` | `bool` |
+| `remove()` | Remove method | `BillableEntityInterface $billable`, `string $paymentMethod` | `void` |
+| `id()` | Method ID | - | `string` |
+| `type()` | Method type | - | `string` |
+| `isDefault()` | Is default | - | `bool` |
+| `brand()` | Card brand | - | `?string` |
+| `lastFour()` | Last 4 digits | - | `?string` |
+| `expiryMonth()` | Expiry month | - | `?int` |
+| `expiryYear()` | Expiry year | - | `?int` |
+| `bank()` | Bank name | - | `?string` |

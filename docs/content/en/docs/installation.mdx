@@ -1,0 +1,144 @@
+# Installation
+
+## 1. Install the bundle
+
+```bash
+composer require makfly/stripe-cashier-bundle dompdf/dompdf:^3.1
+```
+
+> **Note**: `dompdf/dompdf` ^3.1 is installed by default (PDF renderer). You can use another renderer like Snappy (see [Configuration](/docs/configuration)).
+
+To enable asynchronous webhook processing, also install:
+
+```bash
+composer require symfony/messenger
+```
+
+This allows Stripe events to be processed via async messages (see [Events - Messenger](/docs/events#messenger-integration)).
+
+## 2. Install `ext-intl` if possible
+
+The bundle works without `ext-intl`, but the rendering quality of amounts and dates is better with the extension.
+
+On Debian / Ubuntu (replace `8.x` with your PHP version, e.g. 8.2, 8.3 or 8.4):
+
+```bash
+sudo apt-get install -y php8.x-intl
+```
+
+> **Note**: The `intl` extension is recommended for monetary formatting and dates in PDF invoices.
+
+Verification:
+
+```bash
+php -m | grep intl
+```
+
+## 3. Generate the configuration
+
+```bash
+php bin/console cashier:install
+```
+
+The command is idempotent. It only creates what is missing.
+
+### Generated files
+
+- `config/packages/cashier.yaml`
+- `config/packages/cashier_doctrine.yaml`
+- `config/routes/cashier.yaml`
+- `.env` with missing Stripe variables
+
+### Generated directories
+
+- `var/data`
+- `var/data/invoices`
+
+## 4. Check Stripe variables
+
+```env
+STRIPE_KEY=pk_test_change_me
+STRIPE_SECRET=sk_test_change_me
+STRIPE_WEBHOOK_SECRET=whsec_change_me
+```
+
+Replace the placeholder values before connecting to a real environment.
+
+## 5. Declare a billable entity
+
+Your entity must implement `BillableEntityInterface` and use `BillableTrait`.
+
+```php
+use CashierBundle\Concerns\BillableTrait;
+use CashierBundle\Contract\BillableEntityInterface;
+use Doctrine\ORM\Mapping as ORM;
+
+#[ORM\Entity]
+class User implements BillableEntityInterface
+{
+    use BillableTrait;
+
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column]
+    private ?int $id = null;
+
+    #[ORM\Column(length: 180, unique: true)]
+    private string $email;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $name = null;
+
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    public function getEmail(): string
+    {
+        return $this->email;
+    }
+
+    public function getName(): ?string
+    {
+        return $this->name;
+    }
+}
+```
+
+## 6. Generate migrations
+
+```bash
+php bin/console doctrine:migrations:diff
+php bin/console doctrine:migrations:migrate
+```
+
+## 7. Check the boot
+
+```bash
+php bin/console about
+php bin/console debug:router | grep cashier
+php bin/console doctrine:mapping:info
+```
+
+## 8. Verify the full local installation
+
+> **Prerequisite**: The [Stripe CLI](https://stripe.com/docs/stripe-cli) must be installed locally to test webhooks.
+
+```bash
+php bin/console cashier:webhook:listen --forward-to=http://127.0.0.1:8000/cashier/webhook
+```
+
+Or with `--base-url` to automatically build the URL:
+
+```bash
+php bin/console cashier:webhook:listen --forward-to --base-url http://localhost:8000
+```
+
+Then trigger a test payment via Stripe Checkout to verify:
+
+- the Checkout session
+- webhook reception
+- PDF generation in `var/data/invoices`
+
+[Configuration →](/docs/configuration)

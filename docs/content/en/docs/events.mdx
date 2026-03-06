@@ -1,0 +1,118 @@
+# Symfony Events
+
+The bundle dispatches Symfony events to allow the consuming application to cleanly hook into billing.
+
+## Events and properties table
+
+| Event | Available methods |
+|-------|---------------------|
+| `PaymentSucceededEvent` | `getCustomerId()`, `getPaymentIntentId()`, `getAmount()` (cents), `getCurrency()`, `getInvoiceId(): ?string`, `getCheckoutSessionId(): ?string`, `getAmountInDecimal(): float` |
+| `PaymentFailedEvent` | `getCustomerId()`, `getPaymentIntentId()`, `getAmount()`, `getCurrency()`, `getAmountInDecimal(): float` |
+| `SubscriptionCreatedEvent` | `getSubscription(): Subscription` |
+| `SubscriptionUpdatedEvent` | `getSubscription(): Subscription` |
+| `SubscriptionDeletedEvent` | `getSubscription(): Subscription` |
+| `WebhookReceivedEvent` | `getEvent(): \Stripe\Event` |
+| `WebhookHandledEvent` | `getEvent(): \Stripe\Event` |
+
+## Webhook lifecycle
+
+### `WebhookReceivedEvent`
+
+Triggered upon reception of a valid Stripe webhook.
+
+### `WebhookHandledEvent`
+
+Triggered after the configured handlers have run.
+
+## Business events
+
+### `SubscriptionCreatedEvent`
+
+Emitted when a local subscription has been created or synchronized from Stripe.
+
+### `SubscriptionUpdatedEvent`
+
+Emitted when a local subscription is modified after a webhook or synchronization.
+
+### `SubscriptionDeletedEvent`
+
+Emitted when a subscription is deleted or terminated.
+
+### `PaymentSucceededEvent`
+
+Emitted on confirmed payment. This event is particularly useful for:
+
+- validating an order
+- triggering a reservation
+- sending a notification
+- archiving an additional application invoice if needed
+
+### `PaymentFailedEvent`
+
+Emitted when Stripe signals a payment failure.
+
+## Listening example
+
+```php
+use CashierBundle\Event\PaymentSucceededEvent;
+use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
+
+#[AsEventListener(event: PaymentSucceededEvent::class)]
+final class ConfirmOrderListener
+{
+    public function __invoke(PaymentSucceededEvent $event): void
+    {
+        $customerId = $event->getCustomerId();
+        $paymentIntentId = $event->getPaymentIntentId();
+
+        // find your order and confirm it
+    }
+}
+```
+
+## Best practice
+
+Keep business listeners:
+
+- idempotent
+- fast
+- traceable
+
+If processing becomes heavy, delegate to Messenger or an application bus.
+
+## Messenger integration
+
+Symfony events can trigger async messages. Available messages:
+
+- `CancelSubscriptionMessage`
+- `ProcessInvoiceMessage`
+- `RetryPaymentMessage`
+- `SyncCustomerDetailsMessage`
+- `UpdateSubscriptionQuantityMessage`
+
+Requires `symfony/messenger` in `composer.json`.
+
+Example: trigger `SyncCustomerDetailsMessage` from a `CustomerUpdatedEvent` listener:
+
+```php
+use CashierBundle\Event\CustomerUpdatedEvent;
+use CashierBundle\Message\SyncCustomerDetailsMessage;
+use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
+use Symfony\Component\Messenger\MessageBusInterface;
+
+#[AsEventListener(event: CustomerUpdatedEvent::class)]
+final class SyncCustomerDetailsListener
+{
+    public function __construct(
+        private MessageBusInterface $messageBus,
+    ) {
+    }
+
+    public function __invoke(CustomerUpdatedEvent $event): void
+    {
+        $this->messageBus->dispatch(new SyncCustomerDetailsMessage($event->getStripeCustomerId()));
+    }
+}
+```
+
+[CLI Commands →](/docs/commands)

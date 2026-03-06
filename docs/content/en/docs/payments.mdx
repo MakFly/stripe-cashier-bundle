@@ -1,0 +1,123 @@
+# Payments
+
+The bundle exposes the Stripe building blocks needed for one-shot payments, refunds and payment intents.
+
+> **Note**: All amounts are expressed in cents (1999 = $19.99).
+
+## Direct charge
+
+```php
+use CashierBundle\Contract\BillableEntityInterface;
+use CashierBundle\Service\PaymentService;
+
+final readonly class PaymentController
+{
+    public function __construct(
+        private PaymentService $paymentService,
+    ) {
+    }
+
+    public function charge(BillableEntityInterface $user): void
+    {
+        $payment = $this->paymentService->charge(
+            billable: $user,
+            amount: 1999, // 19.99 € in cents
+            paymentMethod: 'pm_card_visa',
+            options: [
+                'description' => 'Order #1234',
+                'metadata' => ['app_order_id' => '1234'],
+            ],
+        );
+    }
+}
+```
+
+## Pay with the default method
+
+```php
+$payment = $paymentService->pay($user, 2999); // 29.99 € in cents
+```
+
+## SCA / 3DS handling
+
+If the payment requires an action (3DS authentication), an `IncompletePaymentException` is thrown:
+
+```php
+use CashierBundle\Exception\IncompletePaymentException;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+
+try {
+    $payment = $paymentService->charge($user, 1999, $pmId);
+} catch (IncompletePaymentException $e) {
+    // Redirect to Stripe payment page to complete authentication
+    return new RedirectResponse('/cashier/payment/' . $e->payment()->id);
+}
+```
+
+The exception contains the `Payment` with `clientSecret()` for the frontend.
+
+## Stripe error handling
+
+```php
+use Stripe\Exception\CardException;
+
+try {
+    $payment = $paymentService->charge($user, 1999, $pmId);
+} catch (IncompletePaymentException $e) {
+    return new RedirectResponse('/checkout/confirm/' . $e->payment()->id());
+} catch (CardException $e) {
+    // Card declined
+    // $e->getMessage() contains the Stripe error message
+}
+```
+
+## Refund
+
+```php
+$paymentService->refund($paymentIntentId);
+$paymentService->refundPartial(paymentIntent: $paymentIntentId, amount: 1000);
+```
+
+## PaymentIntentService (advanced)
+
+For low-level PaymentIntent creation (two-step payment):
+
+```php
+use CashierBundle\Service\PaymentIntentService;
+
+$intent = $this->paymentIntentService->create([
+    'amount' => 4999, // 49.99 € in cents
+    'currency' => 'eur',
+    'payment_method_types' => ['card'],
+    'capture_method' => 'manual', // two-step payment
+    'metadata' => ['order_id' => '123'],
+]);
+
+// $intent contains: id, client_secret, status, amount, currency
+```
+
+### Available methods
+
+- `authorize(array $options)` — returns `['id', 'client_secret', 'status', 'amount', 'currency']`
+- `capture(string $paymentIntentId, ?int $amount = null)` — captures the payment
+- `cancel(string $paymentIntentId)` — cancels the authorized payment
+- `confirm(string $paymentIntentId, array $options)` — confirms with `IncompletePaymentException` handling
+
+## Useful states
+
+```php
+$payment->isSucceeded();
+$payment->isProcessing();
+$payment->requiresAction();
+$payment->requiresCapture();
+```
+
+## Best practice
+
+For a modern front-end tunnel, prefer `CheckoutService` if you want:
+
+- a payment page hosted by Stripe
+- `invoice_creation` automatically enabled
+- a simpler webhook chain to exploit server-side
+
+[Subscriptions →](/docs/subscriptions)

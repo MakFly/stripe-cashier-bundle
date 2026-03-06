@@ -1,0 +1,86 @@
+# Introduction
+
+[![Version](https://img.shields.io/packagist/v/makfly/stripe-cashier-bundle.svg)](https://packagist.org/packages/makfly/stripe-cashier-bundle)
+[![PHP](https://img.shields.io/packagist/php-v/makfly/stripe-cashier-bundle.svg)](https://packagist.org/packages/makfly/stripe-cashier-bundle)
+[![Licence](https://img.shields.io/packagist/l/makfly/stripe-cashier-bundle.svg)](https://packagist.org/packages/makfly/stripe-cashier-bundle)
+
+`makfly/stripe-cashier-bundle` brings to Symfony a Stripe billing foundation:
+
+- subscriptions and trials
+- one-shot payments
+- Stripe Checkout
+- Stripe webhooks with extensible handlers
+- automatic PDF archiving of paid invoices (GeneratedInvoice)
+- local invoice storage in `var/data/invoices`
+- Doctrine integration for Stripe customers, subscriptions and generated invoices
+- **[optional]** Symfony Messenger integration for asynchronous webhook processing
+
+The bundle is designed for two use cases:
+
+1. a Symfony project that wants a billing base ready to use
+2. a business application that wants to keep control of its order flow while delegating Stripe, webhooks and invoice archiving
+
+## Prerequisites
+
+| Dependency | Version |
+|-----------|---------|
+| PHP | `^8.2` |
+| Symfony | `^7.0` or `^8.0` |
+| Doctrine ORM | `^3.0` |
+| Stripe PHP SDK | `^16.0` |
+| dompdf/dompdf | `^3.1` (default PDF renderer) |
+| symfony/messenger | Optional (for async webhooks) |
+
+## `ext-intl`
+
+`ext-intl` is **recommended**, but **not required**.
+
+Without `intl`, the bundle continues to work:
+
+- amounts fall back to a safe fallback
+- invoice dates fall back to ISO format (`YYYY-MM-DD`)
+- FR/EN label translations remain available
+
+With `intl` installed, you get:
+
+- native monetary formatting by locale
+- cleaner localized dates in PDFs
+- FR/EN rendering closer to a production invoice
+
+## Bundle contract
+
+The official installation flow is:
+
+```bash
+composer require makfly/stripe-cashier-bundle
+php bin/console cashier:install
+```
+
+The install command prepares:
+
+- `config/packages/cashier.yaml`
+- `config/packages/cashier_doctrine.yaml`
+- `config/routes/cashier.yaml`
+- Stripe variables in `.env`
+- `var/data`
+- `var/data/invoices`
+
+## Covered surface
+
+The bundle currently handles:
+
+- `StripeCustomer`
+- `Subscription`
+- `SubscriptionItem`
+- `GeneratedInvoice`
+- common Stripe billing webhooks
+- PDF rendering and archiving of invoices
+
+It deliberately leaves to the consuming application:
+
+- business order logic
+- authorization rules
+- front-end screens
+- reservation or fulfillment workflows
+
+[Install the bundle →](/docs/installation)

@@ -1,0 +1,113 @@
+# Customers
+
+The bundle persists a local projection of the Stripe customer in `CashierBundle\Entity\StripeCustomer`.
+
+## Create or retrieve a Stripe customer
+
+```php
+use CashierBundle\Contract\BillableEntityInterface;
+use CashierBundle\Service\CustomerService;
+
+final readonly class CheckoutController
+{
+    public function __construct(
+        private CustomerService $customerService,
+    ) {
+    }
+
+    public function __invoke(BillableEntityInterface $user): void
+    {
+        $stripeId = $this->customerService->createOrGetStripeId($user);
+    }
+}
+```
+
+The Stripe payload is built from your billable entity:
+
+- `getEmail()`
+- `getName()`
+- `getPhone(): ?string` (optional)
+- `getAddress(): ?array` (optional, must return `['line1' => '...', 'line2' => '...', 'postal_code' => '...', 'city' => '...', 'country' => 'FR']`)
+
+## Update the customer
+
+```php
+$this->customerService->update($user, [
+    'metadata' => [
+        'source' => 'backoffice',
+    ],
+]);
+```
+
+## Local synchronization
+
+The bundle keeps useful data locally to avoid depending solely on a real-time Stripe fetch.
+
+### Automatically synchronized fields
+
+Fields of `StripeCustomer`:
+- `stripeId`
+- `email`
+- `name`
+- `phone`
+- `currency`
+- `balance` (balance in cents)
+- `address` (array)
+- `invoicePrefix`
+- `taxExempt`
+- `pmType` (default payment method type)
+- `pmLastFour` (last 4 digits)
+- `billableId`
+- `billableType`
+
+### Synchronization from Stripe
+
+To synchronize data from Stripe (useful in a `customer.updated` webhook handler):
+
+```php
+$this->customerService->sync($user); // synchronizes from the local entity
+$this->customerService->syncByStripeId('cus_xxx'); // synchronizes from Stripe API
+```
+
+## Deletion
+
+When a customer is deleted in Stripe, the `customer.deleted` webhook triggers `CustomerDeletedHandler` which deletes the local `StripeCustomer` (not the application User entity).
+
+## Balance
+
+The bundle manages the Stripe customer balance (credits/debits).
+
+```php
+// Credit the balance (negative amount at Stripe, in cents)
+$user->creditBalance(1000, 'Bonus credit'); // 10€
+
+// Debit the balance
+$user->debitBalance(500, 'Service usage');
+
+// Formatted balance
+$user->balance(); // string, e.g. "10.00 EUR"
+```
+
+### CustomerBalanceTransaction
+
+Each balance operation is persisted in `CashierBundle\Entity\CustomerBalanceTransaction`:
+
+- `id` — unique ID
+- `amount` — amount in cents (negative = credit, positive = debit)
+- `currency` — currency
+- `type` — transaction type
+- `description` — description
+- `isCredit()` — returns `true` if credit
+- `isDebit()` — returns `true` if debit
+
+## Customer locale
+
+For invoices, the locale follows this priority:
+
+1. explicit locale passed to rendering
+2. `preferred_locales` of the Stripe customer
+3. `cashier.invoices.default_locale`
+
+If your application already knows the user's language, push it to Stripe via `preferred_locales` at checkout or when updating the customer.
+
+[Payments →](/docs/payments)

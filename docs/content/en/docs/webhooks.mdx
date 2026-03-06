@@ -1,0 +1,144 @@
+# Webhooks
+
+The bundle exposes `POST /cashier/webhook` to receive Stripe events.
+
+## Configuration
+
+```yaml
+cashier:
+    webhook:
+        secret: '%env(STRIPE_WEBHOOK_SECRET)%'
+        tolerance: 300
+        events:
+            - customer.subscription.created
+            - customer.subscription.updated
+            - customer.subscription.deleted
+            - customer.deleted
+            - invoice.payment_succeeded
+            - invoice.payment_failed
+            - checkout.session.completed
+            - payment_intent.succeeded
+            - payment_intent.payment_failed
+```
+
+## Role of webhooks
+
+Do not limit your integration to the browser return after payment.
+
+Webhooks are used to:
+
+- confirm payment server-side
+- synchronize subscriptions
+- archive invoices
+- dispatch the bundle's Symfony events
+
+## Built-in handlers
+
+The bundle provides handlers for the main billing events, notably:
+
+- `customer.subscription.created`
+- `customer.subscription.updated`
+- `customer.subscription.deleted`
+- `customer.deleted`
+- `invoice.payment_succeeded`
+- `invoice.payment_failed`
+- `invoice.payment_action_required`
+- `checkout.session.completed`
+- `checkout.session.expired`
+- `payment_method.updated`
+- `payment_intent.succeeded`
+- `payment_intent.payment_failed`
+
+## Placeholder handlers
+
+Some handlers are empty extension points — implement via a custom handler:
+
+- `InvoicePaymentActionRequiredHandler` — handles `invoice.payment_action_required`
+- `CheckoutSessionCompletedHandler` — handles `checkout.session.completed`
+
+## Production configuration
+
+Create the webhook via CLI:
+
+```bash
+php bin/console cashier:webhook --url=https://mysite.com/cashier/webhook --show-secret
+```
+
+Copy the secret into `STRIPE_WEBHOOK_SECRET`.
+
+Verify that the path matches `cashier.path` in `cashier.yaml`.
+
+## Idempotency
+
+Stripe handlers may be called multiple times with the same event ID.
+
+Use `$event->id` as a guard: store processed IDs, reject duplicates.
+
+## Exception handling
+
+If a handler throws an exception, Stripe will retry the webhook (3 days, increasing intervals).
+
+Catch business exceptions and return `200` if the event can be ignored.
+
+## Custom handler
+
+```php
+use CashierBundle\Contract\WebhookHandlerInterface;
+use Stripe\Event;
+use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
+
+#[AutoconfigureTag('cashier.webhook_handler')]
+final readonly class SyncOrderHandler implements WebhookHandlerInterface
+{
+    public function handles(): array
+    {
+        return ['payment_intent.succeeded'];
+    }
+
+    public function handle(Event $event): void
+    {
+        $paymentIntent = $event->data->object;
+        $orderId = $paymentIntent->metadata->app_order_id ?? null;
+
+        // your business logic
+    }
+}
+```
+
+## Dispatched Symfony events
+
+- `WebhookReceivedEvent`
+- `WebhookHandledEvent`
+- `SubscriptionCreatedEvent`
+- `SubscriptionUpdatedEvent`
+- `SubscriptionDeletedEvent`
+- `PaymentSucceededEvent`
+- `PaymentFailedEvent`
+
+## Local Stripe CLI
+
+```bash
+php bin/console cashier:webhook:listen --forward-to=http://127.0.0.1:8000/cashier/webhook
+```
+
+Or with `--base-url` to automatically build the URL:
+
+```bash
+php bin/console cashier:webhook:listen --forward-to --base-url http://localhost:8000
+```
+
+The command:
+
+- launches `stripe listen`
+- retrieves the `whsec_...`
+- can update your `.env*` files
+- colorizes webhook entries and HTTP statuses
+
+## Reading console output
+
+- incoming Stripe event: cyan
+- `2xx` response: green
+- `4xx` response: yellow
+- `5xx` response and CLI errors: red
+
+[Symfony Events →](/docs/events)

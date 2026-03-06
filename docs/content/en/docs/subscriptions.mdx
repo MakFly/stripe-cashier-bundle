@@ -1,0 +1,119 @@
+# Subscriptions
+
+## Create a subscription
+
+```php
+use CashierBundle\Contract\BillableEntityInterface;
+use CashierBundle\Service\SubscriptionService;
+
+final readonly class SubscriptionController
+{
+    public function __construct(
+        private SubscriptionService $subscriptionService,
+    ) {
+    }
+
+    public function create(BillableEntityInterface $user): void
+    {
+        $subscription = $user->newSubscription('default', 'price_monthly')
+            ->trialDays(14)
+            ->create('pm_card_visa');
+    }
+}
+```
+
+## `SubscriptionBuilder` capabilities
+
+```php
+$builder = $user->newSubscription('default');
+
+$builder->price('price_monthly', quantity: 1);
+$builder->meteredPrice('price_metered');
+$builder->trialDays(14);
+$builder->withCoupon('coupon_xxx');
+$builder->withPromotionCode('promo_xxx');
+$builder->withMetadata(['segment' => 'pro']);
+$builder->withOptions(['collection_method' => 'charge_automatically']);
+$builder->withBillingThresholds(['threshold_cycles' => 3]);
+$builder->anchorBillingCycleOn(new \DateTime('2025-01-01'));
+$builder->withPaymentBehavior('default_incomplete');
+$builder->noProrate(); // or prorate()
+```
+
+## Check state
+
+```php
+$user->subscribed('default');
+$user->onTrial('default');
+$subscription = $user->subscription('default');
+```
+
+### Full lifecycle
+
+| Method | Description |
+|---------|-------------|
+| `active()` | Status `active` or `trialing` |
+| `valid()` | `active` OR `onTrial` OR `onGracePeriod` — common use case for "subscription grants access to service" |
+| `onGracePeriod()` | Cancelled subscription but `ends_at` in the future — access should still be granted |
+| `paused()` | Stripe `paused` subscription |
+| `notPaused()` | Stripe non-`paused` subscription |
+| `onPausedGracePeriod()` | `paused` subscription with grace period |
+| `ended()` | Cancelled AND `ends_at` in the past |
+| `incomplete()` | Payment failure status (configure `Cashier::$deactivateIncomplete`) |
+| `pastDue()` | Pending payment status (configure `Cashier::$deactivatePastDue`) |
+| `recurring()` | Active, not in trial, not in grace period |
+
+```php
+$subscription->active();
+$subscription->pastDue();
+$subscription->paused();
+$subscription->onGracePeriod();
+```
+
+## Evolve the subscription
+
+```php
+$subscriptionService->swap($subscription, 'price_yearly'); // default proration, trialDays not maintained
+$subscriptionService->updateQuantity($subscription, 5);
+$subscriptionService->cancel($subscription); // end of period
+$subscriptionService->cancel($subscription, immediately: true); // immediate
+$subscriptionService->resume($subscription); // requires onGracePeriod() to be true
+```
+
+### Multi-price
+
+For a subscription with multiple prices (base + add-on):
+
+```php
+$user->newSubscription('default')
+    ->price('price_monthly_base')
+    ->price('price_add_on', 1)
+    ->create('pm_card_visa');
+```
+
+### SubscriptionItem
+
+Each price in a subscription corresponds to a `SubscriptionItem`:
+
+```php
+$subscription->items; // Collection of SubscriptionItem
+$item = $subscription->items()->first();
+
+$item->stripePrice; // price_xxx
+$item->quantity;
+$item->meterId; // for usage-based
+$item->meterEventName;
+```
+
+## Usage-based billing
+
+```php
+$item = $subscription->items()->first();
+$item->reportUsage(100);
+```
+
+## Checkout subscription
+
+If you prefer a subscription created via Stripe Checkout, use `CheckoutService::createSubscription()`.
+
+[Checkout →](/docs/checkout)
