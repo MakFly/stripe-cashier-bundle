@@ -169,13 +169,17 @@ class SubscriptionService
 
     public function cancel(Subscription $subscription, bool $immediately = false): Subscription
     {
-        $options = $immediately ? [] : ['cancel_at_period_end' => true];
-
         try {
-            $stripeSubscription = $this->stripe->subscriptions->cancel(
-                $subscription->getStripeId(),
-                $options,
-            );
+            if ($immediately) {
+                $stripeSubscription = $this->stripe->subscriptions->cancel(
+                    $subscription->getStripeId(),
+                );
+            } else {
+                $stripeSubscription = $this->stripe->subscriptions->update(
+                    $subscription->getStripeId(),
+                    ['cancel_at_period_end' => true],
+                );
+            }
 
             $synced = $this->syncSubscription($stripeSubscription, $subscription->getCustomer(), $subscription->getType());
 
