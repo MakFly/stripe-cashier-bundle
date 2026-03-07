@@ -19,8 +19,6 @@
 Thumbs.db
 
 # Env files
-.env
-.env.local
 .env.*.local
 
 # Logs
@@ -32,3 +30,4 @@ Thumbs.db
 
 # Claude
 /.claude/
+config.bat
