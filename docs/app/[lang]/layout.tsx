@@ -9,9 +9,24 @@ import { CustomNavbar } from "../../components/custom-navbar";
 import "nextra-theme-docs/style.css";
 import "../globals.css";
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://stripe-cashier-bundle.vercel.app';
+
 export const metadata: Metadata = {
-  title: "Cashier Symfony",
-  description: "Documentation for Cashier Symfony",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    template: '%s | Cashier Symfony',
+    default: 'Cashier Symfony – Stripe Billing for Symfony',
+  },
+  description: 'Cashier Symfony is a Symfony bundle providing an expressive, fluent interface to Stripe Billing. Manage subscriptions, payments, invoices, checkout sessions and webhooks with Doctrine.',
+  keywords: ['Symfony', 'Stripe', 'billing', 'subscriptions', 'payments', 'cashier', 'bundle', 'PHP', 'Doctrine', 'webhooks', 'checkout', 'invoices'],
+  openGraph: {
+    type: 'website',
+    siteName: 'Cashier Symfony',
+    locale: 'en',
+  },
+  twitter: {
+    card: 'summary_large_image',
+  },
 };
 
 type LayoutProps = Readonly<{

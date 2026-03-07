@@ -1,7 +1,44 @@
+import type { Metadata } from "next";
 import { Instrument_Serif, DM_Sans } from "next/font/google";
 import Link from "next/link";
 import type { FC } from "react";
 import { DocsControls } from "../../components/docs-controls";
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://stripe-cashier-bundle.vercel.app';
+
+const metaDict = {
+  fr: {
+    title: 'Cashier Symfony – Billing Stripe pour Symfony',
+    description: 'Cashier Symfony est un bundle Symfony offrant une interface expressive et fluide pour Stripe Billing. Gérez abonnements, paiements, factures, sessions checkout et webhooks avec Doctrine.',
+    locale: 'fr',
+  },
+  en: {
+    title: 'Cashier Symfony – Stripe Billing for Symfony',
+    description: 'Cashier Symfony is a Symfony bundle providing an expressive, fluent interface to Stripe Billing. Manage subscriptions, payments, invoices, checkout sessions and webhooks with Doctrine.',
+    locale: 'en',
+  },
+} as const;
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { lang } = await params;
+  const m = metaDict[lang as keyof typeof metaDict] ?? metaDict.en;
+  const otherLang = lang === 'fr' ? 'en' : 'fr';
+  return {
+    title: m.title,
+    description: m.description,
+    alternates: {
+      canonical: `${SITE_URL}/${lang}`,
+      languages: {
+        fr: `${SITE_URL}/fr`,
+        en: `${SITE_URL}/en`,
+      },
+    },
+    openGraph: {
+      locale: m.locale,
+      alternateLocale: otherLang,
+    },
+  };
+}
 
 const display = Instrument_Serif({
   subsets: ["latin"],
